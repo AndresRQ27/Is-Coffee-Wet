@@ -2,27 +2,49 @@ import pandas as pd
 import numpy as np
 
 
-def cleanDataset(dataset):
+def cleanDataset(dataset, removeRows = [], 
+                 nullValue = "", removeColumns = []):
     """Removes missing or empty values that can 
     generate error in the parse of the dataset
 
     Args:
         dataset (pd.DataFrame): Dataset to clean
+        removeRows (string): Columns where to search the null values
+        nullValue (string or number): Value to search and remove
+        removeColumns (string): Group of columns to remove
 
     Returns:
         pd.DataFrame: Cleaned dataset
     """
     # Removes the columns with almost all missing values
-    # TODO: when de data set is complete
-    #! dataset = dataset.drop(['column1', 'column2'], axis=1)
+    displayNumber = 0 #Iterator to print
+    if removeColumns: #Checks if empty
+        for columnName in removeColumns: #Remove 
+            try:
+                dataset = dataset.drop(columnName, axis=1)
+                displayNumber += 1
+            except (KeyError):
+                print("Column doesn't exist:", columnName)
 
-    # Sets al the missing values (represented as "---") to NaN in the selected columns
-    dataset = dataset.replace({"Temp Out": "---",  # Columns where missing data could be
-                               # ?"columnName"": "---",
-                               "Leaf Wet 1": "---"},
-                              np.NaN)  # New value
-    dataset = dataset.dropna(axis=0,  # Drop only the rows
-                             how="any")  # Removes the NaN values in the rows
+    print("\nColumns removed:", displayNumber)
+
+    # Sets al the missing values (represented as nullValue) to NaN in the
+    # selected columns
+    displayNumber = dataset.size #Iterator to print
+    if removeRows:
+        for rowName in removeRows:
+            try:
+                dataset = dataset.replace(
+                                {rowName: nullValue}, # Columns where missing data could be
+                                np.NaN)  # New value
+            except (KeyError):
+                print("Column doesn't exist:", columnName)
+    
+    dataset = dataset.dropna(axis=0,        # Drop only the rows
+                             how="any")     # Removes the NaN values in the rows
+
+    print("Rows removed:", displayNumber-dataset.size)
+                             
     return dataset
 
 
@@ -51,9 +73,9 @@ def setDataTypes(dataset):
 
 def unifyTime(dataset):
     # ***Group the rows in sequences of every 15 minutes
-    # Generates an array of all the hours in a day
-    hour_array = pd.date_range('2010-01-01', periods=24, freq='1H')
-    minute_array = pd.date_range('2010-01-01', periods=5, freq='15min')
+    dataset.resample('15min', origin = "start").agg(
+                    {'Temp Out': np.mean})
+    return dataset
 
 #TEST: prints
 # print(dataset.info(verbose=True))
