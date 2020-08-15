@@ -103,10 +103,12 @@ def setDataTypes(dataset, mergeDateTime=[], nameFormat=[]):
         try:
             print("Date and Time merge started...")  # ! Print
             # Unifies "Date" and "Time" in a "datetime64[ns]"
-            dataset[mergeDateTime[0]] = pd.to_datetime(dataset[mergeDateTime[0]] +
+            dataset["Datetime"] = pd.to_datetime(dataset[mergeDateTime[0]] +
                                                        ' ' + dataset[mergeDateTime[1]])
+            #Sets the datetime as the index of the DataFrame
+            dataset = dataset.set_index('Datetime')
             # Drops the "Time" columns as it has been combine into "Date"
-            dataset = dataset.drop(mergeDateTime[1], axis=1)
+            dataset = dataset.drop([mergeDateTime[0], mergeDateTime[1]], axis=1)
         except (KeyError):
             print("Incorrect column name")
         except (IndexError):
@@ -129,10 +131,18 @@ def setDataTypes(dataset, mergeDateTime=[], nameFormat=[]):
     return dataset
 
 
-def sampleDataset(dataset):
+def sampleDataset(dataset, frequency, columnFunction):
     # ***Group the rows in sequences of every 15 minutes
-    dataset.resample('15min', origin="start").agg(
-        {'Temp Out': np.mean})
-    return dataset
+    #Creates the new dataset to return
+    newDataset = pd.DataFrame()
+    
+    for filterFunction in columnFunction:
+        #Samples a specific column with its corresponding function
+        aux = dataset.resample(frequency).agg({filterFunction[0]: filterFunction[1]})
+        #Concatenates to the right the result in the new dataset
+        newDataset = pd.concat([newDataset, aux], axis=1)
 
-# print(dataset.info(verbose=True))
+    #Cleans the dataset from extra values generated while sampling
+    newDataset = newDataset.dropna(axis=0, how="any")
+
+    return newDataset

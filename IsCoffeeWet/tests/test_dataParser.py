@@ -1,4 +1,5 @@
 import unittest
+import numpy as np
 from pandas import read_csv
 from IsCoffeeWet import dataParser
 
@@ -8,27 +9,47 @@ class Test_TestDataParser(unittest.TestCase):
         self.dirtyDataset = read_csv("resources/est0Corta.csv")
 
     def test_cleanDataset(self):
-        filteredDataset = dataParser.cleanDataset(self.dirtyDataset,
-                                                  ["Temp Out", "Leaf Wet 1"],
-                                                  "---")
+        testDS = dataParser.cleanDataset(self.dirtyDataset,
+                                         ["Temp Out", "Leaf Wet 1"],
+                                         "---")
 
-        self.assertLess(filteredDataset.size, self.dirtyDataset.size)
+        self.assertLess(testDS.size, self.dirtyDataset.size)
 
     def test_setDataTypes(self):
-        filteredDataset = dataParser.cleanDataset(self.dirtyDataset,
-                                                  ["Temp Out", 
-                                                  "Leaf Wet 1"],
-                                                  "---")
-        typedDataset = dataParser.setDataTypes(filteredDataset,
-                                               ("Date", "Time"),
-                                               [("Temp Out", "float32"),
-                                                ("Leaf Wet 1", "int32")])
+        dataset = dataParser.cleanDataset(self.dirtyDataset,
+                                          ["Temp Out",
+                                           "Leaf Wet 1"],
+                                          "---")
+        testDS = dataParser.setDataTypes(dataset,
+                                         ("Date", "Time"),
+                                         [("Temp Out", "float32"),
+                                          ("Leaf Wet 1", "int32")])
 
-        self.assertLess(len(typedDataset.columns), len(filteredDataset.columns))
-        
+        self.assertLess(len(testDS.columns), len(dataset.columns))
+
     def test_sampleDataset(self):
-        pass
+        dataset = dataParser.cleanDataset(self.dirtyDataset,
+                                          ["Temp Out",
+                                           "Leaf Wet 1"],
+                                          "---")
+        dataset = dataParser.setDataTypes(dataset,
+                                          ("Date", "Time"),
+                                          [("Temp Out", "float32"),
+                                           ("Leaf Wet 1", "float32")])
+        #TODO: cambiar np.max de Leaf Wet 1
+        testDS = dataParser.sampleDataset(dataset, "15min",
+                                          [("Temp Out", np.mean),
+                                           ("Leaf Wet 1", np.max)])
+        print(testDS.info(verbose=True))
+        self.assertLess(testDS.size, dataset.size)
 
 
 if __name__ == '__main__':
     unittest.main()
+
+#import IsCoffeeWet.dataParser as dp
+#import pandas as pd
+#dataset = pd.read_csv("resources/est0Corta.csv")
+#dataset = dp.cleanDataset(dataset,["Temp Out", "Leaf Wet 1"],"---")
+#dataset = dp.setDataTypes(dataset,("Date","Time"),[("Temp Out","float32"),("Leaf Wet 1","int32")])
+#dataset = dp.sampleDataset(dataset, "1H")
