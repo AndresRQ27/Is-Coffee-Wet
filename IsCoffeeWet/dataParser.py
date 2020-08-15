@@ -2,80 +2,137 @@ import pandas as pd
 import numpy as np
 
 
-def cleanDataset(dataset, removeRows = [], 
-                 nullValue = "", removeColumns = []):
-    """Removes missing or empty values that can 
-    generate error in the parse of the dataset
-
-    Args:
-        dataset (pd.DataFrame): Dataset to clean
-        removeRows (string): Columns where to search the null values
-        nullValue (string or number): Value to search and remove
-        removeColumns (string): Group of columns to remove
-
-    Returns:
-        pd.DataFrame: Cleaned dataset
+def cleanDataset(dataset, removeRows=[], nullValue="", removeColumns=[]):
     """
+    Removes missing or empty values that can generate error in the parse 
+    of the dataset
+
+    Returns a dataset without "damaged" values that could hurt a convertion
+    of a `dtype` in a column of the dataset
+
+    Parameters
+    ----------
+    - dataset: pd.DataFrame.
+        Dataset to clean.
+    - removeRows: list or tuple of strings.
+        Columns where to search the null values.
+        Wrong name will result in a failed removal.
+        Default value is an empty list.
+    - nullValue:  object, generally string or int.
+        Value to search and remove.
+        Default value is an empty string.
+    - removeColumns: list or tuple of strings.
+        Group of columns to remove. Wrong names will
+        result in a failed removal. Default value is 
+        an empty list.
+    
+    Returns
+    -------
+    - dataset : pd.DataFrame.
+        Dataset with entire columns remove and/or
+        rows with incomplete data removed.
+    """
+    print()  # ! Print
     # Removes the columns with almost all missing values
-    displayNumber = 0 #Iterator to print
-    if removeColumns: #Checks if empty
-        for columnName in removeColumns: #Remove 
+    displayNumber = 0  # Iterator to print
+    if removeColumns:  # Checks if empty
+        print("Column removal started...")  # ! Print
+        for columnName in removeColumns:  # Remove
             try:
                 dataset = dataset.drop(columnName, axis=1)
                 displayNumber += 1
             except (KeyError):
+                np.mean()
                 print("Column doesn't exist:", columnName)
 
-    print("\nColumns removed:", displayNumber)
+    print("Columns removed:", displayNumber)
 
     # Sets al the missing values (represented as nullValue) to NaN in the
     # selected columns
-    displayNumber = dataset.size #Iterator to print
+    displayNumber = dataset.size  # Iterator to print
     if removeRows:
+        print("Rows removal started...")  # ! Print
         for rowName in removeRows:
             try:
-                dataset = dataset.replace(
-                                {rowName: nullValue}, # Columns where missing data could be
-                                np.NaN)  # New value
+                dataset = dataset.replace({rowName: nullValue}, np.NaN)
             except (KeyError):
                 print("Column doesn't exist:", columnName)
-    
-    dataset = dataset.dropna(axis=0,        # Drop only the rows
-                             how="any")     # Removes the NaN values in the rows
+
+    # Removes the NaN values in the rows
+    dataset = dataset.dropna(axis=0, how="any")
 
     print("Rows removed:", displayNumber-dataset.size)
-                             
+
     return dataset
 
 
-def setDataTypes(dataset):
-    """Reorders the dataset by merging Date & Time into a pd.datetime64[ns]
-    Sets the types of the rest of the columns
-
-    Args:
-        dataset (pd.DataFrame): Dataset with the columns to change the type
-
-    Returns:
-        pd.DataFrame: dataset with all the columns set to a known type 
-                      (not just "object")
+def setDataTypes(dataset, mergeDateTime=[], nameFormat=[]):
     """
-    # Unifies "Date" and "Time" into a "Date" as pandas uses "datetime64[ns]"
-    dataset['Date'] = pd.to_datetime(dataset['Date'] + ' ' + dataset['Time'])
+    Reorders the dataset by merging Date & Time into a 
+    pd.datetime64[ns]. It also sets the types of the 
+    rest of the columns according to the `dtype` passed.
+
+    Returns a dataset with the column casted to the desired
+    values for easier manipulation
+
+    Parameters
+    ----------
+    - dataset: pd.DataFrame.
+        Dataset to change the `dtype`.
+    - mergeDateTime: tuple of strings.
+        A two strings tuple that has in the first position
+        the name of the column of the dates. In the second 
+        position, the name of the time. Extra parameters will
+        be ignored and one parameter will result in a failed
+        conversion. By default, its an empty list
+    - nameFormat: list of tuples.
+        Each tuple is made of 2 parameters: 
+        the name (string) of the column and the `dtype` in a string 
+        to be converted. Wrong name or incorrect casting will result
+        in a failed conversion. By default is an empty list. Example: 
+        >>> [("Temp Out", "float32")]
+    
+    Returns
+    -------
+    - dataset : pd.DataFrame.
+        Dataset with entire columns remove and/or
+        rows with incomplete data removed.
+    """
+    print()  # ! Print
+    if mergeDateTime:
+        try:
+            print("Date and Time merge started...")  # ! Print
+            # Unifies "Date" and "Time" in a "datetime64[ns]"
+            dataset[mergeDateTime[0]] = pd.to_datetime(dataset[mergeDateTime[0]] +
+                                                       ' ' + dataset[mergeDateTime[1]])
+            # Drops the "Time" columns as it has been combine into "Date"
+            dataset = dataset.drop(mergeDateTime[1], axis=1)
+        except (KeyError):
+            print("Incorrect column name")
+        except (IndexError):
+            print("Incorrect number of parameters in mergeDateTime")
+        except (ValueError):
+            print("Column can't be change to Datetime")
+
     # Changes the data to types that use less memory
-    dataset = dataset.astype({"Temp Out": "float32",
-                              # ?"columnName"": "---",
-                              "Leaf Wet 1": "int32"})
-    # Drops the "Time" columns as it has been combine into "Date"
-    dataset = dataset.drop("Time", axis=1)
+    if nameFormat:
+        print("Values conversion started...")  # ! Print
+        for nameAndType in nameFormat:
+            try:
+                dataset = dataset.astype({nameAndType[0]: nameAndType[1]})
+            except (KeyError):
+                print("Incorrect column name")
+            except (ValueError):
+                print(str(nameAndType[0]) +
+                      "can't be change to" + str(nameAndType[1]))
 
     return dataset
 
 
-def unifyTime(dataset):
+def sampleDataset(dataset):
     # ***Group the rows in sequences of every 15 minutes
-    dataset.resample('15min', origin = "start").agg(
-                    {'Temp Out': np.mean})
+    dataset.resample('15min', origin="start").agg(
+        {'Temp Out': np.mean})
     return dataset
 
-#TEST: prints
 # print(dataset.info(verbose=True))
