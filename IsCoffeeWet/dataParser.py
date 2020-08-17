@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import warnings
 
 
 def cleanDataset(dataset, removeRows=[], nullValue="", removeColumns=[]):
@@ -25,7 +26,7 @@ def cleanDataset(dataset, removeRows=[], nullValue="", removeColumns=[]):
         Group of columns to remove. Wrong names will
         result in a failed removal. Default value is 
         an empty list.
-    
+
     Returns
     -------
     - dataset : pd.DataFrame.
@@ -91,7 +92,7 @@ def setDataTypes(dataset, mergeDateTime=[], nameFormat=[]):
         to be converted. Wrong name or incorrect casting will result
         in a failed conversion. By default is an empty list. Example: 
         >>> [("Temp Out", "float32")]
-    
+
     Returns
     -------
     - dataset : pd.DataFrame.
@@ -104,17 +105,21 @@ def setDataTypes(dataset, mergeDateTime=[], nameFormat=[]):
             print("Date and Time merge started...")  # ! Print
             # Unifies "Date" and "Time" in a "datetime64[ns]"
             dataset["Datetime"] = pd.to_datetime(dataset[mergeDateTime[0]] +
-                                                       ' ' + dataset[mergeDateTime[1]])
-            #Sets the datetime as the index of the DataFrame
+                                                 ' ' + dataset[mergeDateTime[1]])
+            # Sets the datetime as the index of the DataFrame
             dataset = dataset.set_index('Datetime')
             # Drops the "Time" columns as it has been combine into "Date"
-            dataset = dataset.drop([mergeDateTime[0], mergeDateTime[1]], axis=1)
+            dataset = dataset.drop(
+                [mergeDateTime[0], mergeDateTime[1]], axis=1)
         except (KeyError):
-            print("Incorrect column name")
+            print("Incorrect column name. Check",
+                  mergeDateTime[0], mergeDateTime[1])
         except (IndexError):
             print("Incorrect number of parameters in mergeDateTime")
         except (ValueError):
             print("Column can't be change to Datetime")
+
+    print("Date and Time merge finished...")  # ! Print
 
     # Changes the data to types that use less memory
     if nameFormat:
@@ -123,26 +128,80 @@ def setDataTypes(dataset, mergeDateTime=[], nameFormat=[]):
             try:
                 dataset = dataset.astype({nameAndType[0]: nameAndType[1]})
             except (KeyError):
-                print("Incorrect column name")
+                print("Incorrect column name:", nameAndType[0])
             except (ValueError):
                 print(str(nameAndType[0]) +
                       "can't be change to" + str(nameAndType[1]))
 
+    print("Values conversion finished...")  # ! Print
+
     return dataset
 
 
-def sampleDataset(dataset, frequency, columnFunction):
-    # ***Group the rows in sequences of every 15 minutes
-    #Creates the new dataset to return
-    newDataset = pd.DataFrame()
-    
-    for filterFunction in columnFunction:
-        #Samples a specific column with its corresponding function
-        aux = dataset.resample(frequency).agg({filterFunction[0]: filterFunction[1]})
-        #Concatenates to the right the result in the new dataset
-        newDataset = pd.concat([newDataset, aux], axis=1)
+def sampleDataset(dataset, columnFunction=[], frequency="15min"):
+    """
+    Sample dataset according to a time frequency given. The dataset 
+    will be group in interval of `frequency` and a numeric function will
+    be applied to the rows between these timeframes to get one single value
+    for each new timestamp.
 
-    #Cleans the dataset from extra values generated while sampling
+    Different numeric functions can be applied to different column by 
+    pairing the function with the column in a tuple in `columnFunction`.
+    If a column is in the dataset but not in `columnFunction` or doesn't
+    have a function assigned for the sampling, it will be ignore (and 
+    removed) in the returned dataset.
+
+    Parameters
+    ----------
+    - dataset: pd.DataFrame.
+        Dataset to sample each column.
+    - columnFunction: list of tuples.
+        Each tuple is made of 2 parameters: 
+        the name (string) of the column and the function to apply in
+        the sample. Wrong name or incorrect casting will result
+        in a failed conversion. By default is an empty list. Example: 
+        >>> [("Temp Out", "np.mean)]
+    - frequency: string. Value expressed in string of the frequency to
+        sample the data. By default, the dataset gets sample in groups
+        of 15min. Other examples are:
+        >>> "1H" --An hour
+        >>> "1D" --A day
+        >>> "1M" --A month
+        >>> "1h30min" --Combination of hours and minutes
+
+    Returns
+    -------
+    - dataset : pd.DataFrame.
+        Dataset with the rows sample in the desired frequency.
+        If no sample could be made, return the original dataset and
+        a warning will be given.
+    """
+    # Creates the new dataset to return
+    newDataset = pd.DataFrame()
+
+    print("Resampling started...")  # ! Print
+
+    for filterFunction in columnFunction:
+        try:
+            newDataset = pd.concat([newDataset,  # Concatenates to the right the result in the new dataset
+                                    dataset.resample(frequency).agg(  # Samples a specific column with its corresponding function
+                                        {filterFunction[0]:
+                                         filterFunction[1]})],
+                                   axis=1)
+        except (KeyError):
+            print("Incorrect column name:", filterFunction[0])
+        except (pandas.core.base.DataError):
+            print("Incorrect function to apply to:", filterFunction[0])
+
+    print("Resampling finished...")  # ! Print
+    print("Clearing NA values in resampled dataset...")  # ! Print
+
+    # Cleans the dataset from extra values generated while sampling
     newDataset = newDataset.dropna(axis=0, how="any")
+
+    # If it's empty, return the original dataset
+    if newDataset.empty:
+        warnings.warn("Returning un-sampled dataset", Warning)  # ! Warning
+        newDataset = dataset
 
     return newDataset
