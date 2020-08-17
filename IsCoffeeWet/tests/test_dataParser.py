@@ -23,7 +23,7 @@ class Test_TestDataParser(unittest.TestCase):
         testDS = dataParser.setDataTypes(dataset,
                                          ("Date", "Time"),
                                          [("Temp Out", "float32"),
-                                          ("Leaf Wet 1", "int32")])
+                                          ("Leaf Wet 1", "float32")])
 
         self.assertLess(len(testDS.columns), len(dataset.columns))
 
@@ -36,12 +36,20 @@ class Test_TestDataParser(unittest.TestCase):
                                           ("Date", "Time"),
                                           [("Temp Out", "float32"),
                                            ("Leaf Wet 1", "float32")])
-        #TODO: cambiar np.max de Leaf Wet 1
-        testDS = dataParser.sampleDataset(dataset, "15min",
-                                          [("Temp Out", np.mean),
-                                           ("Leaf Wet 1", np.max)])
-        print(testDS.info(verbose=True))
-        self.assertLess(testDS.size, dataset.size)
+
+        # Check warning output
+        with self.subTest():
+            with self.assertWarns(Warning):
+                dataParser.sampleDataset(dataset)
+
+        with self.subTest():
+            # TODO: cambiar np.max de Leaf Wet 1
+            testDS = dataParser.sampleDataset(dataset,
+                                              [("Temp Out", np.mean),
+                                               ("Leaf Wet 1", np.max)],
+                                              "15min")
+            print(testDS.info(verbose=True))
+            self.assertLess(testDS.size, dataset.size)
 
 
 if __name__ == '__main__':
