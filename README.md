@@ -14,3 +14,11 @@ the file hierarchy needs it.
 3. Go to the last line and write `export PYTHONPATH=$PYTHONPATH:/path/to/folder/Is-Coffee-Wet`
 4. Save & exit, then close the terminal
 5. Re-open the terminal and type `echo $PYTHONPATH` to check if it worked
+
+## Requirements
+
+The project was run using:
+
+- Python 3.8.2 (at least >3.4)
+- Pandas 0.25.3
+- Numpy 1.17.4
