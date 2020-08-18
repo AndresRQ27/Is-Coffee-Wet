@@ -36,8 +36,8 @@ class Test_TestDataParser(unittest.TestCase):
                                           "---")
 
         convertDS = dataParser.convertNumeric(dataset,
-                                           [("Temp Out", "float32"),
-                                            ("Leaf Wet 1", "float32")])
+                                              [("Temp Out", "float32"),
+                                               ("Leaf Wet 1", "float32")])
 
         # Checks the table for np.NaN
         # Uses any(0) to group all the rows in a value for each column
@@ -60,7 +60,7 @@ class Test_TestDataParser(unittest.TestCase):
         # TODO: cambiar np.max de Leaf Wet 1
         sampleDS = dataParser.sampleDataset(dataset,
                                             [("Temp Out", np.mean),
-                                            ("Leaf Wet 1", np.max)],
+                                             ("Leaf Wet 1", np.max)],
                                             "15min")
         print(sampleDS.info(verbose=True))
         self.assertLess(sampleDS.size, dataset.size)
@@ -69,6 +69,7 @@ class Test_TestDataParser(unittest.TestCase):
 if __name__ == '__main__':
     unittest.main()
 
+# TODO: remove comments
 #import IsCoffeeWet.dataParser as dp
 #import pandas as pd
 #dataset = pd.read_csv("resources/est0Corta.csv")
