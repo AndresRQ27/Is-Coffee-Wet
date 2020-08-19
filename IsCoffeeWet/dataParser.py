@@ -75,7 +75,7 @@ def cleanDataset(dataset, completeRows, nullValue):
 def convertNumeric(dataset, columnAndType):
     """
     Sets the type of a column according to the given pair.
-    Use numeric values only (int, float, etc.) or it will fail.
+    Use for columns with numeric values or it will fail.
     If the dataset is not clean (other values that are not NaN),
     the conversion will fail.
 
@@ -86,11 +86,12 @@ def convertNumeric(dataset, columnAndType):
     ----------
     - dataset: pd.DataFrame.
         Dataset to change the `dtype`.
-    - columnAndFormat: list of tuples.
-        Each tuple is made of 2 parameters: 
-        The name (string) of the column and the `dtype` as a string 
-        to be converted. Example: 
-        >>> [("Temp Out", "float32"), ("Leaf Wet 1", "int32")]
+    - columnAndType: list of tuples.
+        Each tuples consists of 2 values: name of the column
+        and name type of data for the column (signed, unsigned 
+        or float).
+        Example:
+        >>> [("Temp Out", "float"), ("Leaf Wet 1", "signed")]
 
     Returns
     -------
@@ -100,22 +101,47 @@ def convertNumeric(dataset, columnAndType):
 
     Notes
     -----
-    All the columns that contain NaN values must be converted to
-    float (32 or 64) as this value doesn't exist for the interger.
+    The precision of the converted dataset is low (32bits or lower),
+    but higher precision isn't needed with the values that the sensors
+    capture. Downcast is used to restrict the data type (float use
+    as int when possible) and the memory footprint (float64 to float32)
+
+    This also helps identify problems when data consistency is getting 
+    lost. An example is parameters that are purely integers, if an 
+    operation generates decimals in those numbers, it can be corrected.
     
-    After the interpolation, an attemp to downcast the column type
-    is made to save memory. This can be a problem if all the numbers
-    in a column are >1000, as it will be downcasted to int; this can
-    cause a lost of the decimals for that column, if it had.
     """
+
     # Changes the data to types to use less memory
     for nameAndType in columnAndType:
-        # Cast the column to the wanted type
-        dataset = dataset.astype({nameAndType[0]: nameAndType[1]})
-        #TODO: round int values
-        # Interpolates the NaN values
+        # Casting of the column type
+        dataset = dataset.astype({nameAndType[0]: "float32"})
+
+        # Interpolation of NaNs
         dataset[nameAndType[0]] = dataset[nameAndType[0]].interpolate(
-            method="time", limit_direction="forward", downcast="infer")
+            method="time", limit_direction="forward")
+
+        # Downcast of the types
+        if nameAndType[1] == "signed":
+
+            # Round the number to remain integer after interpolation
+            dataset[nameAndType[0]] = dataset[nameAndType[0]].round()
+            # Downcast it to integer properly
+            dataset[nameAndType[0]] = pd.to_numeric(
+                dataset[nameAndType[0]], downcast="signed")
+
+        elif nameAndType[1] == "unsigned":
+
+            # Round the number to remain integer after interpolation
+            dataset[nameAndType[0]] = dataset[nameAndType[0]].round()
+            # Downcast it to integer properly
+            dataset[nameAndType[0]] = pd.to_numeric(
+                dataset[nameAndType[0]], downcast="unsigned")
+        else:
+
+            # Downcast it to integer properly
+            dataset[nameAndType[0]] = pd.to_numeric(
+                dataset[nameAndType[0]], downcast="float")
 
     return dataset
 
@@ -129,9 +155,6 @@ def sampleDataset(dataset, columnAndFunction, frequency):
 
     Different numeric functions can be applied to different column by 
     pairing the function with the column in a tuple in `columnAndFunction`.
-    If a column is in the dataset but not in `columnAndFunction` or doesn't
-    have a function assigned for the sampling, it will be ignore (and 
-    removed) in the returned dataset.
 
     Parameters
     ----------
@@ -154,23 +177,26 @@ def sampleDataset(dataset, columnAndFunction, frequency):
     -------
     - dataset : pd.DataFrame.
         Dataset with the rows sample in the desired frequency.
+
+    Notes
+    -----
+    The returned database may have empty rows if the dataset isn't 
+    complete. It's recommended to use again `convertNumeric` function
+    to interpolate the empty values and maintain the data type consistency.
+
     """
     # Creates the new dataset to return
     newDataset = pd.DataFrame()
 
     for filterFunction in columnAndFunction:
         # Generates a new DataFrame
-        # By concatenating the column to the new DataFrame
-        # As it gets sampled by the frequency
+        # Each resampling creates a column, so it is appended to get a
+        # final result. It must be done this way to use a different
+        # function in each column
         newDataset = pd.concat([newDataset,
                                 dataset.resample(
                                     frequency, label="right", closed="right").agg(
                                         {filterFunction[0]:filterFunction[1]})],
                                axis=1)
-
-    #TODO: round int values
-    # Clears the dataset from extra values generated while sampling
-    newDataset = newDataset.interpolate(
-        method="time", limit_direction="forward", downcast="infer")
 
     return newDataset

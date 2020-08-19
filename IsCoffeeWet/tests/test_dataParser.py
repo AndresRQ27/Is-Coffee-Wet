@@ -36,8 +36,10 @@ class Test_TestDataParser(unittest.TestCase):
                                           "---")
 
         convertDS = dataParser.convertNumeric(dataset,
-                                              [("Temp Out", "float32"),
-                                               ("Leaf Wet 1", "float32")])
+                                              [("Temp Out", "float"),
+                                               ("Leaf Wet 1", "unsigned")])
+
+        print(sampleDS.info(verbose=True))
 
         # Checks the table for np.NaN
         # Uses any(0) to group all the rows in a value for each column
@@ -54,14 +56,13 @@ class Test_TestDataParser(unittest.TestCase):
                                           "---")
         # Casts the dataset's columns into the needed dtypes
         dataset = dataParser.convertNumeric(dataset,
-                                            [("Temp Out", "float32"),
-                                             ("Leaf Wet 1", "float32")])
+                                            [("Temp Out", "float"),
+                                             ("Leaf Wet 1", "unsigned")])
 
         sampleDS = dataParser.sampleDataset(dataset,
                                             [("Temp Out", np.mean),
                                              ("Leaf Wet 1", "last")],
                                             "15min")
-        print(sampleDS.info(verbose=True))
 
         # TODO: think of an assert for the test
         self.assertTrue(True)
