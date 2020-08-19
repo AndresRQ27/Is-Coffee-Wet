@@ -60,7 +60,7 @@ class Test_TestDataParser(unittest.TestCase):
         # TODO: cambiar np.max de Leaf Wet 1
         sampleDS = dataParser.sampleDataset(dataset,
                                             [("Temp Out", np.mean),
-                                             ("Leaf Wet 1", np.max)],
+                                             ("Leaf Wet 1", "last")],
                                             "15min")
         print(sampleDS.info(verbose=True))
         self.assertLess(sampleDS.size, dataset.size)
