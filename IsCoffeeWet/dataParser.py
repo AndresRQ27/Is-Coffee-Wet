@@ -97,14 +97,25 @@ def convertNumeric(dataset, columnAndType):
     - dataset : pd.DataFrame.
         Dataset with columns type changed and missing
         values interpolated.
+
+    Notes
+    -----
+    All the columns that contain NaN values must be converted to
+    float (32 or 64) as this value doesn't exist for the interger.
+    
+    After the interpolation, an attemp to downcast the column type
+    is made to save memory. This can be a problem if all the numbers
+    in a column are >1000, as it will be downcasted to int; this can
+    cause a lost of the decimals for that column, if it had.
     """
     # Changes the data to types to use less memory
     for nameAndType in columnAndType:
         # Cast the column to the wanted type
         dataset = dataset.astype({nameAndType[0]: nameAndType[1]})
+        #TODO: round int values
         # Interpolates the NaN values
         dataset[nameAndType[0]] = dataset[nameAndType[0]].interpolate(
-            method="time", limit_direction='forward')
+            method="time", limit_direction="forward", downcast="infer")
 
     return dataset
 
@@ -157,8 +168,9 @@ def sampleDataset(dataset, columnAndFunction, frequency):
                                         {filterFunction[0]:filterFunction[1]})],
                                axis=1)
 
-    # TODO: preguntar si se deben borrar los NaN
+    #TODO: round int values
     # Clears the dataset from extra values generated while sampling
-    newDataset = newDataset.dropna(axis=0, how="any")
+    newDataset = newDataset.interpolate(
+        method="time", limit_direction="forward", downcast="infer")
 
     return newDataset
