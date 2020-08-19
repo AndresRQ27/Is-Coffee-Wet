@@ -151,8 +151,9 @@ def sampleDataset(dataset, columnAndFunction, frequency):
         # By concatenating the column to the new DataFrame
         # As it gets sampled by the frequency
         newDataset = pd.concat([newDataset,
-                                dataset.resample(frequency).agg(
-                                    {filterFunction[0]:filterFunction[1]})],
+                                dataset.resample(
+                                    frequency, label="right", closed="right").agg(
+                                        {filterFunction[0]:filterFunction[1]})],
                                axis=1)
 
     # TODO: preguntar si se deben borrar los NaN
