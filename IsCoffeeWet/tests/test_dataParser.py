@@ -39,7 +39,7 @@ class Test_TestDataParser(unittest.TestCase):
                                               [("Temp Out", "float"),
                                                ("Leaf Wet 1", "unsigned")])
 
-        print(sampleDS.info(verbose=True))
+        print(convertDS.info(verbose=True))
 
         # Checks the table for np.NaN
         # Uses any(0) to group all the rows in a value for each column
