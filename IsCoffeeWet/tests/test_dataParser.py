@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-from pandas import read_csv
+from pandas import read_csv, DataFrame
 from IsCoffeeWet import dataParser
 
 
@@ -65,6 +65,7 @@ class Test_TestDataParser(unittest.TestCase):
                                             "15min")
 
         # TODO: think of an assert for the test
+        #Maybe change it check the frequency
         self.assertTrue(True)
 
 
