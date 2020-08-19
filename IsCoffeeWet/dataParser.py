@@ -129,8 +129,9 @@ def sampleDataset(dataset, columnAndFunction, frequency):
     - columnAndFunction: list of tuples.
         Each tuple is made of 2 parameters: 
         the name (string) of the column and the function to apply in
-        the sample. Example: 
-        >>> [("Temp Out", "np.mean)]
+        the sample. Function can also be a string Example: 
+        >>> [("Temp Out", np.mean)]
+        >>> [("Leaf Wet 1", "last")]
     - frequency: string. Value expressed in string of the frequency to
         sample the data. Examples:
         >>> "1H" --An hour
