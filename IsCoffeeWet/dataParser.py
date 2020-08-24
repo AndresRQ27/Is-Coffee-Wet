@@ -44,9 +44,9 @@ def mergeDateTime(dataset, dateName, timeName):
 def convertNumeric(dataset, columnAndType, nullValue):
     """
     Sets the type of a column according to the given pair.
-    Use for columns with numeric values or it will fail.
-    If the dataset is not clean (other values that are not NaN),
-    the conversion will fail.
+    Supported types for conversion are `float`, `signed`
+    and `unsigned`the moment. It's important that the index
+    is time-base as the interpolation uses time.
 
     Returns a dataset with the column casted to the desired
     values for easier manipulation.
@@ -174,4 +174,18 @@ def sampleDataset(dataset, columnAndFunction, frequency):
 
     return newDataset
 
-#TODO: convert day and it's time to sin/cos encoding
+
+def cyclicalEncoder(dataset, encodeDays, encodeHours):
+    
+    datetime = dataset.index
+
+    if encodeDays:        
+        dataset["days_sin"] = np.sin(2 * np.pi * datetime.dayofyear / 365)
+        dataset["days_cos"] = np.cos(2 * np.pi * datetime.dayofyear / 365)
+
+    if encodeHours:
+        dataset["hours_sin"] = np.sin(2 * np.pi * datetime.hour / 23)
+        dataset["hours_cos"] = np.cos(2 * np.pi * datetime.hour / 23)
+
+    return dataset
+

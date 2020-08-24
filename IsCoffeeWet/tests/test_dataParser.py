@@ -12,9 +12,10 @@ class Test_TestDataParser(unittest.TestCase):
         datetimeDS = dataParser.mergeDateTime(
             self.dirtyDataset, "Date", "Time")
 
-        # New dataset must have less rows as 2 of them have been merged
-        self.assertNotEqual(len(datetimeDS.columns),
-                            len(self.dirtyDataset.columns))
+        # Original dataset has 5 rows: Datetime, Date, Time, Temp Out, 
+        # Leaf Wet 1 .New dataset has 2 rows: Temp Out, Leaf Wet 1. 
+        self.assertEqual(len(datetimeDS.columns) + 3,
+                         len(self.dirtyDataset.columns))
 
     def test_convertNumeric(self):
         # INFO: Needs datetime index to interpolate by time
@@ -49,6 +50,28 @@ class Test_TestDataParser(unittest.TestCase):
                                             "15min")
 
         self.assertEquals(sampleDS.index.freq, "15T")
+
+    def test_cyclicalEncoder(self):
+        # Merge into datetime and uses it as index
+        dataset = dataParser.mergeDateTime(self.dirtyDataset, "Date", "Time")
+
+        # Encode the days into 2 additional column
+        encodedDS = dataParser.cyclicalEncoder(dataset, True, False)
+
+        # Checks if there's a "day_sin" column
+        with self.subTest():
+            #In the first 2 quadrants of the unitary circle
+            #The inverse function using cos returns a value
+            #Equal to the day of the year
+            day = encodedDS.head(1).index.dayofyear
+            decodedDay = 365 * np.arccos(encodedDS.head(1)["days_cos"]) \
+                / (2*np.pi)
+            self.assertEquals(day, decodedDay)
+
+        # Checks if there's no "hours_cos" column
+        with self.subTest():
+            with self.assertRaises(KeyError):
+                encodedDS["hours_cos"]
 
 
 if __name__ == '__main__':
