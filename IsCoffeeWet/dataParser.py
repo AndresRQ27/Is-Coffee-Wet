@@ -41,38 +41,7 @@ def mergeDateTime(dataset, dateName, timeName):
     return dataset
 
 
-def cleanDataset(dataset, completeRows, nullValue):
-    """
-    Clears a dataset of all the damage values
-
-    Returns a dataset without "damaged" values that could hurt 
-    a convertion of a `dtype` in a column of the dataset
-
-    Parameters
-    ----------
-    - dataset: pd.DataFrame.
-        Dataset to clean.
-    - completeRows: list of strings.
-        Columns where to search the null values. Example:
-        >>> ["Temp Out", "Leaf Wet 1"]
-    - nullValue:  object, generally string or int.
-        Value to search and remove. Example:
-        >>> "---"
-
-    Returns
-    -------
-    - dataset : pd.DataFrame.
-        Dataset with entire dataset "repaired"
-        (not null values other than NaNs)
-    """
-    for rowName in completeRows:
-        # Replaces nullValue to NaN
-        dataset[rowName] = dataset[rowName].replace(nullValue, np.NaN)
-
-    return dataset
-
-
-def convertNumeric(dataset, columnAndType):
+def convertNumeric(dataset, columnAndType, nullValue):
     """
     Sets the type of a column according to the given pair.
     Use for columns with numeric values or it will fail.
@@ -92,6 +61,9 @@ def convertNumeric(dataset, columnAndType):
         or float).
         Example:
         >>> [("Temp Out", "float"), ("Leaf Wet 1", "signed")]
+    - nullValue:  object, generally string or int.
+        Value to search and remove. Example:
+        >>> "---"
 
     Returns
     -------
@@ -109,8 +81,9 @@ def convertNumeric(dataset, columnAndType):
     This also helps identify problems when data consistency is getting 
     lost. An example is parameters that are purely integers, if an 
     operation generates decimals in those numbers, it can be corrected.
-    
     """
+    # Sets all "nullValues" to NaN
+    dataset = dataset.replace(nullValue, np.NaN)
 
     # Changes the data to types to use less memory
     for nameAndType in columnAndType:
@@ -200,3 +173,5 @@ def sampleDataset(dataset, columnAndFunction, frequency):
                                axis=1)
 
     return newDataset
+
+#TODO: convert day and it's time to sin/cos encoding
