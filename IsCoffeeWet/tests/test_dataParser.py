@@ -12,8 +12,8 @@ class Test_TestDataParser(unittest.TestCase):
         datetimeDS = dataParser.mergeDateTime(
             self.dirtyDataset, "Date", "Time")
 
-        # Original dataset has 5 rows: Datetime, Date, Time, Temp Out, 
-        # Leaf Wet 1 .New dataset has 2 rows: Temp Out, Leaf Wet 1. 
+        # Original dataset has 5 rows: Datetime, Date, Time, Temp Out,
+        # Leaf Wet 1 .New dataset has 2 rows: Temp Out, Leaf Wet 1.
         self.assertEqual(len(datetimeDS.columns) + 3,
                          len(self.dirtyDataset.columns))
 
@@ -60,9 +60,10 @@ class Test_TestDataParser(unittest.TestCase):
 
         # Checks if there's a "day_sin" column
         with self.subTest():
-            #In the first 2 quadrants of the unitary circle
-            #The inverse function using cos returns a value
-            #Equal to the day of the year
+            # In the first 2 quadrants of the unitary circle.
+            # The inverse function using cos returns a value
+            # equal to the day of the year.
+            # This is when when sin(x) is positive
             day = encodedDS.head(1).index.dayofyear
             decodedDay = 365 * np.arccos(encodedDS.head(1)["days_cos"]) \
                 / (2*np.pi)

@@ -176,10 +176,10 @@ def sampleDataset(dataset, columnAndFunction, frequency):
 
 
 def cyclicalEncoder(dataset, encodeDays, encodeHours):
-    
+
     datetime = dataset.index
 
-    if encodeDays:        
+    if encodeDays:
         dataset["days_sin"] = np.sin(2 * np.pi * datetime.dayofyear / 365)
         dataset["days_cos"] = np.cos(2 * np.pi * datetime.dayofyear / 365)
 
@@ -188,4 +188,3 @@ def cyclicalEncoder(dataset, encodeDays, encodeHours):
         dataset["hours_cos"] = np.cos(2 * np.pi * datetime.hour / 23)
 
     return dataset
-
