@@ -128,6 +128,7 @@ def sampleDataset(dataset, columnAndFunction, frequency):
 
     Different numeric functions can be applied to different column by 
     pairing the function with the column in a tuple in `columnAndFunction`.
+    The return value is a sampled dataset into the given frequency.
 
     Parameters
     ----------
@@ -156,7 +157,6 @@ def sampleDataset(dataset, columnAndFunction, frequency):
     The returned database may have empty rows if the dataset isn't 
     complete. It's recommended to use again `convertNumeric` function
     to interpolate the empty values and maintain the data type consistency.
-
     """
     # Creates the new dataset to return
     newDataset = pd.DataFrame()
@@ -176,7 +176,38 @@ def sampleDataset(dataset, columnAndFunction, frequency):
 
 
 def cyclicalEncoder(dataset, encodeDays, encodeHours):
+    """
+    Converts values that have cyclical behavior into pair of sin(x) 
+    and cos(x) functions. Day and time is extracted from a datetime 
+    index, so be sure to have it. To understand the purpose of this
+    function, see `Notes`.
 
+    The return dataset has a decomposition into sin(x) and cos(x) of
+    the day and/or hour.
+
+    Parameters
+    ----------
+    - dataset: pd.DataFrame.
+        Dataset to extract the time from it's datetime index.
+    - encodeDays: boolean.
+        Tells the function to encode the days into sin(x) and cos(x)
+    - encodeHours: boolean.
+        Tells the function to encode the hours into sin(x) and cos(x)
+
+    Returns
+    -------
+    - dataset : pd.DataFrame.
+        Dataset with the decomposition of sin(x) and cos(x) of
+        the day and/or hour.
+
+    Notes
+    -----
+    The purpose is that the NN see all days equally separated from 
+    themselfs, as the last day of the year is one day away of the first 
+    day; same happens with the hours and the minutes of a day. By using 
+    integers, this isn't obvious to the NN, so we help him by parsing the
+    time in a more easy-to-see way.
+    """
     datetime = dataset.index
 
     if encodeDays:
