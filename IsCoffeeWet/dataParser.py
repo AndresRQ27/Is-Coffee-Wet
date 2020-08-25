@@ -1,6 +1,5 @@
 import pandas as pd
 import numpy as np
-import warnings
 
 # IMPORTANT: The dataset used mustn't contain trailing whitespaces
 
