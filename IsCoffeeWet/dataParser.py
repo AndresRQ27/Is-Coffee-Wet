@@ -40,7 +40,7 @@ def mergeDateTime(dataset, dateName, timeName):
     return dataset
 
 
-def convertNumeric(dataset, columnAndType, nullValue):
+def convertNumeric(dataset, columnAndType, nullList):
     """
     Sets the type of a column according to the given pair.
     Supported types for conversion are `float`, `signed`
@@ -60,9 +60,9 @@ def convertNumeric(dataset, columnAndType, nullValue):
         or float).
         Example:
         >>> [("Temp Out", "float"), ("Leaf Wet 1", "signed")]
-    - nullValue:  object, generally string or int.
-        Value to search and remove. Example:
-        >>> "---"
+    - nullList:  list, generally string or int.
+        List of values to search and remove. Example:
+        >>> ["---", "------"]
 
     Returns
     -------
@@ -82,7 +82,8 @@ def convertNumeric(dataset, columnAndType, nullValue):
     operation generates decimals in those numbers, it can be corrected.
     """
     # Sets all "nullValues" to NaN
-    dataset = dataset.replace(nullValue, np.NaN)
+    for nullValue in nullList:
+        dataset = dataset.replace(nullValue, np.NaN)
 
     # Changes the data to types to use less memory
     for nameAndType in columnAndType:
