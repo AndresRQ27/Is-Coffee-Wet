@@ -43,9 +43,9 @@ def mergeDateTime(dataset, dateName, timeName):
 def convertNumeric(dataset, columnAndType, nullList):
     """
     Sets the type of a column according to the given pair.
-    Supported types for conversion are `float`, `signed`
-    and `unsigned`the moment. It's important that the index
-    is time-base as the interpolation uses time.
+    Supported types for conversion are `float` and `int`
+    the moment. It's important that the index is time-base 
+    as the interpolation uses time.
 
     Returns a dataset with the column casted to the desired
     values for easier manipulation.
@@ -56,8 +56,7 @@ def convertNumeric(dataset, columnAndType, nullList):
         Dataset to change the `dtype`.
     - columnAndType: list of tuples.
         Each tuples consists of 2 values: name of the column
-        and name type of data for the column (signed, unsigned 
-        or float).
+        and name type of data for the column (int or float).
         Example:
         >>> [("Temp Out", "float"), ("Leaf Wet 1", "signed")]
     - nullList:  list, generally string or int.
@@ -69,17 +68,6 @@ def convertNumeric(dataset, columnAndType, nullList):
     - dataset : pd.DataFrame.
         Dataset with columns type changed and missing
         values interpolated.
-
-    Notes
-    -----
-    The precision of the converted dataset is low (32bits or lower),
-    but higher precision isn't needed with the values that the sensors
-    capture. Downcast is used to restrict the data type (float use
-    as int when possible) and the memory footprint (float64 to float32)
-
-    This also helps identify problems when data consistency is getting 
-    lost. An example is parameters that are purely integers, if an 
-    operation generates decimals in those numbers, it can be corrected.
     """
     # Sets all "nullValues" to NaN
     for nullValue in nullList:
@@ -88,33 +76,18 @@ def convertNumeric(dataset, columnAndType, nullList):
     # Changes the data to types to use less memory
     for nameAndType in columnAndType:
         # Casting of the column type
-        dataset = dataset.astype({nameAndType[0]: "float32"})
+        dataset = dataset.astype({nameAndType[0]: "float64"})
 
         # Interpolation of NaNs
         dataset[nameAndType[0]] = dataset[nameAndType[0]].interpolate(
             method="time", limit_direction="forward")
 
-        # Downcast of the types
-        if nameAndType[1] == "signed":
-
-            # Round the number to remain integer after interpolation
+        # Round the integers of the types
+        if nameAndType[1] == "int":
             dataset[nameAndType[0]] = dataset[nameAndType[0]].round()
-            # Downcast it to integer properly
-            dataset[nameAndType[0]] = pd.to_numeric(
-                dataset[nameAndType[0]], downcast="signed")
 
-        elif nameAndType[1] == "unsigned":
-
-            # Round the number to remain integer after interpolation
-            dataset[nameAndType[0]] = dataset[nameAndType[0]].round()
-            # Downcast it to integer properly
-            dataset[nameAndType[0]] = pd.to_numeric(
-                dataset[nameAndType[0]], downcast="unsigned")
-        else:
-
-            # Downcast it to integer properly
-            dataset[nameAndType[0]] = pd.to_numeric(
-                dataset[nameAndType[0]], downcast="float")
+    # Applying infer_objects() function. 
+    dataset = dataset.infer_objects() 
 
     return dataset
 

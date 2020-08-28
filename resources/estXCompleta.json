@@ -28,17 +28,17 @@
     "Temp Out": "float",
     "Hi Temp": "float",
     "Low Temp": "float",
-    "Out Hum": "unsigned",
+    "Out Hum": "int",
     "Wind Speed": "float",
     "Hi Speed": "float",
     "Bar": "float",
     "Rain": "float",
-    "Solar Rad.": "unsigned",
-    "Hi Solar Rad.": "unsigned",
+    "Solar Rad.": "int",
+    "Hi Solar Rad.": "int",
     "In Temp": "float",
-    "In Hum": "unsigned",
-    "Soils 1 Moist.": "unsigned",
-    "Leaf Wet 1": "unsigned"
+    "In Hum": "int",
+    "Soils 1 Moist.": "int",
+    "Leaf Wet 1": "int"
   },
   "columnAndFunction": {
     "Temp Out": "mean",
