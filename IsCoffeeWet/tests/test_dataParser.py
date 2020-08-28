@@ -24,7 +24,7 @@ class Test_TestDataParser(unittest.TestCase):
         convertDS = dataParser.convertNumeric(dataset,
                                               [("Temp Out", "float"),
                                                ("Leaf Wet 1", "unsigned")],
-                                              "---")
+                                              ["---"])
 
         print(convertDS.info(verbose=True))
 
@@ -42,7 +42,7 @@ class Test_TestDataParser(unittest.TestCase):
         dataset = dataParser.convertNumeric(dataset,
                                             [("Temp Out", "float"),
                                              ("Leaf Wet 1", "unsigned")],
-                                            "---")
+                                            ["---"])
 
         sampleDS = dataParser.sampleDataset(dataset,
                                             [("Temp Out", np.mean),
