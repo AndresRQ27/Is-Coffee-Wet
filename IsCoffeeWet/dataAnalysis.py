@@ -24,6 +24,6 @@ def graphData(dataset, columnList, stop):
         figure(figure_index)
         figure_index += 1
 
-        dataset[columnName].plot()
+        dataset[columnName].plot().set_ylabel(columnName)
 
     show(block=stop)
