@@ -1,12 +1,12 @@
 import unittest
 import numpy as np
-from pandas import read_csv, DataFrame
+from pandas import read_csv
 from IsCoffeeWet import dataParser
 
 
 class Test_TestDataParser(unittest.TestCase):
     def setUp(self):
-        self.dirtyDataset = read_csv("resources/est0Corta.csv")
+        self.dirtyDataset = read_csv("resources/test.csv")
 
     def test_mergeDateTime(self):
         datetimeDS = dataParser.mergeDateTime(
