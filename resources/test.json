@@ -1,0 +1,22 @@
+{
+  "dateName": "Date",
+  "timeName": "Time",
+  "nullList": [
+    "---"
+  ],
+  "frequency": "1H",
+  "encodeDays": true,
+  "encodeHours": true,
+  "columns": [
+    "Temp Out",
+    "Leaf Wet 1"
+  ],
+  "columnAndType": {
+    "Temp Out": "float",
+    "Leaf Wet 1": "int"
+  },
+  "columnAndFunction": {
+    "Temp Out": "mean",
+    "Leaf Wet 1": "mean"
+  }
+}
