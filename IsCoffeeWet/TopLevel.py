@@ -59,5 +59,13 @@ else:
     # Infers the frequency
     dataset = dataset.asfreq(dsConfig.freq)
 
-#TODO: change to False when more code is written
-da.graphData(dataset, dsConfig.columns, True)
+print("Do a graphical analysis of the dataset?")
+print("(If yes, NN training must be done in another execution)")
+graphData = input("- (yes/no): ")
+
+# Execution ends with the graph as it requires a lot of memory
+# to have the graphs with the NN training
+if graphData == "yes":    
+    #TODO: change to False when more code is written
+    da.graphData(dataset, dsConfig.graphColumns)
+    exit()
