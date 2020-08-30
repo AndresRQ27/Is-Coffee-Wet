@@ -25,6 +25,8 @@ class configFile:
             # Name of the Time column
             self.time = configFile["timeName"]
 
+            # List of the original columns
+            self.columns = configFile["columns"]
             # List of the type of each column
             self.cType = []
             # List of the function for each column
