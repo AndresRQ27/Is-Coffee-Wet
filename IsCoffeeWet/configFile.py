@@ -2,7 +2,19 @@ import json
 
 
 class configFile:
-
+    """
+    Object that contains the values of the configuration file in the
+    JSON for the corresponding dataset. This helps to not have the file
+    open more than the necessary time, while retaining its data during 
+    the execution of the program.
+    
+    Parameters
+    ----------
+    - configPath : string.
+        Path of the JSON that has the configuration of the dataset to
+        use. Can be relative to the path where the program is running 
+        or absolute.
+    """
     def __init__(self, configPath):
         with open(configPath, 'r') as file:
             # Loads json file
