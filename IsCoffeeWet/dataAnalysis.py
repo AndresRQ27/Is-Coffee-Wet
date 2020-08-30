@@ -1,6 +1,6 @@
 from matplotlib.pyplot import show, figure
 
-def graphData(dataset, columnList, stop):
+def graphData(dataset, columnList):
     """
     Function that graph the data in a column vs the time when it was
     taken. Help visualizing big gaps where the data was interpolated
@@ -10,12 +10,6 @@ def graphData(dataset, columnList, stop):
     ----------
     - columnList: list of strings.
         List of the names of the columns to graph.
-    - stop: bool.
-        If true, the execution stops until all the figures are closed.
-        Else, continue execution without stopping without waiting for
-        the graphs to close. This is used because when the program 
-        finishes, all the figures are close regardless they have the
-        user focus or not.
     """
     figure_index = 0
 
@@ -26,4 +20,4 @@ def graphData(dataset, columnList, stop):
 
         dataset[columnName].plot().set_ylabel(columnName)
 
-    show(block=stop)
+    show()
