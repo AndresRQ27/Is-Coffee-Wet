@@ -26,7 +26,7 @@ class configFile:
             self.time = configFile["timeName"]
 
             # List of the original columns
-            self.columns = configFile["columns"]
+            self.graphColumns = configFile["graphColumns"]
             # List of the type of each column
             self.cType = []
             # List of the function for each column

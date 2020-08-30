@@ -24,6 +24,18 @@
     "Soils 1 Moist.",
     "Leaf Wet 1"
   ],
+  "graphColumns": [
+    "Temp Out",
+    "Out Hum",
+    "Wind Speed",
+    "Bar",
+    "Rain",
+    "Solar Rad.",
+    "In Temp",
+    "In Hum",
+    "Soils 1 Moist.",
+    "Leaf Wet 1"
+  ],
   "columnAndType": {
     "Temp Out": "float",
     "Hi Temp": "float",

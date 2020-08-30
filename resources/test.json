@@ -11,6 +11,10 @@
     "Temp Out",
     "Leaf Wet 1"
   ],
+  "graphColumns": [
+    "Temp Out",
+    "Leaf Wet 1"
+  ],
   "columnAndType": {
     "Temp Out": "float",
     "Leaf Wet 1": "int"
