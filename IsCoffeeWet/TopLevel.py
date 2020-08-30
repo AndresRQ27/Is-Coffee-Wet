@@ -1,8 +1,7 @@
-import matplotlib as plt
-import pandas as pd
-import numpy as np
-import json
-from IsCoffeeWet import dataParser as dp, configFile as cf
+from pandas import read_csv
+from IsCoffeeWet import (dataParser as dp,  
+                        configFile as cf, 
+                        dataAnalysis as da)
 
 print("******************************************")
 print("*** Welcome to the IsCoffeeWet project ***")
@@ -12,14 +11,15 @@ dataPath = input("- Please type the path to your dataset: ")
 
 configPath = input("- Path to your config file (JSON): ")
 
-isDataParsed = input("- Has your dataset been previously parsed? (Yes/No): ")
+isDataParsed = input("- Has your dataset been previously parsed? (yes/no): ")
 
 # Dataset configuration extracted from the JSON
 dsConfig = cf.configFile(configPath)
 
-if isDataParsed == "No":
+# Initialize the dataset
+if isDataParsed == "no":
     # Loads the dataset
-    dataset = pd.read_csv(dataPath, engine="c")
+    dataset = read_csv(dataPath, engine="c")
 
     # Remove trailing and leading spaces from column names
     dataset.columns = dataset.columns.str.strip()
@@ -54,7 +54,10 @@ if isDataParsed == "No":
 
 else:
     # Sets the index using Datetime column
-    dataset = pd.read_csv(dataPath, engine="c",
+    dataset = read_csv(dataPath, engine="c",
                           index_col="Datetime", parse_dates=True)
     # Infers the frequency
     dataset = dataset.asfreq(dsConfig.freq)
+
+#TODO: change to False when more code is written
+da.graphData(dataset, dsConfig.columns, True)
