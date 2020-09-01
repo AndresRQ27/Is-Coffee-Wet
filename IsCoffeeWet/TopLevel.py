@@ -1,7 +1,7 @@
 from pandas import read_csv
-from IsCoffeeWet import (dataParser as dp,  
-                        configFile as cf, 
-                        dataAnalysis as da)
+from IsCoffeeWet import (dataParser as dp,
+                         configFile as cf,
+                         dataAnalysis as da)
 
 print("******************************************")
 print("*** Welcome to the IsCoffeeWet project ***")
@@ -55,7 +55,7 @@ if isDataParsed == "no":
 else:
     # Sets the index using Datetime column
     dataset = read_csv(dataPath, engine="c",
-                          index_col="Datetime", parse_dates=True)
+                       index_col="Datetime", parse_dates=True)
     # Infers the frequency
     dataset = dataset.asfreq(dsConfig.freq)
 
@@ -65,7 +65,6 @@ graphData = input("- (yes/no): ")
 
 # Execution ends with the graph as it requires a lot of memory
 # to have the graphs with the NN training
-if graphData == "yes":    
-    #TODO: change to False when more code is written
+if graphData == "yes":
     da.graphData(dataset, dsConfig.graphColumns)
     exit()

@@ -7,7 +7,7 @@ class configFile:
     JSON for the corresponding dataset. This helps to not have the file
     open more than the necessary time, while retaining its data during 
     the execution of the program.
-    
+
     Parameters
     ----------
     - configPath : string.
@@ -15,6 +15,7 @@ class configFile:
         use. Can be relative to the path where the program is running 
         or absolute.
     """
+
     def __init__(self, configPath):
         with open(configPath, 'r') as file:
             # Loads json file

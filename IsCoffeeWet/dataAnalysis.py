@@ -1,5 +1,6 @@
 from matplotlib.pyplot import show, figure
 
+
 def graphData(dataset, columnList):
     """
     Function that graph the data in a column vs the time when it was

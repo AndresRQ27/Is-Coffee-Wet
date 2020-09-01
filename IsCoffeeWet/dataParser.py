@@ -86,8 +86,8 @@ def convertNumeric(dataset, columnAndType, nullList):
         if nameAndType[1] == "int":
             dataset[nameAndType[0]] = dataset[nameAndType[0]].round()
 
-    # Applying infer_objects() function. 
-    dataset = dataset.infer_objects() 
+    # Applying infer_objects() function.
+    dataset = dataset.infer_objects()
 
     return dataset
 
