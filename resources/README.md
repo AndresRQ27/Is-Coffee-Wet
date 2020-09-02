@@ -17,3 +17,7 @@
 - Solar radiation (Solar Rad)
 - Soil humidity (Soil Temp)
 - Leaf Wetness (Leaf Wet)
+
+New columns added
+- Leaf Wetness Accumulated (Leaf Wet Accum)
+  - Total time, in minutes, the leaf has been wet during a time frame.
