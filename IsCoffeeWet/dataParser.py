@@ -151,8 +151,10 @@ def sampleDataset(dataset, columnAndFunction, frequency):
             # There is no data about the delta time of the first
             # measurement, so use the difference of the second one
             # as a hard guess. We divide by 60 to use minutes
-            dataset.loc[dataset.index[0], "Leaf Wet Accum"] *= timeDiff[0].seconds/60
-            dataset.loc[dataset.index[1:], "Leaf Wet Accum"] *= timeDiff.seconds/60
+            dataset.loc[dataset.index[0],
+                        "Leaf Wet Accum"] *= timeDiff[0].seconds/60
+            dataset.loc[dataset.index[1:],
+                        "Leaf Wet Accum"] *= timeDiff.seconds/60
 
             columnAndFunction.append(("Leaf Wet Accum", "sum"))
 
@@ -160,6 +162,7 @@ def sampleDataset(dataset, columnAndFunction, frequency):
         # Each resampling creates a column, so it is appended to get a
         # final result. It must be done this way to use a different
         # function in each column
+        # FIXME: Data is being lost during resample - start and end of dataset
         newDataset = pd.concat([newDataset,
                                 dataset.resample(
                                     frequency, label="right", closed="right").agg(
