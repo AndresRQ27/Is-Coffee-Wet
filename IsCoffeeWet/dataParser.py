@@ -135,6 +135,27 @@ def sampleDataset(dataset, columnAndFunction, frequency):
     newDataset = pd.DataFrame()
 
     for filterFunction in columnAndFunction:
+        # Generates a column of accumulated time
+        # the leaf has been wet.
+        if filterFunction[0] == "Leaf Wet 1":
+            # Difference between last and current datetime
+            timeDiff = dataset.index[1:] - dataset.index[:-1]
+
+            # Creates a new column with 0s
+            dataset["Leaf Wet Accum"] = 0
+
+            # Sets to 1 the columns that has wetness
+            dataset.loc[dataset["Leaf Wet 1"]
+                        > 0, "Leaf Wet Accum"] = 1
+
+            # There is no data about the delta time of the first
+            # measurement, so use the difference of the second one
+            # as a hard guess. We divide by 60 to use minutes
+            dataset.loc[dataset.index[0], "Leaf Wet Accum"] *= timeDiff[0].seconds/60
+            dataset.loc[dataset.index[1:], "Leaf Wet Accum"] *= timeDiff.seconds/60
+
+            columnAndFunction.append(("Leaf Wet Accum", "sum"))
+
         # Generates a new DataFrame
         # Each resampling creates a column, so it is appended to get a
         # final result. It must be done this way to use a different
