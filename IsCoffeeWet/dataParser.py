@@ -162,12 +162,14 @@ def sampleDataset(dataset, columnAndFunction, frequency):
         # Each resampling creates a column, so it is appended to get a
         # final result. It must be done this way to use a different
         # function in each column
-        # FIXME: Data is being lost during resample - start and end of dataset
         newDataset = pd.concat([newDataset,
                                 dataset.resample(
                                     frequency, label="right", closed="right").agg(
                                         {filterFunction[0]:filterFunction[1]})],
                                axis=1)
+
+        # FIXME: Data is being lost during resample if the dataset is too big
+        # at start and end of dataset
 
     return newDataset
 

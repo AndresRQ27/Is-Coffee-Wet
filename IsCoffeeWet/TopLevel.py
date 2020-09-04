@@ -1,7 +1,7 @@
 from pandas import read_csv
-from IsCoffeeWet import (dataParser as dp,
-                         configFile as cf,
-                         dataAnalysis as da)
+import dataParser as dp
+import configFile as cf
+import dataAnalysis as da
 
 print("******************************************")
 print("*** Welcome to the IsCoffeeWet project ***")
