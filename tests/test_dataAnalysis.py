@@ -12,7 +12,7 @@ class Test_TestDataAnalysis(unittest.TestCase):
         self.dataset = self.dataset.asfreq(self.dataset.index.inferred_freq)
 
     def test_graphData(self):
-        dataAnalysis.graphData(self.dataset, self.dataset.columns[:2], True)
+        dataAnalysis.graphData(self.dataset, self.dataset.columns[:2])
         self.assertTrue(True)
 
 

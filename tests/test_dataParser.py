@@ -49,7 +49,7 @@ class Test_TestDataParser(unittest.TestCase):
                                              ("Leaf Wet 1", "last")],
                                             "15min")
 
-        self.assertEquals(sampleDS.index.freq, "15T")
+        self.assertEqual(sampleDS.index.freq, "15T")
 
     def test_cyclicalEncoder(self):
         # Merge into datetime and uses it as index
@@ -67,7 +67,7 @@ class Test_TestDataParser(unittest.TestCase):
             day = encodedDS.head(1).index.dayofyear
             decodedDay = 365 * np.arccos(encodedDS.head(1)["days_cos"]) \
                 / (2*np.pi)
-            self.assertEquals(day, decodedDay)
+            self.assertEqual(day, decodedDay)
 
         # Checks if there's no "hours_cos" column
         with self.subTest():
