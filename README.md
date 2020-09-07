@@ -20,5 +20,13 @@ the file hierarchy needs it.
 The project was run using:
 
 - Python 3.8.2 (at least >3.4)
-- Pandas 0.25.3
-- Numpy 1.17.4
+- Pandas 1.1.1
+- Numpy 1.18.5
+- Matplotlib 3.3.1
+- Keras 2.4.3
+- Tensorflow 2.4.0 (nightly)
+
+Optionals (GPU enhancement):
+
+- Cuda 11.0
+- CuDNN-11 v8.0
