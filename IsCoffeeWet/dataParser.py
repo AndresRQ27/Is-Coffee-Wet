@@ -31,7 +31,8 @@ def mergeDateTime(dataset, dateName, timeName):
 
     # Unifies "Date" and "Time" in a "datetime64[ns]"
     dataset["Datetime"] = pd.to_datetime(dataset[dateName] +
-                                         ' ' + dataset[timeName])
+                                         ' ' + dataset[timeName],
+                                         dayfirst=True)
     # Sets the datetime as the index of the DataFrame
     dataset = dataset.set_index('Datetime')
     # Drops the "Time" columns as it has been combine into "Date"
@@ -44,7 +45,7 @@ def convertNumeric(dataset, columnAndType, nullList):
     """
     Sets the type of a column according to the given pair.
     Supported types for conversion are `float` and `int`
-    the moment. It's important that the index is time-base 
+    the moment. It's important that the index is time-base
     as the interpolation uses time.
 
     Returns a dataset with the column casted to the desired
@@ -75,16 +76,20 @@ def convertNumeric(dataset, columnAndType, nullList):
 
     # Changes the data to types to use less memory
     for nameAndType in columnAndType:
-        # Casting of the column type
-        dataset = dataset.astype({nameAndType[0]: "float64"})
+        try:
+            # Casting of the column type
+            dataset = dataset.astype({nameAndType[0]: "float64"})
 
-        # Interpolation of NaNs
-        dataset[nameAndType[0]] = dataset[nameAndType[0]].interpolate(
-            method="time", limit_direction="forward")
+            # Interpolation of NaNs
+            dataset[nameAndType[0]] = dataset[nameAndType[0]].interpolate(
+                method="time", limit_direction="forward")
 
-        # Round the integers of the types
-        if nameAndType[1] == "int":
-            dataset[nameAndType[0]] = dataset[nameAndType[0]].round()
+            # Round the integers of the types
+            if nameAndType[1] == "int":
+                dataset[nameAndType[0]] = dataset[nameAndType[0]].round()
+        
+        except KeyError:
+            print("Column \"{}\" not found in dataset".format(nameAndType[0]))
 
     # Applying infer_objects() function.
     dataset = dataset.infer_objects()
@@ -94,12 +99,12 @@ def convertNumeric(dataset, columnAndType, nullList):
 
 def sampleDataset(dataset, columnAndFunction, frequency):
     """
-    Sample dataset according to a time frequency given. The dataset 
+    Sample dataset according to a time frequency given. The dataset
     will be group in interval of `frequency` and a numeric function will
     be applied to the rows between these timeframes to get one single value
     for each new timestamp.
 
-    Different numeric functions can be applied to different column by 
+    Different numeric functions can be applied to different column by
     pairing the function with the column in a tuple in `columnAndFunction`.
     The return value is a sampled dataset into the given frequency.
 
@@ -108,9 +113,9 @@ def sampleDataset(dataset, columnAndFunction, frequency):
     - dataset: pd.DataFrame.
         Dataset to sample each column.
     - columnAndFunction: list of tuples.
-        Each tuple is made of 2 parameters: 
+        Each tuple is made of 2 parameters:
         the name (string) of the column and the function to apply in
-        the sample. Function can also be a string Example: 
+        the sample. Function can also be a string Example:
         >>> [("Temp Out", np.mean)]
         >>> [("Leaf Wet 1", "last")]
     - frequency: string. Value expressed in string of the frequency to
@@ -127,17 +132,17 @@ def sampleDataset(dataset, columnAndFunction, frequency):
 
     Notes
     -----
-    The returned database may have empty rows if the dataset isn't 
+    The returned database may have empty rows if the dataset isn't
     complete. It's recommended to use again `convertNumeric` function
     to interpolate the empty values and maintain the data type consistency.
     """
     # Creates the new dataset to return
     newDataset = pd.DataFrame()
 
-    for filterFunction in columnAndFunction:
+    for nameAndFunction in columnAndFunction:
         # Generates a column of accumulated time
         # the leaf has been wet.
-        if filterFunction[0] == "Leaf Wet 1":
+        if nameAndFunction[0] == "Leaf Wet Accum":
             # Difference between last and current datetime
             timeDiff = dataset.index[1:] - dataset.index[:-1]
 
@@ -156,28 +161,34 @@ def sampleDataset(dataset, columnAndFunction, frequency):
             dataset.loc[dataset.index[1:],
                         "Leaf Wet Accum"] *= timeDiff.seconds/60
 
-            columnAndFunction.append(("Leaf Wet Accum", "sum"))
-
-        # Generates a new DataFrame
+        # Generates a new DataFrame (DF)
         # Each resampling creates a column, so it is appended to get a
         # final result. It must be done this way to use a different
         # function in each column
-        newDataset = pd.concat([newDataset,
-                                dataset.resample(
-                                    frequency, label="right", closed="right").agg(
-                                        {filterFunction[0]:filterFunction[1]})],
-                               axis=1)
+        try:
+            auxiliarDF = dataset.resample(frequency, label="right",
+                                          closed="right", origin="start"
+                                          ).agg({nameAndFunction[0]: nameAndFunction[1]})
 
-        # FIXME: Data is being lost during resample if the dataset is too big
-        # at start and end of dataset
+            newDataset = pd.concat([newDataset, auxiliarDF], axis=1)
+
+        except KeyError:
+            print("Column \"{}\" not found in dataset".format(
+                nameAndFunction[0]))
+
+    # If the value is NaN in "Leaf Wet 1"
+    # set "Leaf Wet Accum" to NaN as well
+    # This is to use interpolation later in these values
+    newDataset.loc[newDataset["Leaf Wet 1"].isna(),
+                   "Leaf Wet Accum"] = np.NaN
 
     return newDataset
 
 
 def cyclicalEncoder(dataset, encodeDays, encodeHours):
     """
-    Converts values that have cyclical behavior into pair of sin(x) 
-    and cos(x) functions. Day and time is extracted from a datetime 
+    Converts values that have cyclical behavior into pair of sin(x)
+    and cos(x) functions. Day and time is extracted from a datetime
     index, so be sure to have it. To understand the purpose of this
     function, see `Notes`.
 
@@ -201,9 +212,9 @@ def cyclicalEncoder(dataset, encodeDays, encodeHours):
 
     Notes
     -----
-    The purpose is that the NN see all days equally separated from 
-    themselfs, as the last day of the year is one day away of the first 
-    day; same happens with the hours and the minutes of a day. By using 
+    The purpose is that the NN see all days equally separated from
+    themselfs, as the last day of the year is one day away of the first
+    day; same happens with the hours and the minutes of a day. By using
     integers, this isn't obvious to the NN, so we help him by parsing the
     time in a more easy-to-see way.
     """
@@ -218,3 +229,21 @@ def cyclicalEncoder(dataset, encodeDays, encodeHours):
         dataset["hours_cos"] = np.cos(2 * np.pi * datetime.hour / 23)
 
     return dataset
+
+
+def dayEncoder(dataset, datetime):
+    # TODO: documentation
+    for date in datetime:
+        dataset.loc[datetime, "days_sin"] = np.sin(
+            2 * np.pi * datetime.dayofyear / 365)
+        dataset.loc[datetime, "days_cos"] = np.cos(
+            2 * np.pi * datetime.dayofyear / 365)
+
+
+def hourEncoder(dataset, datetime):
+    # TODO: documentation
+    for date in datetime:
+        dataset.loc[datetime, "hours_sin"] = np.sin(
+            2 * np.pi * datetime.hour / 23)
+        dataset.loc[datetime, "hours_cos"] = np.cos(
+            2 * np.pi * datetime.hour / 23)

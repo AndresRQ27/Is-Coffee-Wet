@@ -32,7 +32,7 @@ class Test_TestDataParser(unittest.TestCase):
         # Uses any(0) to group all the rows in a value for each column
         # Uses any(0) again to group the True and False into a single result
         # If the result is false, all instances have been replaced
-        self.assertFalse(convertDS.eq(np.NaN).any(0).any(0))
+        self.assertFalse(convertDS.loc[convertDS.isna()].any(0).any(0))
 
     def test_sampleDataset(self):
         # Merge into datetime and uses it as index
