@@ -40,7 +40,7 @@ if isDataParsed == "no":
         printDays = ""
 
     # Value used for filename of new dataset
-    if dsConfig.time:
+    if dsConfig.hours:
         printHours = "_encodedHours"
     else:
         printHours = ""
