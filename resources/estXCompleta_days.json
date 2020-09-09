@@ -22,7 +22,8 @@
     "In Temp",
     "In Hum",
     "Soils 1 Moist.",
-    "Leaf Wet 1"
+    "Leaf Wet 1",
+    "Leaf Wet Accum"
   ],
   "graphColumns": [
     "Temp Out",
@@ -34,7 +35,8 @@
     "In Temp",
     "In Hum",
     "Soils 1 Moist.",
-    "Leaf Wet 1"
+    "Leaf Wet 1",
+    "Leaf Wet Accum"
   ],
   "columnAndType": {
     "Temp Out": "float",
@@ -50,7 +52,8 @@
     "In Temp": "float",
     "In Hum": "int",
     "Soils 1 Moist.": "int",
-    "Leaf Wet 1": "int"
+    "Leaf Wet 1": "int",
+    "Leaf Wet Accum": "int"
   },
   "columnAndFunction": {
     "Temp Out": "mean",
@@ -66,6 +69,7 @@
     "In Temp": "mean",
     "In Hum": "mean",
     "Soils 1 Moist.": "mean",
-    "Leaf Wet 1": "mean"
+    "Leaf Wet 1": "mean",
+    "Leaf Wet Accum": "sum"
   }
 }
