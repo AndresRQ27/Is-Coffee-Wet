@@ -151,3 +151,7 @@ cython_debug/
 resources/*.csv
 resources/*.xlsx
 problems/*
+
+# TODO: Maybe add later
+doc/papers/*
+doc/images/*
