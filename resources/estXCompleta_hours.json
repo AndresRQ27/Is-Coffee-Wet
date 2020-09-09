@@ -1,0 +1,71 @@
+{
+  "dateName": "Date",
+  "timeName": "Time",
+  "nullList": [
+    "---",
+    "------"
+  ],
+  "frequency": "1H",
+  "encodeDays": true,
+  "encodeHours": true,
+  "columns": [
+    "Temp Out",
+    "Hi Temp",
+    "Low Temp",
+    "Out Hum",
+    "Wind Speed",
+    "Hi Speed",
+    "Bar",
+    "Rain",
+    "Solar Rad.",
+    "Hi Solar Rad.",
+    "In Temp",
+    "In Hum",
+    "Soils 1 Moist.",
+    "Leaf Wet 1"
+  ],
+  "graphColumns": [
+    "Temp Out",
+    "Out Hum",
+    "Wind Speed",
+    "Bar",
+    "Rain",
+    "Solar Rad.",
+    "In Temp",
+    "In Hum",
+    "Soils 1 Moist.",
+    "Leaf Wet 1"
+  ],
+  "columnAndType": {
+    "Temp Out": "float",
+    "Hi Temp": "float",
+    "Low Temp": "float",
+    "Out Hum": "int",
+    "Wind Speed": "float",
+    "Hi Speed": "float",
+    "Bar": "float",
+    "Rain": "float",
+    "Solar Rad.": "int",
+    "Hi Solar Rad.": "int",
+    "In Temp": "float",
+    "In Hum": "int",
+    "Soils 1 Moist.": "int",
+    "Leaf Wet 1": "int"
+  },
+  "columnAndFunction": {
+    "Temp Out": "mean",
+    "Hi Temp": "max",
+    "Low Temp": "min",
+    "Out Hum": "mean",
+    "Wind Speed": "mean",
+    "Hi Speed": "max",
+    "Bar": "mean",
+    "Rain": "sum",
+    "Solar Rad.": "mean",
+    "Hi Solar Rad.": "max",
+    "In Temp": "mean",
+    "In Hum": "mean",
+    "Soils 1 Moist.": "mean",
+    "Leaf Wet 1": "mean"
+  }
+}
