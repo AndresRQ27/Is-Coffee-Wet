@@ -28,6 +28,8 @@ class configFile:
 
             # List of the original columns
             self.graphColumns = configFile["graphColumns"]
+            # List of the column names
+            self.columns = configFile["columns"]
             # List of the type of each column
             self.cType = []
             # List of the function for each column
@@ -51,4 +53,5 @@ class configFile:
 
             # Construct the list of tuples to use
             for id in range(len(configFile["encodeNames"])):
-                self.encode.append((configFile["encodeNames"][id], configFile["encodeFreq"][id]))
+                self.encode.append(
+                    (configFile["encodeNames"][id], configFile["encodeFreq"][id]))
