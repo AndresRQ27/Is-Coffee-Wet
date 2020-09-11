@@ -88,7 +88,7 @@ def convertNumeric(dataset, columnAndType, nullList):
             # Round the integers of the types
             if nameAndType[1] == "int":
                 dataset[nameAndType[0]] = dataset[nameAndType[0]].round()
-        
+
         except KeyError:
             print("Column \"{}\" not found in dataset".format(nameAndType[0]))
 
@@ -232,8 +232,10 @@ def cyclicalEncoder(dataset, encodeList):
     timestamp_s = dataset.index.map(datetime.datetime.timestamp)
 
     for encoder in encodeList:
-        dataset[encoder[0] + ' sin'] = np.sin(timestamp_s * (2 * np.pi / encoder[1]))
-        dataset[encoder[0] + ' cos'] = np.cos(timestamp_s * (2 * np.pi / encoder[1]))
+        dataset[encoder[0] +
+                ' sin'] = np.sin(timestamp_s * (2 * np.pi / encoder[1]))
+        dataset[encoder[0] +
+                ' cos'] = np.cos(timestamp_s * (2 * np.pi / encoder[1]))
 
     return dataset
 

@@ -2,8 +2,10 @@ from tensorflow.signal import rfft
 import numpy as np
 import matplotlib.pyplot as plt
 
-#Global parameter for the number of figures
+# Global parameter for the number of figures
 figure_index = 0
+
+
 def graphData(dataset, columnList):
     """
     Function that graph the data in a column vs the time when it was
@@ -18,7 +20,7 @@ def graphData(dataset, columnList):
     global figure_index
 
     for columnName in columnList:
-        #Creates a new figure
+        # Creates a new figure
         plt.figure(figure_index)
         figure_index += 1
 
@@ -26,12 +28,13 @@ def graphData(dataset, columnList):
 
     plt.show()
 
-def freqDomain(dataset, columnList):    
+
+def freqDomain(dataset, columnList):
     # TODO: documentation
     global figure_index
 
     for column in columnList:
-        #Creates a new figure
+        # Creates a new figure
         plt.figure(figure_index)
         figure_index += 1
 
@@ -48,8 +51,9 @@ def freqDomain(dataset, columnList):
         plt.ylim(0, 1000000)
         plt.xlim([0.1, max(plt.xlim())])
 
-        #Show some normals datapoints
-        plt.xticks([1, 365.2524, 365.2524*24], labels=['1/Year', '1/day', '1/hour'])
+        # Show some normals datapoints
+        plt.xticks([1, 365.2524, 365.2524*24],
+                   labels=['1/Year', '1/day', '1/hour'])
         _ = plt.xlabel('Frequency (log scale)')
 
     plt.show()
