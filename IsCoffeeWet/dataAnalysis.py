@@ -1,6 +1,6 @@
-from tensorflow.signal import rfft
 import numpy as np
 import matplotlib.pyplot as plt
+from tensorflow import signal
 
 # Global parameter for the number of figures
 figure_index = 0
@@ -38,7 +38,7 @@ def freqDomain(dataset, columnList):
         plt.figure(figure_index)
         figure_index += 1
 
-        fft = rfft(dataset[column])
+        fft = signal.rfft(dataset[column])
         f_per_dataset = np.arange(0, len(fft))
 
         n_samples_h = len(dataset[column])
