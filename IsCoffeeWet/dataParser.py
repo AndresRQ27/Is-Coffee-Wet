@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import datetime
 
 # IMPORTANT: The dataset used mustn't contain trailing whitespaces
 
@@ -185,7 +186,7 @@ def sampleDataset(dataset, columnAndFunction, frequency):
     return newDataset
 
 
-def cyclicalEncoder(dataset, encodeDays, encodeHours):
+def cyclicalEncoder(dataset, encodeList):
     """
     Converts values that have cyclical behavior into pair of sin(x)
     and cos(x) functions. Day and time is extracted from a datetime
@@ -193,16 +194,17 @@ def cyclicalEncoder(dataset, encodeDays, encodeHours):
     function, see `Notes`.
 
     The return dataset has a decomposition into sin(x) and cos(x) of
-    the day and/or hour.
+    the desired frequencies.
 
     Parameters
     ----------
     - dataset: pd.DataFrame.
         Dataset to extract the time from it's datetime index.
-    - encodeDays: boolean.
-        Tells the function to encode the days into sin(x) and cos(x)
-    - encodeHours: boolean.
-        Tells the function to encode the hours into sin(x) and cos(x)
+    - encodeList: list of tuples.
+        Each tuple consists of two values: name of the frequency to
+        name the column and the frequency value. The timestamp starts
+        from seconds, so start the conversion from that point. Example:
+        >>> [("Day", 60*60*24)]
 
     Returns
     -------
@@ -217,22 +219,28 @@ def cyclicalEncoder(dataset, encodeDays, encodeHours):
     day; same happens with the hours and the minutes of a day. By using
     integers, this isn't obvious to the NN, so we help him by parsing the
     time in a more easy-to-see way.
+
+    Moreover, compared to the previous version that covered values between
+    0 and 2*pi, the actual function represents the full date in a 
+    continuos wave. This helps to see de date as cyclical, while having
+    a difference between (e.g.) 04-May-2014 and 04-May-2020, without taking
+    into account the year directly.
+
+    A frequency analysis of the data using the function "freqDomain" is
+    strongly recommended.
     """
-    datetime = dataset.index
+    timestamp_s = dataset.index.map(datetime.datetime.timestamp)
 
-    if encodeDays:
-        dataset["days_sin"] = np.sin(2 * np.pi * datetime.dayofyear / 365)
-        dataset["days_cos"] = np.cos(2 * np.pi * datetime.dayofyear / 365)
-
-    if encodeHours:
-        dataset["hours_sin"] = np.sin(2 * np.pi * datetime.hour / 23)
-        dataset["hours_cos"] = np.cos(2 * np.pi * datetime.hour / 23)
+    for encoder in encodeList:
+        dataset[encoder[0] + ' sin'] = np.sin(timestamp_s * (2 * np.pi / encoder[1]))
+        dataset[encoder[0] + ' cos'] = np.cos(timestamp_s * (2 * np.pi / encoder[1]))
 
     return dataset
 
 
 def dayEncoder(dataset, datetime):
     # TODO: documentation
+    # TODO: update function to use the new method
     for date in datetime:
         dataset.loc[datetime, "days_sin"] = np.sin(
             2 * np.pi * datetime.dayofyear / 365)
@@ -242,6 +250,7 @@ def dayEncoder(dataset, datetime):
 
 def hourEncoder(dataset, datetime):
     # TODO: documentation
+    # TODO: update function to use the new method
     for date in datetime:
         dataset.loc[datetime, "hours_sin"] = np.sin(
             2 * np.pi * datetime.hour / 23)
