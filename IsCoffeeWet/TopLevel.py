@@ -61,4 +61,5 @@ graphData = input("- (yes/no): ")
 if graphData == "yes":
     dataset.describe().transpose()
     da.graphData(dataset, dsConfig.graphColumns)
+    da.freqDomain(dataset, dsConfig.columns[:2])
     exit()
