@@ -30,23 +30,16 @@ if isDataParsed == "no":
                       .pipe(dp.convertNumeric, columnAndType=dsConfig.cType, nullList=dsConfig.null)
                       .pipe(dp.sampleDataset, columnAndFunction=dsConfig.cFunction, frequency=dsConfig.freq)
                       .pipe(dp.convertNumeric, columnAndType=dsConfig.cType, nullList=dsConfig.null)
-                      .pipe(dp.cyclicalEncoder, encodeDays=dsConfig.days, encodeHours=dsConfig.hours)
+                      .pipe(dp.cyclicalEncoder, encodeList=dsConfig.encode)
                )
 
     # Value used for filename of new dataset
-    if dsConfig.days:
-        printDays = "_encodedDays"
-    else:
-        printDays = ""
-
-    # Value used for filename of new dataset
-    if dsConfig.hours:
-        printHours = "_encodedHours"
-    else:
-        printHours = ""
+    encode = ""
+    for name in dsConfig.encode:
+        encode = encode + "_" + name[0]
 
     dataPath = dataPath.replace(".csv", "")
-    dataPath = dataPath + "_" + dsConfig.freq + printDays + printHours + ".csv"
+    dataPath = dataPath + "_" + dsConfig.freq + encode + ".csv"
 
     # Saves the parsed dataset
     dataset.to_csv(dataPath)
@@ -66,5 +59,6 @@ graphData = input("- (yes/no): ")
 # Execution ends with the graph as it requires a lot of memory
 # to have the graphs with the NN training
 if graphData == "yes":
+    dataset.describe().transpose()
     da.graphData(dataset, dsConfig.graphColumns)
     exit()

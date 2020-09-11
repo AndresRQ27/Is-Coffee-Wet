@@ -46,6 +46,9 @@ class configFile:
             # Frequency of the dataset
             self.freq = configFile["frequency"]
 
-            # Bool values to whether encode days/hours or not
-            self.days = configFile["encodeDays"]
-            self.hours = configFile["encodeHours"]
+            # List for time encoding
+            self.encode = []
+
+            # Construct the list of tuples to use
+            for id in range(len(configFile["encodeNames"])):
+                self.encode.append((configFile["encodeNames"][id], configFile["encodeFreq"][id]))

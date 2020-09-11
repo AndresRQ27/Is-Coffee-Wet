@@ -5,8 +5,14 @@
     "---"
   ],
   "frequency": "1H",
-  "encodeDays": true,
-  "encodeHours": true,
+  "encodeNames": [
+    "Day",
+    "Trimester"
+  ],
+  "encodeFreq": [
+    86400,
+    7887456
+  ],
   "columns": [
     "Temp Out",
     "Leaf Wet 1"

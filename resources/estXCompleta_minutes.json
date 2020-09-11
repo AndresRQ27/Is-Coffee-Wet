@@ -6,8 +6,14 @@
     "------"
   ],
   "frequency": "15min",
-  "encodeDays": true,
-  "encodeHours": true,
+  "encodeNames": [
+    "Day",
+    "Trimester"
+  ],
+  "encodeFreq": [
+    86400,
+    7887456
+  ],
   "columns": [
     "Temp Out",
     "Hi Temp",
