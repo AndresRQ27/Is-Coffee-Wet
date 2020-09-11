@@ -15,6 +15,10 @@ class Test_TestDataAnalysis(unittest.TestCase):
         dataAnalysis.graphData(self.dataset, self.dataset.columns[:2])
         self.assertTrue(True)
 
+    def test_freqDomain(self):
+        dataAnalysis.freqDomain(self.dataset, ["Temp Out", "Leaf Wet 1"])
+        self.assertTrue(True)
+
 
 if __name__ == '__main__':
     unittest.main()
