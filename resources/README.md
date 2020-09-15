@@ -21,3 +21,11 @@
 New columns added
 - Leaf Wetness Accumulated (Leaf Wet Accum)
   - Total time, in minutes, the leaf has been wet during a time frame.
+- "Frequency" cos/sin
+  - For each frequency, adds a decomposition of sin and cos to the columns.
+  - This helps capture cyclical behaviour of the weather, by letting the
+    neural network analyze it by "season", like daily, yearly, by
+    trimester, etc.
+  - The columns created depends on the values in `encodeNames` and `encodeFreq`
+    - `encodeNames` are the names fro the new columns
+    - `encodeFreq` are the frequency (in seconds) of the data.
