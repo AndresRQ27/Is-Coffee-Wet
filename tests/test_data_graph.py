@@ -1,9 +1,9 @@
 import unittest
 from pandas import read_csv
-from IsCoffeeWet import dataAnalysis
+from IsCoffeeWet import data_graph
 
 
-class Test_TestDataAnalysis(unittest.TestCase):
+class Test_TestDataGraph(unittest.TestCase):
     def setUp(self):
         # Sets the index using Datetime column
         self.dataset = read_csv("resources\test_1H_Day_Trimester.csv",
@@ -11,12 +11,12 @@ class Test_TestDataAnalysis(unittest.TestCase):
         # Infers the frequency
         self.dataset = self.dataset.asfreq(self.dataset.index.inferred_freq)
 
-    def test_graphData(self):
-        dataAnalysis.graphData(self.dataset, self.dataset.columns[:2])
+    def test_graph_data(self):
+        data_graph.graph_data(self.dataset, self.dataset.columns[:2])
         self.assertTrue(True)
 
-    def test_freqDomain(self):
-        dataAnalysis.freqDomain(self.dataset, [("Temp Out"), "Leaf Wet 1"])
+    def test_freq_domain(self):
+        data_graph.freq_domain(self.dataset, ["Temp Out", "Leaf Wet 1"])
         self.assertTrue(True)
 
 

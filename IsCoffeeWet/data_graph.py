@@ -1,12 +1,18 @@
+import pandas as pd
 import numpy as np
+import seaborn as sns
 import matplotlib.pyplot as plt
-from tensorflow import signal
+from tensorflow._api.v2.signal import rfft
 
-# Global parameter for the number of figures
-figure_index = 0
+def graph_normalize(dataset, columns):
+    # TODO: documentation
+    df_std = dataset.melt(var_name='Column', value_name='Normalized')
+    plt.figure(figsize=(12, 6))
+    ax = sns.violinplot(x='Column', y='Normalized', data=df_std)
+    _ = ax.set_xticklabels(columns, rotation=90)
+    plt.show()
 
-
-def graphData(dataset, columnList):
+def graph_data(dataset, columnList):
     """
     Function that graph the data in a column vs the time when it was
     taken. Help visualizing big gaps where the data was interpolated
@@ -17,28 +23,36 @@ def graphData(dataset, columnList):
     - columnList: list of strings.
         List of the names of the columns to graph.
     """
-    global figure_index
 
     for columnName in columnList:
         # Creates a new figure
-        plt.figure(figure_index)
-        figure_index += 1
+        plt.figure()
 
         dataset[columnName].plot().set_ylabel(columnName)
 
     plt.show()
 
 
-def freqDomain(dataset, columnList):
-    # TODO: documentation
-    global figure_index
+def freq_domain(dataset, columnList):
+    """
+    Function that graph the data in the frequency domain by using Fourier Transform.
+    Useful when analyzing the information to see which frequencies are the 
+    most important in the dataset. They can be added as features by using
+    `cyclical_encoder` to help the NN convergence
+
+    Parameters
+    ----------
+    - dataset: pd.DataFrame.
+        Dataset where to extract the columns
+    - columnList: list of strings.
+        Names of the columns to graph after applying Fourier Transformation
+    """
 
     for column in columnList:
         # Creates a new figure
-        plt.figure(figure_index)
-        figure_index += 1
+        plt.figure()
 
-        fft = signal.rfft(dataset[column])
+        fft = rfft(dataset[column])
         f_per_dataset = np.arange(0, len(fft))
 
         n_samples_h = len(dataset[column])

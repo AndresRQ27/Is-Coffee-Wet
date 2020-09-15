@@ -1,7 +1,7 @@
 import json
 
 
-class configFile:
+class ConfigFile:
     """
     Object that contains the values of the configuration file in the
     JSON for the corresponding dataset. This helps to not have the file
@@ -27,7 +27,7 @@ class configFile:
             self.time = configFile["timeName"]
 
             # List of the original columns
-            self.graphColumns = configFile["graphColumns"]
+            self.graph_columns = configFile["graphColumns"]
             # List of the column names
             self.columns = configFile["columns"]
             # List of the type of each column
