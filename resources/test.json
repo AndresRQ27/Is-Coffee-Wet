@@ -15,18 +15,22 @@
   ],
   "columns": [
     "Temp Out",
-    "Leaf Wet 1"
+    "Leaf Wet 1",
+    "Leaf Wet Accum"
   ],
   "graphColumns": [
     "Temp Out",
-    "Leaf Wet 1"
+    "Leaf Wet 1",
+    "Leaf Wet Accum"
   ],
   "columnAndType": {
     "Temp Out": "float",
-    "Leaf Wet 1": "int"
+    "Leaf Wet 1": "int",
+    "Leaf Wet Accum": "int"
   },
   "columnAndFunction": {
     "Temp Out": "mean",
-    "Leaf Wet 1": "mean"
+    "Leaf Wet 1": "mean",
+    "Leaf Wet Accum": "sum"
   }
 }
