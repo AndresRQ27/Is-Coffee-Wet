@@ -2,8 +2,8 @@
 
 - _datasetPath_: string. path of the dataset file to use.
   - Recommended to use an absolute path.
-- _frequency_: string. frequency to resample the dataset. It also includes
-  the minimal timestep to use when predicting the values.
+- _frequency_: string. Frequency to resample the dataset. It also
+  includes the minimal timestep to use when predicting the values.
   - Possible values are:
     - `15min` for 15 minutes
     - `1h` for 1 hour
