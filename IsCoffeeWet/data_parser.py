@@ -84,13 +84,10 @@ def convert_numeric(dataset, config_file):
 
         # Check if it's an special format
         if name in config_file.formats:
-            # Ignore integers as interpolations works just fine
-            if config_file.formats[name] == "int":
-                pass
-            #! Add elif to evaluate other conditions
-            # Do not interpolate for other types (e.g. bool, string)
-            else:
+            # Ignores interpolation of bool types
+            if config_file.formats[name] == "bool":
                 continue
+            #! With elif, you can add other types
 
         # Casting of the column type
         dataset = dataset.astype({name: "float64"})
@@ -144,7 +141,7 @@ def sample_dataset(dataset, config_file):
 
     # Generates a column of accumulated time the leaf has been wet, using
     # the Leaf Wet 1 column.
-    if "Leaf Wet 1" in config_file.functions:
+    if "Leaf Wet 1" in config_file.columns:
         # Difference between last and current datetime
         # This is because the frequency isn't all the same
         timeDiff = dataset.index[1:] - dataset.index[:-1]
@@ -161,6 +158,7 @@ def sample_dataset(dataset, config_file):
         # hard guess. We divide by 60 to use minutes
         dataset.loc[dataset.index[0],
                     "Leaf Wet Accum"] *= timeDiff[0].seconds/60
+        # FIXME: missing data cause HUGE time differences
         dataset.loc[dataset.index[1:],
                     "Leaf Wet Accum"] *= timeDiff.seconds/60
 
@@ -169,16 +167,25 @@ def sample_dataset(dataset, config_file):
         config_file.functions["Leaf Wet Accum"] = "sum"
         config_file.formats["Leaf Wet Accum"] = "int"
 
-    for name, functions in config_file.functions.items():
+    for name in config_file.columns:
+
+        # Choose between a special or mean function
+        if name in config_file.functions:
+            functions = config_file.functions[name]
+        else:
+            functions = "mean"
+
         # Generates a new DataFrame (DF)
         # Each resampling creates a column, so it is appended to get a
         # final result. It must be done this way to use a different
         # function in each column
-        auxiliarDF = dataset.resample(config_file.freq, label="right",
+        auxiliarDF = dataset.resample(config_file.freq_txt, label="right",
                                         closed="right", origin="start"
                                         ).agg({name: functions})
 
         new_dataset = pd.concat([new_dataset, auxiliarDF], axis=1)
+
+    
 
     # If the value is NaN in "Leaf Wet 1"
     # set "Leaf Wet Accum" to NaN as well

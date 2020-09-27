@@ -1,23 +1,24 @@
 import unittest
 import numpy as np
-import pandas as pd
+from pandas import read_csv, date_range
 from IsCoffeeWet import data_parser
 from IsCoffeeWet import config_file as cf
 
 
 class Test_TestDataParser(unittest.TestCase):
     def setUp(self):
-        self.dirtyDataset = pd.read_csv("resources/test.csv")
+        self.dirtyDataset = read_csv("resources/test.csv")
 
     def test_merge_datetime(self):
         # Uses a list of columns with the date as the config file
         config_file = cf.ConfigFile()
         config_file.datetime = ["Date", "Time"]
+        config_file.columns = ["Date", "Time"]
         config_file.datetime_format = "%d/%m/%Y %I:%M %p"
         
         datetime_ds = data_parser.merge_datetime(self.dirtyDataset, config_file)
         
-        result = pd.date_range("2010-04-07 00:00:00", 
+        result = date_range("2010-04-07 00:00:00", 
                                "2010-04-07 00:04:00", 
                                freq="min")
 
@@ -29,11 +30,12 @@ class Test_TestDataParser(unittest.TestCase):
         # INFO: Needs datetime index to interpolate by time
         config_file = cf.ConfigFile()
         config_file.datetime = ["Date", "Time"]
+        config_file.columns = ["Date", "Time"]
         config_file.datetime_format = "%d/%m/%Y %I:%M %p"
         dataset = data_parser.merge_datetime(self.dirtyDataset, config_file)
         
         config_file.null = ["---"]
-        config_file.columns = ["Temp Out", "Leaf Wet 1"]
+        config_file.columns.extend(["Temp Out", "Leaf Wet 1"])
         config_file.formats = {"Leaf Wet 1": "int"}
 
         convert_ds = data_parser.convert_numeric(dataset, config_file)
@@ -58,18 +60,18 @@ class Test_TestDataParser(unittest.TestCase):
         # INFO: Needs datetime index to resample
         config_file = cf.ConfigFile()
         config_file.datetime = ["Date", "Time"]
+        config_file.columns = ["Date", "Time"]
         config_file.datetime_format = "%d/%m/%Y %I:%M %p"
         dataset = data_parser.merge_datetime(self.dirtyDataset, config_file)
 
         # INFO_ Needs clean dataset to resample
         config_file.null = ["---"]
-        config_file.columns = ["Temp Out", "Leaf Wet 1"]
+        config_file.columns.extend(["Temp Out", "Leaf Wet 1"])
         config_file.formats = {"Leaf Wet 1": "int"}
         dataset = data_parser.convert_numeric(dataset, config_file)
 
         config_file.freq = "15min"
-        config_file.functions = {"Temp Out": "mean",
-                                 "Leaf Wet 1": "last"}
+        config_file.functions = {"Leaf Wet 1": "last"}
 
         sample_ds = data_parser.sample_dataset(dataset, config_file)
 
@@ -86,6 +88,7 @@ class Test_TestDataParser(unittest.TestCase):
         # INFO: Needs datetime index to encode
         config_file = cf.ConfigFile()
         config_file.datetime = ["Date", "Time"]
+        config_file.columns = ["Date", "Time"]
         config_file.datetime_format = "%d/%m/%Y %I:%M %p"
         dataset = data_parser.merge_datetime(self.dirtyDataset, config_file)
 

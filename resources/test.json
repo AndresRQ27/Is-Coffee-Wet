@@ -24,8 +24,7 @@
 
     },
     "specialFormat": {
-      "Leaf Wet 1": "int",
-      "Leaf Wet Accum": "int"
+      "Leaf Wet 1": "int"
     }
   }
 }
