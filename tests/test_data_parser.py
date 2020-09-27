@@ -98,7 +98,7 @@ class Test_TestDataParser(unittest.TestCase):
             self.assertTrue(("day sin" in encoded_ds.columns) 
                             and "day cos" in encoded_ds.columns)
 
-        #Check if there values are between 0 and 1
+        #Check if there values are between -1 and 1
         with self.subTest(msg="check between 0 and 1"):
             self.assertTrue((min(encoded_ds["day sin"]) >= -1)
                             and max((encoded_ds["day sin"]) <= 1))
