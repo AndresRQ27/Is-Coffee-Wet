@@ -1,31 +1,48 @@
-# Relevant variables
+# JSON Format
 
-- Temperature (Temp Out/In)
-  - It's important to note that the internal temperature almost never
-    fails, contrary to the outside temperature.
-  - High and low temperature are also important to have in order for a
-    proper analysis for the experts.
-- External relative humidity (Out Hum)
-- Wind speed
-- Wind direction (Wind Dir)*
-  - Although its a primary variable (measurable directly from a sensor), it
-    won't be predicted by the model as it's a cardinal value
-- Atmospheric pressure (Bar)
-- Rain
-  - It's important to sum all the rain that has fallen in time when
-    resampling as it's important to know it for the experts.
-- Solar radiation (Solar Rad)
-- Soil humidity (Soil Temp)
-- Leaf Wetness (Leaf Wet)
+- _datasetPath_: string. path of the dataset file to use.
+  - Recommended to use an absolute path.
+- _frequency_: string. frequency to resample the dataset. It also includes
+  the minimal timestep to use when predicting the values.
+  - Possible values are:
+    - `15min` for 15 minutes
+    - `1h` for 1 hour
+    - `1h30min` for every hour and a half
+    - `1d` for 1 day
+    - `1m` for 1 month
+- _forecastWindow_: int. amount of __days__ to forecast.
+- _graphData_: boolean. Indicates if it should show the graph of the data
+  used.
+  - Recommended in the first run to view the behavior of the data and find
+    strange values.
+  - Otherwise, recommended off (`False`)
 
-New columns added
-- Leaf Wetness Accumulated (Leaf Wet Accum)
-  - Total time, in minutes, the leaf has been wet during a time frame.
-- "Frequency" cos/sin
-  - For each frequency, adds a decomposition of sin and cos to the columns.
-  - This helps capture cyclical behaviour of the weather, by letting the
-    neural network analyze it by "season", like daily, yearly, by
-    trimester, etc.
-  - The columns created depends on the values in `encodeNames` and `encodeFreq`
-    - `encodeNames` are the names fro the new columns
-    - `encodeFreq` are the frequency (in seconds) of the data.
+## Preprocess
+
+- _datetime_: list of column names (string) to merge into a datetime index.
+  - With the current format:
+    - The column "Date" has the date in DD/MM/YYYY
+    - The column "Time" has the time in HH:MM AM/PM
+  - Both columns are string at first, merge together and converted into
+    datetime objects
+- _datetime\_format_: format (string) the datetime will have after merging
+  all the column.
+- _nullList_: list of possible parameters to represent a bad value. They
+  are change into NaN (Not a Number) and later interpolated
+- _encodeTime_: dictionary of key-value with __extra__ features to add into
+  the dataset. Time __must__ be in seconds,
+  - This is the result of analyzing the trends in the data by graphing the
+    Fast-Fourier Transform and choosing the higher values.
+  - The idea is that the higher the value, the more representative is the
+    feature for the dataset, making easier the NN training.
+- _deleteColumns_: columns (string) to __NOT__ use for the forecasting.
+  They will be eliminated during resampling.
+  - It's' imperative to always delete the columns that use text (e.g. "Wind
+    Direction")
+- _specialFunctions_: in general, all the columns are resample using the
+  mean function. If a different function must be applied to a specific
+  column, it must be specified here (e.g. `"Rain": "sum"` as we want the
+  total amount of rain in a given interval)
+- _specialFormat_: in general, all the numeric values are float. Certain
+  column may want to stay as integers (no decimals) after the resampling
+  process, so specify the columns and the format here (e.g. `"Leaf Wet 1": "int"`).

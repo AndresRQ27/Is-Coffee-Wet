@@ -1,36 +1,31 @@
 {
-  "dateName": "Date",
-  "timeName": "Time",
-  "nullList": [
-    "---"
-  ],
+  "datasetPath": "D:/VMWare/Shared/Is-Coffee-Wet/resources/test.csv",
   "frequency": "1H",
-  "encodeNames": [
-    "Day",
-    "Trimester"
-  ],
-  "encodeFreq": [
-    86400,
-    7887456
-  ],
-  "columns": [
-    "Temp Out",
-    "Leaf Wet 1",
-    "Leaf Wet Accum"
-  ],
-  "graphColumns": [
-    "Temp Out",
-    "Leaf Wet 1",
-    "Leaf Wet Accum"
-  ],
-  "columnAndType": {
-    "Temp Out": "float",
-    "Leaf Wet 1": "int",
-    "Leaf Wet Accum": "int"
-  },
-  "columnAndFunction": {
-    "Temp Out": "mean",
-    "Leaf Wet 1": "mean",
-    "Leaf Wet Accum": "sum"
+  "forecastWindow": 7,
+  "graphData": true,
+
+  "preprocess": {
+    "datetime": [
+      "Date", 
+      "Time"
+    ],
+    "datetime_format": "%d/%m/%Y %I:%M %p",
+    "nullList": [
+      "---"
+    ],
+    "deleteColumns": [
+
+    ],
+    "encodeTime": {
+      "day": 86400,
+      "trimester": 7887456
+    },
+    "specialFunctions": {
+
+    },
+    "specialFormat": {
+      "Leaf Wet 1": "int",
+      "Leaf Wet Accum": "int"
+    }
   }
 }
