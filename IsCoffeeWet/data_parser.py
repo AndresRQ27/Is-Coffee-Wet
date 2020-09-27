@@ -25,8 +25,12 @@ def merge_datetime(dataset, config_file):
     """
 
     # Initialize the Serie with the first column in the list
-    datetime_column = pd.Series(dataset[config_file.datetime[0]])
-    dataset = dataset.drop(config_file.datetime[0], axis=1)
+    name = config_file.datetime[0]
+    datetime_column = pd.Series(dataset[name])
+    
+    # Drop the column
+    dataset = dataset.drop(name, axis=1)
+    config_file.columns.remove(name)
 
     # Unifies the other columns
     for name in config_file.datetime[1:]:
@@ -36,6 +40,7 @@ def merge_datetime(dataset, config_file):
 
         # Drops the added column
         dataset = dataset.drop(name, axis=1)
+        config_file.columns.remove(name)
 
     # Converts the Serie into a "datetime64[ns]" column
     dataset["Datetime"] = pd.to_datetime(datetime_column, 

@@ -52,7 +52,7 @@ class ConfigFile:
                 self.datetime_format = config_file["preprocess"]["datetime_format"]
 
                 # List of strings to use as null
-                self.null = config_file["nullList"]
+                self.null = config_file["preprocess"]["nullList"]
 
                 # Read the list of columns to delete
                 deleteColumns = config_file["preprocess"]["deleteColumns"]
