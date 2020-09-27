@@ -157,10 +157,11 @@ def sample_dataset(dataset, config_file):
         # measurement, so use the difference of the second data as a
         # hard guess. We divide by 60 to use minutes
         dataset.loc[dataset.index[0],
-                    "Leaf Wet Accum"] *= timeDiff[0].seconds/60
-        # FIXME: missing data cause HUGE time differences
+                    "Leaf Wet Accum"] *= timeDiff[0].days*24*60 \
+                                         + timeDiff[0].seconds/60
         dataset.loc[dataset.index[1:],
-                    "Leaf Wet Accum"] *= timeDiff.seconds/60
+                    "Leaf Wet Accum"] *= timeDiff.days*24*60 \
+                                         + timeDiff.seconds/60
 
         # Add the new column to the config_file file
         config_file.columns.append("Leaf Wet Accum")
@@ -179,7 +180,7 @@ def sample_dataset(dataset, config_file):
         # Each resampling creates a column, so it is appended to get a
         # final result. It must be done this way to use a different
         # function in each column
-        auxiliarDF = dataset.resample(config_file.freq_txt, label="right",
+        auxiliarDF = dataset.resample(config_file.freq, label="right",
                                         closed="right", origin="start"
                                         ).agg({name: functions})
 
@@ -192,6 +193,18 @@ def sample_dataset(dataset, config_file):
     # This is to use interpolation later in these values
     new_dataset.loc[new_dataset["Leaf Wet 1"].isna(),
                    "Leaf Wet Accum"] = np.NaN
+
+    #*** No value can be over the maximum amount of minute in a given
+    #*** timestamp according to its frequency, so set a cap
+    #*** Change the values to the limit
+
+    # Calculates the maximum limit for a delta timestep
+    limit = pd.Timedelta(config_file.freq)
+    limit = limit.days*24*60 + limit.seconds/60
+
+    # Sets a hard limit only to the Leaf Wet Accum column
+    new_dataset["Leaf Wet Accum"].loc[new_dataset["Leaf Wet Accum"]>limit] = limit
+
 
     return new_dataset
 
