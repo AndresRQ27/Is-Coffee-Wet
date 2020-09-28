@@ -1,13 +1,14 @@
 import unittest
-import numpy as np
+
 from pandas import read_csv, date_range
-from IsCoffeeWet import data_parser
+
 from IsCoffeeWet import config_file as cf
+from IsCoffeeWet import data_parser
 
 
 class Test_TestDataParser(unittest.TestCase):
     def setUp(self):
-        self.dirtyDataset = read_csv("resources/test.csv")
+        self.dirtyDataset = read_csv("D:/VMWare/Shared/Is-Coffee-Wet/resources/test.csv")
 
     def test_merge_datetime(self):
         # Uses a list of columns with the date as the config file
@@ -15,32 +16,33 @@ class Test_TestDataParser(unittest.TestCase):
         config_file.datetime = ["Date", "Time"]
         config_file.columns = ["Date", "Time"]
         config_file.datetime_format = "%d/%m/%Y %I:%M %p"
-        
+
         datetime_ds = data_parser.merge_datetime(self.dirtyDataset, config_file)
-        
-        result = date_range("2010-04-07 00:00:00", 
-                               "2010-04-07 00:04:00", 
-                               freq="min")
+
+        result = date_range("2010-04-07 00:00:00",
+                            "2010-04-07 00:04:00",
+                            freq="min")
 
         # Test to see if the resulting format is as the desired one
         # All the values must match to generate a True
         self.assertTrue((result == datetime_ds.head(5).index).all())
 
+    # noinspection DuplicatedCode
     def test_convert_numeric(self):
-        #! Needs datetime index to interpolate by time
+        # ! Needs datetime index to interpolate by time
         config_file = cf.ConfigFile()
         config_file.datetime = ["Date", "Time"]
         config_file.columns = ["Date", "Time"]
         config_file.datetime_format = "%d/%m/%Y %I:%M %p"
         dataset = data_parser.merge_datetime(self.dirtyDataset, config_file)
-        
+
         config_file.null = ["---"]
         config_file.columns.extend(["Temp Out", "Leaf Wet 1"])
         config_file.formats = {"Leaf Wet 1": "int"}
 
         convert_ds = data_parser.convert_numeric(dataset, config_file)
 
-        #? print(convert_ds.info(verbose=True))
+        # ? print(convert_ds.info(verbose=True))
 
         # Test if there is a NaN value
         with self.subTest(msg="NaN test"):
@@ -51,20 +53,20 @@ class Test_TestDataParser(unittest.TestCase):
             self.assertTrue((convert_ds.notna()).all().all())
 
         # Test if all values are converted
-        with self.subTest(msg= "dtypes test"):
+        with self.subTest(msg="dtypes test"):
             # Check if all columns are float64
             self.assertTrue((convert_ds.dtypes == "float64").all())
-            
 
+    # noinspection DuplicatedCode
     def test_sample_dataset(self):
-        #! Needs datetime index to resample
+        # ! Needs datetime index to resample
         config_file = cf.ConfigFile()
         config_file.datetime = ["Date", "Time"]
         config_file.columns = ["Date", "Time"]
         config_file.datetime_format = "%d/%m/%Y %I:%M %p"
         dataset = data_parser.merge_datetime(self.dirtyDataset, config_file)
 
-        #! Needs clean dataset to resample
+        # ! Needs clean dataset to resample
         config_file.null = ["---"]
         config_file.columns.extend(["Temp Out", "Leaf Wet 1"])
         config_file.formats = {"Leaf Wet 1": "int"}
@@ -82,10 +84,8 @@ class Test_TestDataParser(unittest.TestCase):
         with self.subTest(msg="check 'Leaf Wet Accum'"):
             self.assertTrue("Leaf Wet Accum" in sample_ds.columns)
 
-
-
     def test_cyclical_encoder(self):
-        #! Needs datetime index to encode
+        # ! Needs datetime index to encode
         config_file = cf.ConfigFile()
         config_file.datetime = ["Date", "Time"]
         config_file.columns = ["Date", "Time"]
@@ -96,12 +96,12 @@ class Test_TestDataParser(unittest.TestCase):
 
         encoded_ds = data_parser.cyclical_encoder(dataset, config_file)
 
-        #Sin/Cos columns added to the new dataset
+        # Sin/Cos columns added to the new dataset
         with self.subTest(msg="check sin/cos test"):
-            self.assertTrue(("day sin" in encoded_ds.columns) 
+            self.assertTrue(("day sin" in encoded_ds.columns)
                             and "day cos" in encoded_ds.columns)
 
-        #Check if there values are between -1 and 1
+        # Check if there values are between -1 and 1
         with self.subTest(msg="check between 0 and 1"):
             self.assertTrue((min(encoded_ds["day sin"]) >= -1)
                             and max((encoded_ds["day sin"]) <= 1))

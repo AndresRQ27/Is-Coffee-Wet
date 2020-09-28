@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import datetime
 
+
 def merge_datetime(dataset, config_file):
     """
     Merges the Date column and the Time column into a single one, used for
@@ -25,7 +26,7 @@ def merge_datetime(dataset, config_file):
     # Initialize the Serie with the first column in the list
     name = config_file.datetime[0]
     datetime_column = pd.Series(dataset[name])
-    
+
     # Drop the column
     dataset = dataset.drop(name, axis=1)
     config_file.columns.remove(name)
@@ -34,15 +35,15 @@ def merge_datetime(dataset, config_file):
     for name in config_file.datetime[1:]:
         datetime_column += " "
         datetime_column += pd.Series(dataset[name])
-        #! Add more columns if the format ever needs it
+        # ! Add more columns if the format ever needs it
 
         # Drops the added column
         dataset = dataset.drop(name, axis=1)
         config_file.columns.remove(name)
 
     # Converts the Serie into a "datetime64[ns]" column
-    dataset["Datetime"] = pd.to_datetime(datetime_column, 
-                                         format= config_file.datetime_format)
+    dataset["Datetime"] = pd.to_datetime(datetime_column,
+                                         format=config_file.datetime_format)
 
     # Sets the datetime as the index of the DataFrame
     dataset = dataset.set_index("Datetime")
@@ -85,20 +86,20 @@ def convert_numeric(dataset, config_file):
             # Ignores interpolation of bool types
             if config_file.formats[name] == "bool":
                 continue
-            #! With elif, you can add other types
+            # ! With elif, you can add other types
 
         # Casting of the column type
         dataset = dataset.astype({name: "float64"})
 
         # Interpolation of NaNs
         dataset[name] = dataset[name].interpolate(method="time",
-                                                limit_direction="forward")
+                                                  limit_direction="forward")
 
     # Apply format to the special cases
     for name, value in config_file.formats.items():
         if value == "int":
             dataset[name] = dataset[name].round()
-        #! Add elif to evaluate other conditions
+        # ! Add elif to evaluate other conditions
         else:
             continue
 
@@ -142,7 +143,7 @@ def sample_dataset(dataset, config_file):
     if "Leaf Wet 1" in config_file.columns:
         # Difference between last and current datetime
         # This is because the frequency isn't all the same
-        timeDiff = dataset.index[1:] - dataset.index[:-1]
+        time_diff = dataset.index[1:] - dataset.index[:-1]
 
         # Creates a new column with 0s
         dataset["Leaf Wet Accum"] = 0
@@ -155,11 +156,9 @@ def sample_dataset(dataset, config_file):
         # measurement, so use the difference of the second data as a
         # hard guess. We divide by 60 to use minutes
         dataset.loc[dataset.index[0],
-                    "Leaf Wet Accum"] *= timeDiff[0].days*24*60 \
-                                         + timeDiff[0].seconds/60
+                    "Leaf Wet Accum"] *= time_diff[0].days * 24 * 60 + time_diff[0].seconds / 60
         dataset.loc[dataset.index[1:],
-                    "Leaf Wet Accum"] *= timeDiff.days*24*60 \
-                                         + timeDiff.seconds/60
+                    "Leaf Wet Accum"] *= time_diff.days * 24 * 60 + time_diff.seconds / 60
 
         # Add the new column to the config_file file
         config_file.columns.append("Leaf Wet Accum")
@@ -178,31 +177,29 @@ def sample_dataset(dataset, config_file):
         # Each resampling creates a column, so it is appended to get a
         # final result. It must be done this way to use a different
         # function in each column
-        auxiliarDF = dataset.resample(config_file.freq, label="right",
-                                        closed="right", origin="start"
-                                        ).agg({name: functions})
+        # noinspection SpellCheckingInspection
+        auxiliar_df = dataset.resample(config_file.freq, label="right",
+                                       closed="right", origin="start"
+                                       ).agg({name: functions})
 
-        new_dataset = pd.concat([new_dataset, auxiliarDF], axis=1)
-
-    
+        new_dataset = pd.concat([new_dataset, auxiliar_df], axis=1)
 
     # If the value is NaN in "Leaf Wet 1"
     # set "Leaf Wet Accum" to NaN as well
     # This is to use interpolation later in these values
     new_dataset.loc[new_dataset["Leaf Wet 1"].isna(),
-                   "Leaf Wet Accum"] = np.NaN
+                    "Leaf Wet Accum"] = np.NaN
 
-    #*** No value can be over the maximum amount of minute in a given
-    #*** timestamp according to its frequency, so set a cap
-    #*** Change the values to the limit
+    # *** No value can be over the maximum amount of minute in a given
+    # *** timestamp according to its frequency, so set a cap
+    # *** Change the values to the limit
 
-    # Calculates the maximum limit for a delta timestep
+    # Calculates the maximum limit for a delta timestamp
     limit = pd.Timedelta(config_file.freq)
-    limit = limit.days*24*60 + limit.seconds/60
+    limit = limit.days * 24 * 60 + limit.seconds / 60
 
     # Sets a hard limit only to the Leaf Wet Accum column
-    new_dataset["Leaf Wet Accum"].loc[new_dataset["Leaf Wet Accum"]>limit] = limit
-
+    new_dataset["Leaf Wet Accum"].loc[new_dataset["Leaf Wet Accum"] > limit] = limit
 
     return new_dataset
 
@@ -232,13 +229,13 @@ def cyclical_encoder(dataset, config_file):
     Notes
     -----
     The purpose is that the NN see all days equally separated from
-    themselfs, as the last day of the year is one day away of the first
+    themselves, as the last day of the year is one day away of the first
     day; same happens with the hours and the minutes of a day. By using
     integers, this isn't obvious to the NN, so we help him by parsing the
     time in a more easy-to-see way.
 
     Moreover, compared to the previous version that covered values between
-    0 and 2*pi, the actual function represents the full date in a continuos
+    0 and 2*pi, the actual function represents the full date in a continuous
     wave. This helps to see de date as cyclical, while having a difference
     between (e.g.) 04-May-2014 and 04-May-2020, without taking into account
     the year directly.
@@ -251,7 +248,7 @@ def cyclical_encoder(dataset, config_file):
 
     # Divide into sin/cos columns
     for name, time in config_file.encode.items():
-        dataset[name + " sin"] = np.sin(timestamp_s*(2*np.pi/time))
-        dataset[name + " cos"] = np.cos(timestamp_s*(2*np.pi/time))
+        dataset[name + " sin"] = np.sin(timestamp_s * (2 * np.pi / time))
+        dataset[name + " cos"] = np.cos(timestamp_s * (2 * np.pi / time))
 
     return dataset

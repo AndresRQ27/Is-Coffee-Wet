@@ -1,35 +1,36 @@
 {
-  "datasetPath": "D:/VMWare/Shared/Is-Coffee-Wet/resources/test.csv",
+  "dataset_path": "D:/VMWare/Shared/Is-Coffee-Wet/resources/test.csv",
   "frequency": "1H",
-  "forecastWindow": 7,
-  "graphData": true,
+  "forecast_window": 168,
+  "graph_data": true,
 
-  "preprocess": {
+  "pre-process": {
     "datetime": [
       "Date", 
       "Time"
     ],
     "datetime_format": "%d/%m/%Y %I:%M %p",
-    "nullList": [
+    "null_list": [
       "---"
     ],
-    "deleteColumns": [
+    "delete_columns": [
 
     ],
-    "encodeTime": {
+    "encode_time": {
       "day": 86400,
       "year": 31556952
     },
-    "specialFunctions": {
+    "special_functions": {
 
     },
-    "specialFormat": {
+    "special_format": {
       "Leaf Wet 1": "int"
     }
   },
 
-  "neural network": {
-    "training set": 0.7,
-    "validation set": 0.2
+  "neural_network": {
+    "training_set": 0.7,
+    "validation_set": 0.2,
+    "path": "D:/VMWare/Shared/Is-Coffee-Wet/resources/models/convolutional.h5"
   }
 }

@@ -16,9 +16,9 @@ class ConfigFile:
         is running or absolute.
     """
 
-    def __init__(self, config_path = None):
+    def __init__(self, config_path=None):
         # When initialize without arguments
-        if config_path == None:
+        if config_path is None:
             return
 
         # When initialize with a path
@@ -31,31 +31,31 @@ class ConfigFile:
                 # and return the most recent file in it
 
                 # Path of the file dataset to use
-                self.path = config_file["datasetPath"]
+                self.path = config_file["dataset_path"]
 
                 # Frequency of the dataset
                 self.freq = config_file["frequency"]
 
                 # Amount of days to forecast
-                self.forecast = config_file["forecastWindow"]
+                self.forecast = config_file["forecast_window"]
 
                 # Boolean to graph the col
-                self.graph = config_file["graphData"]
+                self.graph = config_file["graph_data"]
 
                 # *****************************
                 # *** Preprocess parameters ***
                 # *****************************
 
                 # List of the columns to merge into datetime
-                self.datetime = config_file["preprocess"]["datetime"]
+                self.datetime = config_file["pre-process"]["datetime"]
 
-                self.datetime_format = config_file["preprocess"]["datetime_format"]
+                self.datetime_format = config_file["pre-process"]["datetime_format"]
 
                 # List of strings to use as null
-                self.null = config_file["preprocess"]["nullList"]
+                self.null = config_file["pre-process"]["null_list"]
 
                 # Read the list of columns to delete
-                deleteColumns = config_file["preprocess"]["deleteColumns"]
+                delete_columns = config_file["pre-process"]["delete_columns"]
 
                 # List of columns to use
                 self.columns = read_csv(self.path,
@@ -63,30 +63,30 @@ class ConfigFile:
                                         nrows=1).columns.tolist()
 
                 # Removes the unwanted columns
-                for column_name in deleteColumns:
+                for column_name in delete_columns:
                     self.columns.remove(column_name)
 
                 # Creates an empty dictionary for the column encoding
                 self.encode = {}
                 # Fill the dictionary
-                for name, time in config_file["preprocess"]["encodeTime"].items():
+                for name, time in config_file["pre-process"]["encode_time"].items():
                     self.encode[name] = time
 
                 # Creates an empty dictionary for the special functions
                 self.functions = {}
                 # Fill the dictionary
-                for name, functions in config_file["preprocess"]["specialFunctions"].items():
+                for name, functions in config_file["pre-process"]["special_functions"].items():
                     self.functions[name] = functions
 
                 # Creates an empty dictionary for the special format
                 self.formats = {}
                 # Fill the dictionary
-                for name, formats in config_file["preprocess"]["specialFormat"].items():
+                for name, formats in config_file["pre-process"]["special_format"].items():
                     self.formats[name] = formats
 
                 # *********************************
                 # *** Neural Network parameters ***
                 # *********************************
 
-                self.training = config_file["neural network"]["training set"]
-                self.validation = config_file["neural network"]["validation set"]
+                self.training = config_file["neural_network"]["training_set"]
+                self.validation = config_file["neural_network"]["validation_set"]
