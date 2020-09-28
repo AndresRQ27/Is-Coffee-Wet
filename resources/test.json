@@ -17,7 +17,8 @@
 
     ],
     "encodeTime": {
-      "day": 86400
+      "day": 86400,
+      "year": 31556952
     },
     "specialFunctions": {
 
@@ -25,5 +26,10 @@
     "specialFormat": {
       "Leaf Wet 1": "int"
     }
+  },
+
+  "neural network": {
+    "training set": 0.7,
+    "validation set": 0.2
   }
 }

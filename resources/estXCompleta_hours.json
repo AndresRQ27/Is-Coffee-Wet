@@ -1,81 +1,78 @@
 {
-  "dateName": "Date",
-  "timeName": "Time",
-  "nullList": [
-    "---",
-    "------"
-  ],
+  "datasetPath": "D:/VMWare/Shared/Is-Coffee-Wet/resources/estXCompleta.csv",
   "frequency": "1H",
-  "encodeNames": [
-    "Day",
-    "Trimester"
-  ],
-  "encodeFreq": [
-    86400,
-    7887456
-  ],
-  "columns": [
-    "Temp Out",
-    "Hi Temp",
-    "Low Temp",
-    "Out Hum",
-    "Wind Speed",
-    "Hi Speed",
-    "Bar",
-    "Rain",
-    "Solar Rad.",
-    "Hi Solar Rad.",
-    "In Temp",
-    "In Hum",
-    "Soils 1 Moist.",
-    "Leaf Wet 1",
-    "Leaf Wet Accum"
-  ],
-  "graphColumns": [
-    "Temp Out",
-    "Out Hum",
-    "Wind Speed",
-    "Bar",
-    "Rain",
-    "Solar Rad.",
-    "In Temp",
-    "In Hum",
-    "Soils 1 Moist.",
-    "Leaf Wet 1",
-    "Leaf Wet Accum"
-  ],
-  "columnAndType": {
-    "Temp Out": "float",
-    "Hi Temp": "float",
-    "Low Temp": "float",
-    "Out Hum": "int",
-    "Wind Speed": "float",
-    "Hi Speed": "float",
-    "Bar": "float",
-    "Rain": "float",
-    "Solar Rad.": "int",
-    "Hi Solar Rad.": "int",
-    "In Temp": "float",
-    "In Hum": "int",
-    "Soils 1 Moist.": "int",
-    "Leaf Wet 1": "int",
-    "Leaf Wet Accum": "int"
-  },
-  "columnAndFunction": {
-    "Temp Out": "mean",
-    "Hi Temp": "max",
-    "Low Temp": "min",
-    "Out Hum": "mean",
-    "Wind Speed": "mean",
-    "Hi Speed": "max",
-    "Bar": "mean",
-    "Rain": "sum",
-    "Solar Rad.": "mean",
-    "Hi Solar Rad.": "max",
-    "In Temp": "mean",
-    "In Hum": "mean",
-    "Soils 1 Moist.": "mean",
-    "Leaf Wet 1": "mean",
-    "Leaf Wet Accum": "sum"
+  "forecastWindow": 7,
+  "graphData": true,
+
+  "preprocess": {
+    "datetime": [
+      "Date", 
+      "Time"
+    ],
+    "datetime_format": "%d/%m/%Y %I:%M %p",
+    "nullList": [
+      "---",
+      "------"
+    ],
+    "deleteColumns": [
+      "Dew Pt.",
+      "Wind Dir",
+      "Wind Run",
+      "Hi Dir",
+      "Wind Chill",
+      "Heat Index",
+      "THW Index",
+      "THSW Index",
+      "Rain Rate",
+      "Solar Energy",
+      "UV Index",
+      "UV Dose",
+      "Hi UV ",
+      "Heat D-D ",
+      "Cool D-D ",
+      "In Dew",
+      "In Heat",
+      "In EMC",
+      "In Air Density",
+      "Temp 2nd",
+      "Temp 3rd",
+      "Temp 4th",
+      "Hum 2nd",
+      "Hum 3rd",
+      "ET ",
+      "Soils 2 Moist.",
+      "Soils 3 Moist.",
+      "Soils 4 Moist.",
+      "Soil Temp 1",
+      "Soil Temp 2",
+      "Soil Temp 3",
+      "Soil Temp 4",
+      "Leaf Wet 2",
+      "Leaf Temp 1",
+      "Leaf Temp 2",
+      "Wind Samp",
+      "Wind Tx ",
+      "ISS Recept",
+      "Arc Int."
+    ],
+    "encodeTime": {
+      "day": 86400,
+      "trimester": 7887456
+    },
+    "specialFunctions": {
+      "Hi Temp": "max",
+      "Low Temp": "min",
+      "Hi Speed": "max",
+      "Rain": "sum",
+      "Hi Solar Rad. ": "max"
+    },
+    "specialFormat": {
+      "Out Hum": "int",
+      "Solar Rad.": "int",
+      "Hi Solar Rad. ": "int",
+      "In Hum": "int",
+      "Soils 1 Moist.": "int",
+      "Leaf Wet 1": "int"
+    }
   }
 }

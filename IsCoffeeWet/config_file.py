@@ -83,3 +83,10 @@ class ConfigFile:
                 # Fill the dictionary
                 for name, formats in config_file["preprocess"]["specialFormat"].items():
                     self.formats[name] = formats
+
+                # *********************************
+                # *** Neural Network parameters ***
+                # *********************************
+
+                self.training = config_file["neural network"]["training set"]
+                self.validation = config_file["neural network"]["validation set"]

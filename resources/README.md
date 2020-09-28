@@ -37,12 +37,41 @@
     feature for the dataset, making easier the NN training.
 - _deleteColumns_: columns (string) to __NOT__ use for the forecasting.
   They will be eliminated during resampling.
+  - The names of the columns to delete must be exactly as they appear in the
+    dataset, with white trail spaces and everything.
   - It's' imperative to always delete the columns that use text (e.g. "Wind
     Direction")
 - _specialFunctions_: in general, all the columns are resample using the
   mean function. If a different function must be applied to a specific
   column, it must be specified here (e.g. `"Rain": "sum"` as we want the
   total amount of rain in a given interval)
+  - The names of the columns must be exactly as they appear in the
+    dataset, with white trail spaces and everything.
 - _specialFormat_: in general, all the numeric values are float. Certain
   column may want to stay as integers (no decimals) after the resampling
-  process, so specify the columns and the format here (e.g. `"Leaf Wet 1": "int"`).
+  process, so specify the columns and the format here (e.g. `"Leaf Wet 1":
+  "int"`).
+    - The names of the columns must be exactly as they appear in the
+    dataset, with white trail spaces and everything.
+
+## Neural Network
+
+
+Example: we want a 0.7 train and 0.3 test, that uses 0.2 for
+validation. That means that train will go from 0 to 0.5, validation
+will go from 0.5 to 0.7 and test from 0.7 to 1.
+
+Percentages to use in the neural network training:
+
+- _training set_: data that will be use to learn.
+- _validation set_: data that will be use to check for accuracy and other
+  metrics __while__ traning. It's generally small or it can be $0$ if
+  desired.
+  - The validation set is taken from the training set, so if the validation
+    is $0.2$, the real training set will be $0.7-0.2=0.5$ of the dataset.
+- _test set_: data that will be use to check for accuracy and other metrics
+  __after__ traning. Will be use to check the final performance of the
+  neural network.
+  - It is not explicitly stated in the JSON, as is calculated in the
+    program like $\text{test set} = 1-\text{training set}$. But it's good
+    to know.
