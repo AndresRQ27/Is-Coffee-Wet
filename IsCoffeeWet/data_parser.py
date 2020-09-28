@@ -2,8 +2,6 @@ import pandas as pd
 import numpy as np
 import datetime
 
-# IMPORTANT: The dataset used mustn't contain trailing whitespaces
-
 def merge_datetime(dataset, config_file):
     """
     Merges the Date column and the Time column into a single one, used for

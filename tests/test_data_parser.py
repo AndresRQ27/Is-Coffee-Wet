@@ -27,7 +27,7 @@ class Test_TestDataParser(unittest.TestCase):
         self.assertTrue((result == datetime_ds.head(5).index).all())
 
     def test_convert_numeric(self):
-        # INFO: Needs datetime index to interpolate by time
+        #! Needs datetime index to interpolate by time
         config_file = cf.ConfigFile()
         config_file.datetime = ["Date", "Time"]
         config_file.columns = ["Date", "Time"]
@@ -57,14 +57,14 @@ class Test_TestDataParser(unittest.TestCase):
             
 
     def test_sample_dataset(self):
-        # INFO: Needs datetime index to resample
+        #! Needs datetime index to resample
         config_file = cf.ConfigFile()
         config_file.datetime = ["Date", "Time"]
         config_file.columns = ["Date", "Time"]
         config_file.datetime_format = "%d/%m/%Y %I:%M %p"
         dataset = data_parser.merge_datetime(self.dirtyDataset, config_file)
 
-        # INFO_ Needs clean dataset to resample
+        #! Needs clean dataset to resample
         config_file.null = ["---"]
         config_file.columns.extend(["Temp Out", "Leaf Wet 1"])
         config_file.formats = {"Leaf Wet 1": "int"}
@@ -85,7 +85,7 @@ class Test_TestDataParser(unittest.TestCase):
 
 
     def test_cyclical_encoder(self):
-        # INFO: Needs datetime index to encode
+        #! Needs datetime index to encode
         config_file = cf.ConfigFile()
         config_file.datetime = ["Date", "Time"]
         config_file.columns = ["Date", "Time"]
