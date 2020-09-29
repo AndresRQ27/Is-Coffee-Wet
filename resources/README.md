@@ -46,12 +46,7 @@ timestep to use when predicting the values.
 
 ### `forecast_window`
 
-(_int_) Amount of time to forecast. Beware that it must be counted with the
-unit of the frequency. Example: we want to predict 7 days but our dataset
-is in hours, so the `forecastWindow` must be:
-$$
-7 \text{ days}*\frac{24 \text{ hours}}{1 \text{ day}} = 128 \text{ hours}
-$$
+(_int_) Amount of time to forecast. Its unit are days.
 
 ### `graph_data`
 

@@ -1,20 +1,20 @@
 {
-  "datasetPath": "D:/VMWare/Shared/Is-Coffee-Wet/resources/estXCompleta.csv",
+  "dataset_path": "D:/VMWare/Shared/Is-Coffee-Wet/resources/estXCompleta.csv",
   "frequency": "1H",
-  "forecastWindow": 7,
-  "graphData": true,
+  "forecast_window": 7,
+  "graph_data": false,
 
-  "preprocess": {
+  "pre-process": {
     "datetime": [
       "Date", 
       "Time"
     ],
     "datetime_format": "%d/%m/%Y %I:%M %p",
-    "nullList": [
+    "null_list": [
       "---",
       "------"
     ],
-    "deleteColumns": [
+    "delete_columns": [
       "Dew Pt.",
       "Wind Dir",
       "Wind Run",
@@ -55,18 +55,18 @@
       "ISS Recept",
       "Arc Int."
     ],
-    "encodeTime": {
+    "encode_time": {
       "day": 86400,
       "trimester": 7887456
     },
-    "specialFunctions": {
+    "special_functions": {
       "Hi Temp": "max",
       "Low Temp": "min",
       "Hi Speed": "max",
       "Rain": "sum",
       "Hi Solar Rad. ": "max"
     },
-    "specialFormat": {
+    "special_format": {
       "Out Hum": "int",
       "Solar Rad.": "int",
       "Hi Solar Rad. ": "int",
@@ -74,5 +74,11 @@
       "Soils 1 Moist.": "int",
       "Leaf Wet 1": "int"
     }
+  },
+
+    "neural_network": {
+    "training_set": 0.7,
+    "validation_set": 0.2,
+    "path": "D:/VMWare/Shared/Is-Coffee-Wet/resources/models/convolutional.h5"
   }
 }

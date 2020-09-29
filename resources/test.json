@@ -1,7 +1,7 @@
 {
   "dataset_path": "D:/VMWare/Shared/Is-Coffee-Wet/resources/test.csv",
   "frequency": "1H",
-  "forecast_window": 168,
+  "forecast_window": 7,
   "graph_data": true,
 
   "pre-process": {
