@@ -23,7 +23,7 @@ def merge_datetime(dataset, config_file):
         removed.
     """
 
-    # Initialize the Serie with the first column in the list
+    # Initialize the Series with the first column in the list
     name = config_file.datetime[0]
     datetime_column = pd.Series(dataset[name])
 
@@ -41,7 +41,7 @@ def merge_datetime(dataset, config_file):
         dataset = dataset.drop(name, axis=1)
         config_file.columns.remove(name)
 
-    # Converts the Serie into a "datetime64[ns]" column
+    # Converts the Series into a "datetime64[ns]" column
     dataset["Datetime"] = pd.to_datetime(datetime_column,
                                          format=config_file.datetime_format)
 
@@ -52,27 +52,28 @@ def merge_datetime(dataset, config_file):
 
 
 def convert_numeric(dataset, config_file):
+    # noinspection SpellCheckingInspection
     """
-    Sets the type of a column according to the given pair. Supported types for 
-    conversion are `float` and `int` the moment. It's important that the index
-    is time-base as the interpolation uses time.
+        Sets the type of a column according to the given pair. Supported types for
+        conversion are `float` and `int` the moment. It's important that the index
+        is time-base as the interpolation uses time.
 
-    Returns a dataset with the column casted to the desired values for easier
-    manipulation.
+        Returns a dataset with the column casted to the desired values for easier
+        manipulation.
 
-    Parameters
-    ----------
-    - dataset: pd.DataFrame.
-        Dataset to change the `dtype`.
-    - config_file: ConfigFile object.
-        Object with the needed information to give format
+        Parameters
+        ----------
+        - dataset: pd.DataFrame.
+            Dataset to change the `dtype`.
+        - config_file: ConfigFile object.
+            Object with the needed information to give format
 
-    Returns
-    -------
-    - dataset : pd.DataFrame.
-        Dataset with columns type changed and missing
-        values interpolated.
-    """
+        Returns
+        -------
+        - dataset : pd.DataFrame.
+            Dataset with columns type changed and missing
+            values interpolated.
+        """
 
     # Sets all "nullValues" to NaN
     for null in config_file.null:

@@ -34,7 +34,7 @@ __Table of contents__
 ### `frequency`
 
 (_string_) Frequency to resample the dataset. It also includes the minimal
-timestep to use when predicting the values.
+timestamp to use when predicting the values.
 
 - Possible values are:
   - `15min` for 15 minutes

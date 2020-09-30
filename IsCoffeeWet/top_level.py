@@ -4,22 +4,27 @@ from IsCoffeeWet import data_graph as dg
 from IsCoffeeWet import data_parser as dp
 from IsCoffeeWet import neural_network as nn
 from IsCoffeeWet import window_generator as wg
+from IsCoffeeWet import  model_generator as mg
 
-# import config_file as cf
-# import data_graph as dg
-# import data_parser as dp
-# import neural_network as nn
-# import window_generator as wg
+# Path for Linux
+# PATH_TEST = "/media/andres/DATA/Code-Projects/Is-Coffee-Wet/resources/"
+# Path for Windows
+# PATH_TEST = "D:/VMWare/Shared/Is-Coffee-Wet/resources/"
+# Path for Docker
+PATH_TEST = "/opt/project/resources/"
 
 # Path to the configuration file
-JSON_TEST = "D:/VMWare/Shared/Is-Coffee-Wet/resources/estXCompleta_hours.json"
+JSON_TEST = PATH_TEST + "estXCompleta_hours.json"
 # JSON_TEST = "D:/VMWare/Shared/Is-Coffee-Wet/resources/test.json"
 
 # Amount of neurons in a convolutional layer
 FILTER_SIZE = 16
 
-# A day
-CONV_WIDTH = 24
+# Amount of data a filer can see (a day)
+KERNEL_SIZE = 24
+
+# Size of the pooling layers
+POOL_SIZE = 2
 
 print("******************************************")
 print("*** Welcome to the IsCoffeeWet project ***")
@@ -93,8 +98,9 @@ window.plot("Temp Out")
 # **********************************
 
 # Constructs the convolutional model
-conv_model = nn.convolutional_model(FILTER_SIZE,
-                                    CONV_WIDTH,
+conv_model = mg.convolutional_model(FILTER_SIZE,
+                                    KERNEL_SIZE,
+                                    POOL_SIZE,
                                     (window.input_width, dataset.shape[1]),
                                     (window.label_width, len(window.label_columns))
                                     )

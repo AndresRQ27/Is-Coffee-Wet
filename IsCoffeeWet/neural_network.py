@@ -21,7 +21,7 @@ def split_dataset(dataset, config_file):
     # Resets index to add datetime as a normal column
     dataset = dataset.reset_index()
 
-    # Pops the datetime from the dataset. Not use in the NN explicitely
+    # Pops the datetime from the dataset. Not use in the NN explicitly
     datetime_index = dataset.pop("Datetime")
 
     # Accumulates the ratio to use in slices.
@@ -58,6 +58,13 @@ def compile_and_fit(model, window, patience=2):
     return history
 
 
+def load_model(path):
+    # TODO: implement function
+    # TODO: documentation
+    # TODO: test
+    return
+
+
 def save_model(model, path):
     """
     docstring
@@ -70,41 +77,7 @@ def save_model(model, path):
     return
 
 
-def convolutional_model(filter_size, conv_width, input_size, output_size):
-    """
-    docstring
-    """
-    # TODO documentation
-
-    inputs = tf.keras.layers.Input(shape=input_size)
-
-    conv1 = tf.keras.layers.Conv1D(filters=filter_size,
-                                   kernel_size=conv_width,
-                                   activation="relu")(inputs)
-    max1 = tf.keras.layers.MaxPool1D(pool_size=2)(conv1)
-
-    conv2 = tf.keras.layers.Conv1D(filters=filter_size,
-                                   kernel_size=conv_width,
-                                   activation="relu")(max1)
-    max2 = tf.keras.layers.MaxPool1D(pool_size=2)(conv2)
-
-    conv3 = tf.keras.layers.Conv1D(filters=filter_size,
-                                   kernel_size=conv_width,
-                                   activation="relu")(max2)
-
-    # Shape => [batch, 1,  label_width*features]
-    dense = tf.keras.layers.Dense(units=output_size[0]*output_size[1],
-                                  activation="linear")(conv3)
-    # Shape => [batch, label_width, features]
-    outputs = tf.keras.layers.Reshape([output_size[0], output_size[1]])(dense)
-
-    model = tf.keras.Model(inputs=inputs, outputs=outputs, name="conv_model")
-
-    # ! Printing may requiere extra libraries
-    # tf.keras.utils.plot_model(model, "./resources/images/conv_model.png", show_shapes=True)
-    return model
-
-
+# noinspection SpellCheckingInspection
 """
 # Create 3 layers
 layer1 = tf.keras.layers.Dense(2, activation="relu", name="layer1")
