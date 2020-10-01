@@ -38,26 +38,6 @@ def split_dataset(dataset, config_file):
     return datetime_index, train_ds, val_ds, test_ds
 
 
-def compile_and_fit(model, window, patience=2):
-    # TODO documentation
-    # TODO: tests
-    early_stopping = tf.keras.callbacks.EarlyStopping(monitor='val_loss',
-                                                      patience=patience,
-                                                      mode='min')
-
-    model.compile(loss=tf.losses.MeanSquaredError(),
-                  optimizer=tf.optimizers.Adam(),
-                  metrics=[tf.metrics.MeanAbsoluteError(),
-                           tf.metrics.MeanAbsolutePercentageError()])
-
-    # TODO: add tensorboard to the callback
-    history = model.fit(window.train, epochs=MAX_EPOCHS,
-                        validation_data=window.val,
-                        callbacks=[early_stopping])
-
-    return history
-
-
 def load_model(path):
     # TODO: implement function
     # TODO: documentation

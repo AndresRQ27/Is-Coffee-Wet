@@ -70,8 +70,6 @@ if config_ds.graph:
 # *** Neural Network preparation ***
 # **********************************
 
-column_indices = {name: i for i, name in enumerate(dataset.columns)}
-
 # Number of rows in the dataset. Added in config_file only during execution
 config_ds.num_data, config_ds.num_features = dataset.shape
 
@@ -108,7 +106,8 @@ conv_model = mg.convolutional_model(FILTER_SIZE,
 # Show the model summary (layers, i/o data, etc.)
 conv_model.summary()
 
-history = nn.compile_and_fit(conv_model, window, 5)
+# TODO: implement compile and fitting
+# history = nn.compile_and_fit(conv_model, window, 5)
 
 # Shows graphs for each column
 for name in window.label_columns:
