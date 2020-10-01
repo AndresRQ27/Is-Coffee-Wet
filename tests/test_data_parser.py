@@ -2,22 +2,37 @@ import unittest
 
 from pandas import read_csv, date_range
 
-from IsCoffeeWet import config_file as cf
 from IsCoffeeWet import data_parser
+from IsCoffeeWet import config_file as cf
+
+
+# Path for Linux
+# PATH_TEST = "/media/andres/DATA/Code-Projects/Is-Coffee-Wet/resources/"
+# Path for Windows
+# PATH_TEST = "D:/VMWare/Shared/Is-Coffee-Wet/resources/"
+# Path for Docker
+PATH_TEST = "/opt/project/resources/"
 
 
 class Test_TestDataParser(unittest.TestCase):
-    def setUp(self):
-        self.dirtyDataset = read_csv("D:/VMWare/Shared/Is-Coffee-Wet/resources/test.csv")
+    @classmethod
+    def setUpClass(cls):
+        raw_dataset = read_csv(PATH_TEST + "test.csv")
+
+        # Uses a list of columns with the date as the config file
+        cls.config_file = cf.ConfigFile()
+        cls.config_file.datetime = ["Date", "Time"]
+        cls.config_file.columns = ["Date", "Time"]
+        cls.config_file.datetime_format = "%d/%m/%Y %I:%M %p"
+
+        cls.datetime_ds = data_parser.merge_datetime(raw_dataset, cls.config_file)
+
+        cls.config_file.null = ["---"]
+        cls.config_file.columns.extend(["Temp Out", "Leaf Wet 1"])
+        cls.config_file.formats = {"Leaf Wet 1": "int"}
+        cls.converted_ds = data_parser.convert_numeric(cls.datetime_ds, cls.config_file)
 
     def test_merge_datetime(self):
-        # Uses a list of columns with the date as the config file
-        config_file = cf.ConfigFile()
-        config_file.datetime = ["Date", "Time"]
-        config_file.columns = ["Date", "Time"]
-        config_file.datetime_format = "%d/%m/%Y %I:%M %p"
-
-        datetime_ds = data_parser.merge_datetime(self.dirtyDataset, config_file)
 
         result = date_range("2010-04-07 00:00:00",
                             "2010-04-07 00:04:00",
@@ -25,76 +40,41 @@ class Test_TestDataParser(unittest.TestCase):
 
         # Test to see if the resulting format is as the desired one
         # All the values must match to generate a True
-        self.assertTrue((result == datetime_ds.head(5).index).all())
+        self.assertTrue(all(result == self.datetime_ds.head(5).index))
 
-    # noinspection DuplicatedCode
     def test_convert_numeric(self):
-        # ! Needs datetime index to interpolate by time
-        config_file = cf.ConfigFile()
-        config_file.datetime = ["Date", "Time"]
-        config_file.columns = ["Date", "Time"]
-        config_file.datetime_format = "%d/%m/%Y %I:%M %p"
-        dataset = data_parser.merge_datetime(self.dirtyDataset, config_file)
-
-        config_file.null = ["---"]
-        config_file.columns.extend(["Temp Out", "Leaf Wet 1"])
-        config_file.formats = {"Leaf Wet 1": "int"}
-
-        convert_ds = data_parser.convert_numeric(dataset, config_file)
-
-        # ? print(convert_ds.info(verbose=True))
-
         # Test if there is a NaN value
+        # noinspection SpellCheckingInspection
         with self.subTest(msg="NaN test"):
             # isna() returns False in value is NaN
             # Use all() to detect if there is a single False value (NaN)
             # First all check for True in all columns
-            # Second all check for True accross all columns
-            self.assertTrue((convert_ds.notna()).all().all())
+            # Second all check for True across all columns
+            self.assertTrue((self.converted_ds.notna()).all().all())
 
         # Test if all values are converted
         with self.subTest(msg="dtypes test"):
             # Check if all columns are float64
-            self.assertTrue((convert_ds.dtypes == "float64").all())
+            self.assertTrue((self.converted_ds.dtypes == "float64").all())
 
     # noinspection DuplicatedCode
     def test_sample_dataset(self):
-        # ! Needs datetime index to resample
-        config_file = cf.ConfigFile()
-        config_file.datetime = ["Date", "Time"]
-        config_file.columns = ["Date", "Time"]
-        config_file.datetime_format = "%d/%m/%Y %I:%M %p"
-        dataset = data_parser.merge_datetime(self.dirtyDataset, config_file)
+        self.config_file.freq = "15min"
+        self.config_file.functions = {"Leaf Wet 1": "last"}
 
-        # ! Needs clean dataset to resample
-        config_file.null = ["---"]
-        config_file.columns.extend(["Temp Out", "Leaf Wet 1"])
-        config_file.formats = {"Leaf Wet 1": "int"}
-        dataset = data_parser.convert_numeric(dataset, config_file)
-
-        config_file.freq = "15min"
-        config_file.functions = {"Leaf Wet 1": "last"}
-
-        sample_ds = data_parser.sample_dataset(dataset, config_file)
+        sampled_ds = data_parser.sample_dataset(self.converted_ds, self.config_file)
 
         # Checks the new frequency of the dataset
         with self.subTest(msg="freq test"):
-            self.assertEqual(sample_ds.index.freq, "15T")
+            self.assertEqual(sampled_ds.index.freq, "15T")
 
         with self.subTest(msg="check 'Leaf Wet Accum'"):
-            self.assertTrue("Leaf Wet Accum" in sample_ds.columns)
+            self.assertTrue("Leaf Wet Accum" in sampled_ds.columns)
 
     def test_cyclical_encoder(self):
-        # ! Needs datetime index to encode
-        config_file = cf.ConfigFile()
-        config_file.datetime = ["Date", "Time"]
-        config_file.columns = ["Date", "Time"]
-        config_file.datetime_format = "%d/%m/%Y %I:%M %p"
-        dataset = data_parser.merge_datetime(self.dirtyDataset, config_file)
+        self.config_file.encode = {"day": 86400}
 
-        config_file.encode = {"day": 86400}
-
-        encoded_ds = data_parser.cyclical_encoder(dataset, config_file)
+        encoded_ds = data_parser.cyclical_encoder(self.datetime_ds, self.config_file)
 
         # Sin/Cos columns added to the new dataset
         with self.subTest(msg="check sin/cos test"):
