@@ -53,9 +53,6 @@ def convolutional_model(filter_size, kernel_size, pool_size,
                                kernel_size=kernel_size.pop(0),
                                activation="relu")(x)
 
-    if dropout:
-        x = tf.keras.layers.Dropout(dropout)(x)
-
     # Shape => [batch, 1,  label_width*features]
     dense = tf.keras.layers.Dense(units=output_size[0] * output_size[1],
                                   activation="linear")(x)
