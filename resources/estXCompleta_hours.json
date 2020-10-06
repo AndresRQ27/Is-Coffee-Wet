@@ -1,5 +1,5 @@
 {
-  "dataset_path": "D:/VMWare/Shared/Is-Coffee-Wet/resources/estXCompleta.csv",
+  "dataset_path": "/opt/project/resources/estXCompleta.csv",
   "frequency": "1H",
   "forecast_window": 7,
   "graph_data": false,
@@ -57,7 +57,7 @@
     ],
     "encode_time": {
       "day": 86400,
-      "trimester": 7887456
+      "year": 31556952
     },
     "special_functions": {
       "Hi Temp": "max",
@@ -79,6 +79,6 @@
     "neural_network": {
     "training_set": 0.7,
     "validation_set": 0.2,
-    "path": "D:/VMWare/Shared/Is-Coffee-Wet/resources/models/convolutional.h5"
+    "path": "/opt/project/resources/models/convolutional.h5"
   }
 }

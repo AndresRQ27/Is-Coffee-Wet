@@ -1,5 +1,5 @@
 {
-  "dataset_path": "D:/VMWare/Shared/Is-Coffee-Wet/resources/test.csv",
+  "dataset_path": "/opt/project/resources/test.csv",
   "frequency": "1H",
   "forecast_window": 7,
   "graph_data": true,
@@ -31,6 +31,6 @@
   "neural_network": {
     "training_set": 0.7,
     "validation_set": 0.2,
-    "path": "D:/VMWare/Shared/Is-Coffee-Wet/resources/models/convolutional.h5"
+    "path": "/opt/project/resources/models/convolutional.h5"
   }
 }
