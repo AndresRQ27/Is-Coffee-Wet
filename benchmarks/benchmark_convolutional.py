@@ -21,17 +21,17 @@ PATH_BENCHMARK = "/opt/project/resources/benchmark/"
 # ********* Global Variables *********
 # ************************************
 
-dataset: pd.DataFrame
-config_file: cf.ConfigFile
-train_ds: pd.DataFrame
-val_ds: pd.DataFrame
-test_ds: pd.DataFrame
-sliding_window: wg.WindowGenerator
-filter_size: int
-kernel_size: int
-pool_size: int
-input_size: tuple
-output_size: tuple
+g_dataset: pd.DataFrame
+g_config: cf.ConfigFile
+g_train: pd.DataFrame
+g_val: pd.DataFrame
+g_test: pd.DataFrame
+g_window: wg.WindowGenerator
+g_filter_size: int
+g_kernel_size: int
+g_pool_size: int
+g_input_size: tuple
+g_output_size: tuple
 max_epochs: int
 
 all_history: pd.DataFrame
@@ -40,54 +40,54 @@ all_history: pd.DataFrame
 # ************************************
 
 def setUpModule():
-    global dataset, config_file, train_ds, val_ds, test_ds, sliding_window, all_history
-    global filter_size, kernel_size, pool_size, input_size, output_size, max_epochs
+    global g_dataset, g_config, g_train, g_val, g_test, g_window, all_history
+    global g_filter_size, g_kernel_size, g_pool_size, g_input_size, g_output_size, max_epochs
 
     # *** Dataset
     # Loads the dataset
-    dataset = pd.read_csv(PATH_BENCHMARK + "benchmark_hour.csv",
-                          engine="c", index_col="Datetime", parse_dates=True)
+    g_dataset = pd.read_csv(PATH_BENCHMARK + "benchmark_hour.csv",
+                            engine="c", index_col="Datetime", parse_dates=True)
 
     # Information of the dataset
-    print(dataset.info(verbose=True))
-    print(dataset.describe().transpose())
+    print(g_dataset.info(verbose=True))
+    print(g_dataset.describe().transpose())
 
     # *** Config File
-    config_file = cf.ConfigFile()
-    config_file.training = 0.7
-    config_file.validation = 0.2
-    config_file.num_data, config_file.num_features = dataset.shape
+    g_config = cf.ConfigFile()
+    g_config.training = 0.7
+    g_config.validation = 0.2
+    g_config.num_data, g_config.num_features = g_dataset.shape
 
     # *** Dataset preparation
     # Normalize the dataset
-    dataset = nn.normalize(dataset)
+    g_dataset = nn.normalize(g_dataset)
 
     # Partition the dataset
-    _, train_ds, val_ds, test_ds = nn.split_dataset(dataset, config_file)
+    _, g_train, g_val, g_test = nn.split_dataset(g_dataset, g_config)
 
     # *** Window
     input_width = 7 * 24
     label_width = input_width
-    label_columns = dataset.columns.tolist()
+    label_columns = g_dataset.columns.tolist()
 
     # Removes th sin/cos columns from the labels
     label_columns = label_columns[:-4]
 
     # Window of 7 days for testing the NN
-    sliding_window = wg.WindowGenerator(input_width=input_width,
-                                        label_width=label_width,
-                                        shift=label_width,
-                                        train_ds=train_ds,
-                                        val_ds=val_ds,
-                                        test_ds=test_ds,
-                                        label_columns=label_columns)
+    g_window = wg.WindowGenerator(input_width=input_width,
+                                  label_width=label_width,
+                                  shift=label_width,
+                                  train_ds=g_train,
+                                  val_ds=g_val,
+                                  test_ds=g_test,
+                                  label_columns=label_columns)
 
     # Arguments of the default NN
-    filter_size = 32  # Neurons in a conv layer
-    kernel_size = 24  # A day
-    pool_size = 2
-    input_size = (input_width, dataset.shape[1])
-    output_size = (label_width, len(label_columns))
+    g_filter_size = 32  # Neurons in a conv layer
+    g_kernel_size = 24  # A day
+    g_pool_size = 2
+    g_input_size = (input_width, g_dataset.shape[1])
+    g_output_size = (label_width, len(label_columns))
     max_epochs = 100
 
     # *** Dataframe
@@ -113,7 +113,7 @@ def compile_and_fit(model, window, patience=5):
                                                       mode='min')
 
     model.compile(loss=tf.losses.MeanSquaredError(),
-                  optimizer=tf.optimizers.Adam(),
+                  optimizer=tf.optimizers.Adam(learning_rate),
                   metrics=[tf.metrics.MeanAbsoluteError(),
                            tf.metrics.MeanAbsolutePercentageError()])
 
@@ -139,18 +139,18 @@ class Test_TestBase(unittest.TestCase):
         all_history = all_history.append(history_df)
 
     def test_generic_network(self):
-        global filter_size, kernel_size, pool_size, input_size, output_size
-        global sliding_window
+        global g_filter_size, g_kernel_size, g_pool_size, g_input_size, g_output_size
+        global g_window
 
         self.name = "generic"
 
-        model = model_generator.convolutional_model(filter_size,
-                                                    kernel_size,
-                                                    pool_size,
-                                                    input_size,
-                                                    output_size)
+        model = model_generator.convolutional_model(g_filter_size,
+                                                    g_kernel_size,
+                                                    g_pool_size,
+                                                    g_input_size,
+                                                    g_output_size)
 
-        self.history = compile_and_fit(model, sliding_window)
+        self.history = compile_and_fit(model, g_window)
 
 
 class Test_TestFilters(unittest.TestCase):
@@ -167,46 +167,52 @@ class Test_TestFilters(unittest.TestCase):
         all_history = all_history.append(history_df)
 
     def test_filter_16(self):
-        global kernel_size, pool_size, input_size, output_size
-        global sliding_window
+        global g_kernel_size, g_pool_size, g_input_size, g_output_size
+        global g_window
 
         self.name = "filter_16"
 
-        model = model_generator.convolutional_model(16,
-                                                    kernel_size,
-                                                    pool_size,
-                                                    input_size,
-                                                    output_size)
+        filter_size = 16
 
-        self.history = compile_and_fit(model, sliding_window)
+        model = model_generator.convolutional_model(filter_size,
+                                                    g_kernel_size,
+                                                    g_pool_size,
+                                                    g_input_size,
+                                                    g_output_size)
+
+        self.history = compile_and_fit(model, g_window)
 
     def test_filter_64(self):
-        global kernel_size, pool_size, input_size, output_size
-        global sliding_window
+        global g_kernel_size, g_pool_size, g_input_size, g_output_size
+        global g_window
 
         self.name = "filter_64"
 
-        model = model_generator.convolutional_model(64,
-                                                    kernel_size,
-                                                    pool_size,
-                                                    input_size,
-                                                    output_size)
+        filter_size = 64
 
-        self.history = compile_and_fit(model, sliding_window)
+        model = model_generator.convolutional_model(filter_size,
+                                                    g_kernel_size,
+                                                    g_pool_size,
+                                                    g_input_size,
+                                                    g_output_size)
+
+        self.history = compile_and_fit(model, g_window)
 
     def test_filter_128(self):
-        global kernel_size, pool_size, input_size, output_size
-        global sliding_window
+        global g_kernel_size, g_pool_size, g_input_size, g_output_size
+        global g_window
 
         self.name = "filter_128"
 
-        model = model_generator.convolutional_model(128,
-                                                    kernel_size,
-                                                    pool_size,
-                                                    input_size,
-                                                    output_size)
+        filter_size = 128
 
-        self.history = compile_and_fit(model, sliding_window)
+        model = model_generator.convolutional_model(filter_size,
+                                                    g_kernel_size,
+                                                    g_pool_size,
+                                                    g_input_size,
+                                                    g_output_size)
+
+        self.history = compile_and_fit(model, g_window)
 
 
 class Test_TestDropout(unittest.TestCase):
@@ -223,19 +229,19 @@ class Test_TestDropout(unittest.TestCase):
         all_history = all_history.append(history_df)
 
     def test_no_dropout(self):
-        global filter_size, kernel_size, pool_size, input_size, output_size
-        global sliding_window
+        global g_filter_size, g_kernel_size, g_pool_size, g_input_size, g_output_size
+        global g_window
 
         self.name = "dropout"
 
-        model = model_generator.convolutional_model(filter_size,
-                                                    kernel_size,
-                                                    pool_size,
-                                                    input_size,
-                                                    output_size,
+        model = model_generator.convolutional_model(g_filter_size,
+                                                    g_kernel_size,
+                                                    g_pool_size,
+                                                    g_input_size,
+                                                    g_output_size,
                                                     None)
 
-        self.history = compile_and_fit(model, sliding_window)
+        self.history = compile_and_fit(model, g_window)
 
 
 class Test_TestNoEncoding(unittest.TestCase):
@@ -252,26 +258,26 @@ class Test_TestNoEncoding(unittest.TestCase):
         all_history = all_history.append(history_df)
 
     def test_no_encoding(self):
-        global filter_size, kernel_size, pool_size, test_ds, val_ds, train_ds
-        global output_size
+        global g_filter_size, g_kernel_size, g_pool_size, g_test, g_val, g_train
+        global g_output_size, g_window
 
         self.name = "no_encoding"
 
         # Copy the original window to modify only the sets
-        window_ne = copy.deepcopy(sliding_window)
+        window_ne = copy.deepcopy(g_window)
 
         # Drops the encoding for each set
-        window_ne.test_ds = test_ds.drop(["day sin",
+        window_ne.test_ds = g_test.drop(["day sin",
                                     "day cos",
                                     "year sin",
                                     "year cos"], axis=1)
 
-        window_ne.train_ds = train_ds.drop(["day sin",
+        window_ne.train_ds = g_train.drop(["day sin",
                                     "day cos",
                                     "year sin",
                                     "year cos"], axis=1)
 
-        window_ne.val_ds = val_ds.drop(["day sin",
+        window_ne.val_ds = g_val.drop(["day sin",
                                     "day cos",
                                     "year sin",
                                     "year cos"], axis=1)
@@ -283,13 +289,13 @@ class Test_TestNoEncoding(unittest.TestCase):
         # Re-defines only the input size as it's the one that changed
         input_size = (input_width, label_columns)
 
-        model = model_generator.convolutional_model(filter_size,
-                                                    kernel_size,
-                                                    pool_size,
+        model = model_generator.convolutional_model(g_filter_size,
+                                                    g_kernel_size,
+                                                    g_pool_size,
                                                     input_size,
-                                                    output_size)
+                                                    g_output_size)
 
-        self.history = compile_and_fit(model, sliding_window)
+        self.history = compile_and_fit(model, window_ne)
 
 
 class Test_TestDay(unittest.TestCase):
@@ -306,7 +312,7 @@ class Test_TestDay(unittest.TestCase):
         all_history = all_history.append(history_df)
 
     def test_day(self):
-        global config_file
+        global g_config
 
         self.name = "day"
 
@@ -320,7 +326,7 @@ class Test_TestDay(unittest.TestCase):
         dataset_day = nn.normalize(dataset_day)
 
         # Copy config file
-        config_day = copy.deepcopy(config_file)
+        config_day = copy.deepcopy(g_config)
         config_day.num_data = dataset_day.shape[0]
 
         # Partition the dataset
@@ -343,14 +349,14 @@ class Test_TestDay(unittest.TestCase):
                                         test_ds=test_day,
                                         label_columns=label_columns)
 
-        input_size = (input_width, dataset.shape[1])
+        kernel_size = 2
+        pool_size = [2, 1]
+        input_size = (input_width, g_dataset.shape[1])
         output_size = (label_width, len(label_columns))
 
-        kernel_size = 2
-
-        model = model_generator.convolutional_model(filter_size,
+        model = model_generator.convolutional_model(g_filter_size,
                                                     kernel_size,
-                                                    [2, 1],
+                                                    pool_size,
                                                     input_size,
                                                     output_size)
 
