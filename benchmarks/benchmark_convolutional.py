@@ -104,7 +104,7 @@ def tearDownModule():
         all_history.to_csv(file)
 
 
-def compile_and_fit(model, window, patience=5):
+def compile_and_fit(model, window, patience=5, learning_rate=0.001):
     # TODO documentation
     global max_epochs
 
@@ -361,6 +361,199 @@ class Test_TestDay(unittest.TestCase):
                                                     output_size)
 
         self.history = compile_and_fit(model, window_day)
+
+
+class Test_TestWindow(unittest.TestCase):
+    def setUp(self):
+        self.history: tf.keras.callbacks.History
+        self.name: str
+
+    def tearDown(self):
+        global all_history
+
+        history_df = pd.DataFrame(self.history.history)
+        history_df["name"] = self.name
+
+        all_history = all_history.append(history_df)
+
+    def test_window_14(self):
+        global  g_train, g_val, g_test, g_dataset, g_filter_size
+
+        self.name = "window_14"
+
+        # *** Window
+        input_width = 14 * 24
+        label_width = input_width
+        label_columns = g_dataset.columns.tolist()
+
+        # Removes th sin/cos columns from the labels
+        label_columns = label_columns[:-4]
+
+        # Window of 7 days for testing the NN
+        window_14 = wg.WindowGenerator(input_width=input_width,
+                                       label_width=label_width,
+                                       shift=label_width,
+                                       train_ds=g_train,
+                                       val_ds=g_val,
+                                       test_ds=g_test,
+                                       label_columns=label_columns)
+
+        # Arguments of the default NN
+        kernel_size = [48, 24, 12]  # A day
+        pool_size = 4
+        input_size = (input_width, g_dataset.shape[1])
+        output_size = (label_width, len(label_columns))
+
+        model = model_generator.convolutional_model(g_filter_size,
+                                                    kernel_size,
+                                                    pool_size,
+                                                    input_size,
+                                                    output_size)
+
+        self.history = compile_and_fit(model, window_14)
+
+    def test_window_14x7(self):
+        global  g_train, g_val, g_test, g_dataset, g_filter_size
+
+        self.name = "window_14x7"
+
+        # *** Window
+        input_width = 14 * 24
+        label_width = 7 * 24
+        label_columns = g_dataset.columns.tolist()
+
+        # Removes th sin/cos columns from the labels
+        label_columns = label_columns[:-4]
+
+        # Window of 7 days for testing the NN
+        window_14x7 = wg.WindowGenerator(input_width=input_width,
+                                       label_width=label_width,
+                                       shift=label_width,
+                                       train_ds=g_train,
+                                       val_ds=g_val,
+                                       test_ds=g_test,
+                                       label_columns=label_columns)
+
+        # Arguments of the default NN
+        kernel_size = [48, 24, 12]  # A day
+        pool_size = 4
+        input_size = (input_width, g_dataset.shape[1])
+        output_size = (label_width, len(label_columns))
+
+        model = model_generator.convolutional_model(g_filter_size,
+                                                    kernel_size,
+                                                    pool_size,
+                                                    input_size,
+                                                    output_size)
+
+        self.history = compile_and_fit(model, window_14x7)
+
+
+class Test_TestModels(unittest.TestCase):
+    def setUp(self):
+        self.history: tf.keras.callbacks.History
+        self.name: str
+
+    def tearDown(self):
+        global all_history
+
+        history_df = pd.DataFrame(self.history.history)
+        history_df["name"] = self.name
+
+        all_history = all_history.append(history_df)
+
+    def test_kernel_dynamic(self):
+        global g_input_size, g_output_size, g_window, g_filter_size
+
+        self.name = "kernel_reduction"
+
+        # Arguments of the default NN
+        kernel_size = [48, 24, 12]  # A day
+        pool_size = [2, 3]
+
+        model = model_generator.convolutional_model(g_filter_size,
+                                                    kernel_size,
+                                                    pool_size,
+                                                    g_input_size,
+                                                    g_output_size)
+
+        self.history = compile_and_fit(model, g_window)
+
+    def test_dense_15(self):
+        global g_input_size, g_output_size, g_window
+
+        self.name = "dense_15"
+
+        # Arguments of the default NN
+        kernel_size = [12, 48, 1]  # A day
+        filter_size = [48, 24, 12]
+        pool_size = [2, 2]
+
+        inputs = tf.keras.layers.Input(shape=g_input_size)
+        x = tf.keras.layers.Conv1D(filters=filter_size.pop(0),
+                                   kernel_size=kernel_size.pop(0),
+                                   activation="relu")(inputs)
+        x = tf.keras.layers.Dropout(0.2)(x)
+        x = tf.keras.layers.MaxPool1D(pool_size=pool_size.pop(0))(x)
+        x = tf.keras.layers.Conv1D(filters=filter_size.pop(0),
+                                   kernel_size=kernel_size.pop(0),
+                                   activation="relu")(x)
+        x = tf.keras.layers.Dropout(0.1)(x)
+        x = tf.keras.layers.MaxPool1D(pool_size=pool_size.pop(0))(x)
+        x = tf.keras.layers.Conv1D(filters=filter_size.pop(0),
+                                   kernel_size=kernel_size.pop(0),
+                                   activation="relu")(x)
+        dense = tf.keras.layers.Dense(units=g_output_size[0],
+                                      activation="linear")(x)
+        outputs = tf.keras.layers.Reshape([g_output_size[0], g_output_size[1]])(dense)
+
+        model = tf.keras.Model(inputs=inputs, outputs=outputs, name="conv_model")
+
+        self.history = compile_and_fit(model, g_window)
+
+
+class Test_TestLearning(unittest.TestCase):
+    def setUp(self):
+        self.history: tf.keras.callbacks.History
+        self.name: str
+
+    def tearDown(self):
+        global all_history
+
+        history_df = pd.DataFrame(self.history.history)
+        history_df["name"] = self.name
+
+        all_history = all_history.append(history_df)
+
+    def test_learning_small(self):
+        global g_filter_size, g_kernel_size, g_pool_size, g_input_size, g_output_size
+        global g_window
+
+        self.name = "learning_big"
+
+        model = model_generator.convolutional_model(g_filter_size,
+                                                    g_kernel_size,
+                                                    g_pool_size,
+                                                    g_input_size,
+                                                    g_output_size)
+
+        self.history = compile_and_fit(model, g_window, 5, 0.0001)
+
+    def test_learning_big(self):
+        global g_filter_size, g_kernel_size, g_pool_size, g_input_size, g_output_size
+        global g_window
+
+        self.name = "learning_big"
+
+        model = model_generator.convolutional_model(g_filter_size,
+                                                    g_kernel_size,
+                                                    g_pool_size,
+                                                    g_input_size,
+                                                    g_output_size)
+
+        self.history = compile_and_fit(model, g_window, 5, 0.01)
+
+# TODO: document all benchmarks
 
 if __name__ == '__main__':
     unittest.main()
