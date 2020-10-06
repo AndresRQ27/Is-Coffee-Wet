@@ -2,6 +2,7 @@ import unittest
 
 from IsCoffeeWet import model_generator
 
+import copy
 import pandas as pd
 import tensorflow as tf
 
@@ -44,7 +45,7 @@ def setUpModule():
 
     # *** Dataset
     # Loads the dataset
-    dataset = pd.read_csv(PATH_BENCHMARK + "estXCompleta_parsed.csv",
+    dataset = pd.read_csv(PATH_BENCHMARK + "benchmark_hour.csv",
                           engine="c", index_col="Datetime", parse_dates=True)
 
     # Information of the dataset
@@ -151,6 +152,209 @@ class Test_TestBase(unittest.TestCase):
 
         self.history = compile_and_fit(model, sliding_window)
 
+
+class Test_TestFilters(unittest.TestCase):
+    def setUp(self):
+        self.history: tf.keras.callbacks.History
+        self.name: str
+
+    def tearDown(self):
+        global all_history
+
+        history_df = pd.DataFrame(self.history.history)
+        history_df["name"] = self.name
+
+        all_history = all_history.append(history_df)
+
+    def test_filter_16(self):
+        global kernel_size, pool_size, input_size, output_size
+        global sliding_window
+
+        self.name = "filter_16"
+
+        model = model_generator.convolutional_model(16,
+                                                    kernel_size,
+                                                    pool_size,
+                                                    input_size,
+                                                    output_size)
+
+        self.history = compile_and_fit(model, sliding_window)
+
+    def test_filter_64(self):
+        global kernel_size, pool_size, input_size, output_size
+        global sliding_window
+
+        self.name = "filter_64"
+
+        model = model_generator.convolutional_model(64,
+                                                    kernel_size,
+                                                    pool_size,
+                                                    input_size,
+                                                    output_size)
+
+        self.history = compile_and_fit(model, sliding_window)
+
+    def test_filter_128(self):
+        global kernel_size, pool_size, input_size, output_size
+        global sliding_window
+
+        self.name = "filter_128"
+
+        model = model_generator.convolutional_model(128,
+                                                    kernel_size,
+                                                    pool_size,
+                                                    input_size,
+                                                    output_size)
+
+        self.history = compile_and_fit(model, sliding_window)
+
+
+class Test_TestDropout(unittest.TestCase):
+    def setUp(self):
+        self.history: tf.keras.callbacks.History
+        self.name: str
+
+    def tearDown(self):
+        global all_history
+
+        history_df = pd.DataFrame(self.history.history)
+        history_df["name"] = self.name
+
+        all_history = all_history.append(history_df)
+
+    def test_no_dropout(self):
+        global filter_size, kernel_size, pool_size, input_size, output_size
+        global sliding_window
+
+        self.name = "dropout"
+
+        model = model_generator.convolutional_model(filter_size,
+                                                    kernel_size,
+                                                    pool_size,
+                                                    input_size,
+                                                    output_size,
+                                                    None)
+
+        self.history = compile_and_fit(model, sliding_window)
+
+
+class Test_TestNoEncoding(unittest.TestCase):
+    def setUp(self):
+        self.history: tf.keras.callbacks.History
+        self.name: str
+
+    def tearDown(self):
+        global all_history
+
+        history_df = pd.DataFrame(self.history.history)
+        history_df["name"] = self.name
+
+        all_history = all_history.append(history_df)
+
+    def test_no_encoding(self):
+        global filter_size, kernel_size, pool_size, test_ds, val_ds, train_ds
+        global output_size
+
+        self.name = "no_encoding"
+
+        # Copy the original window to modify only the sets
+        window_ne = copy.deepcopy(sliding_window)
+
+        # Drops the encoding for each set
+        window_ne.test_ds = test_ds.drop(["day sin",
+                                    "day cos",
+                                    "year sin",
+                                    "year cos"], axis=1)
+
+        window_ne.train_ds = train_ds.drop(["day sin",
+                                    "day cos",
+                                    "year sin",
+                                    "year cos"], axis=1)
+
+        window_ne.val_ds = val_ds.drop(["day sin",
+                                    "day cos",
+                                    "year sin",
+                                    "year cos"], axis=1)
+
+        # Re-define the input/output size for the model
+        input_width = 24*7
+        label_columns = window_ne.train_ds.shape[1]
+
+        # Re-defines only the input size as it's the one that changed
+        input_size = (input_width, label_columns)
+
+        model = model_generator.convolutional_model(filter_size,
+                                                    kernel_size,
+                                                    pool_size,
+                                                    input_size,
+                                                    output_size)
+
+        self.history = compile_and_fit(model, sliding_window)
+
+
+class Test_TestDay(unittest.TestCase):
+    def setUp(self):
+        self.history: tf.keras.callbacks.History
+        self.name: str
+
+    def tearDown(self):
+        global all_history
+
+        history_df = pd.DataFrame(self.history.history)
+        history_df["name"] = self.name
+
+        all_history = all_history.append(history_df)
+
+    def test_day(self):
+        global config_file
+
+        self.name = "day"
+
+        # *** Dataset. All parsing process for new dataset
+        # Loads the dataset
+        dataset_day = pd.read_csv(PATH_BENCHMARK + "benchmark_day.csv",
+                                  engine="c", index_col="Datetime", parse_dates=True)
+
+        # *** Dataset preparation
+        # Normalize the dataset
+        dataset_day = nn.normalize(dataset_day)
+
+        # Copy config file
+        config_day = copy.deepcopy(config_file)
+        config_day.num_data = dataset_day.shape[0]
+
+        # Partition the dataset
+        _, train_day, val_day, test_day = nn.split_dataset(dataset_day, config_day)
+
+        # *** Window
+        input_width = 7
+        label_width = input_width
+        label_columns = dataset_day.columns.tolist()
+
+        # Removes th sin/cos columns from the labels
+        label_columns = label_columns[:-4]
+
+        # Window of 7 days for testing the NN
+        window_day = wg.WindowGenerator(input_width=input_width,
+                                        label_width=label_width,
+                                        shift=label_width,
+                                        train_ds=train_day,
+                                        val_ds=val_day,
+                                        test_ds=test_day,
+                                        label_columns=label_columns)
+
+        input_size = (input_width, dataset.shape[1])
+        output_size = (label_width, len(label_columns))
+
+        kernel_size = 2
+
+        model = model_generator.convolutional_model(filter_size,
+                                                    kernel_size,
+                                                    [2, 1],
+                                                    input_size,
+                                                    output_size)
+
+        self.history = compile_and_fit(model, window_day)
 
 if __name__ == '__main__':
     unittest.main()
