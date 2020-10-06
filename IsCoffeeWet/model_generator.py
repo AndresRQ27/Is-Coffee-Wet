@@ -18,7 +18,8 @@ def check_ifint(value, size):
 
 
 def convolutional_model(filter_size, kernel_size, pool_size,
-                        input_size, output_size, graph_path=None):
+                        input_size, output_size, dropout=0.2,
+                        graph_path=None):
     """
     docstring
     """
@@ -30,23 +31,35 @@ def convolutional_model(filter_size, kernel_size, pool_size,
 
     inputs = tf.keras.layers.Input(shape=input_size)
 
-    conv1 = tf.keras.layers.Conv1D(filters=filter_size.pop(),
-                                   kernel_size=kernel_size.pop(),
-                                   activation="relu")(inputs)
-    max1 = tf.keras.layers.MaxPool1D(pool_size=pool_size.pop())(conv1)
+    x = tf.keras.layers.Conv1D(filters=filter_size.pop(0),
+                               kernel_size=kernel_size.pop(0),
+                               activation="relu")(inputs)
 
-    conv2 = tf.keras.layers.Conv1D(filters=filter_size.pop(),
-                                   kernel_size=kernel_size.pop(),
-                                   activation="relu")(max1)
-    max2 = tf.keras.layers.MaxPool1D(pool_size=pool_size.pop())(conv2)
+    if dropout:
+        x = tf.keras.layers.Dropout(dropout)(x)
 
-    conv3 = tf.keras.layers.Conv1D(filters=filter_size.pop(),
-                                   kernel_size=kernel_size.pop(),
-                                   activation="relu")(max2)
+    x = tf.keras.layers.MaxPool1D(pool_size=pool_size.pop(0))(x)
+
+    x = tf.keras.layers.Conv1D(filters=filter_size.pop(0),
+                               kernel_size=kernel_size.pop(0),
+                               activation="relu")(x)
+
+    if dropout:
+        x = tf.keras.layers.Dropout(dropout)(x)
+
+    x = tf.keras.layers.MaxPool1D(pool_size=pool_size.pop(0))(x)
+
+    x = tf.keras.layers.Conv1D(filters=filter_size.pop(0),
+                               kernel_size=kernel_size.pop(0),
+                               activation="relu")(x)
+
+    if dropout:
+        x = tf.keras.layers.Dropout(dropout)(x)
 
     # Shape => [batch, 1,  label_width*features]
-    dense = tf.keras.layers.Dense(units=output_size[0]*output_size[1],
-                                  activation="linear")(conv3)
+    dense = tf.keras.layers.Dense(units=output_size[0] * output_size[1],
+                                  activation="linear")(x)
+
     # Shape => [batch, label_width, features]
     outputs = tf.keras.layers.Reshape([output_size[0], output_size[1]])(dense)
 
