@@ -1,10 +1,11 @@
 from pandas import read_csv
+
 from IsCoffeeWet import config_file as cf
 from IsCoffeeWet import data_graph as dg
 from IsCoffeeWet import data_parser as dp
+from IsCoffeeWet import model_generator as mg
 from IsCoffeeWet import neural_network as nn
 from IsCoffeeWet import window_generator as wg
-from IsCoffeeWet import  model_generator as mg
 
 # Path for Linux
 # PATH_TEST = "/media/andres/DATA/Code-Projects/Is-Coffee-Wet/resources/"
@@ -15,10 +16,10 @@ PATH_TEST = "/opt/project/resources/"
 
 # Path to the configuration file
 JSON_TEST = PATH_TEST + "estXCompleta_hours.json"
-# JSON_TEST = "D:/VMWare/Shared/Is-Coffee-Wet/resources/test.json"
+# JSON_TEST = PATH_TEST + "test.json"
 
 # Amount of neurons in a convolutional layer
-FILTER_SIZE = 16
+FILTER_SIZE = 32
 
 # Amount of data a filer can see (a day)
 KERNEL_SIZE = 24
@@ -84,8 +85,8 @@ if config_ds.graph:
 datetime_index, train_ds, val_ds, test_ds = nn.split_dataset(dataset, config_ds)
 
 # INFO: Input width and shift size are the same. Could be change
-window = wg.WindowGenerator(input_width=config_ds.forecast*24, label_width=config_ds.forecast*24,
-                            shift=config_ds.forecast*24, train_ds=train_ds,
+window = wg.WindowGenerator(input_width=config_ds.forecast * 24, label_width=config_ds.forecast * 24,
+                            shift=config_ds.forecast * 24, train_ds=train_ds,
                             val_ds=val_ds, test_ds=test_ds,
                             label_columns=config_ds.columns)
 

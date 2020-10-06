@@ -1,8 +1,8 @@
 #! Code obtain from https://www.tensorflow.org/tutorials/structured_data/time_series#1_indexes_and_offsets
 
+import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
-import matplotlib.pyplot as plt
 
 
 # ! Dataset must be at least of size 300

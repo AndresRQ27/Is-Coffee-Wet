@@ -1,8 +1,3 @@
-import tensorflow as tf
-
-MAX_EPOCHS = 20
-
-
 def normalize(dataset):
     # TODO: documentation
 
@@ -57,25 +52,7 @@ def save_model(model, path):
     return
 
 
-# noinspection SpellCheckingInspection
 """
-# Create 3 layers
-layer1 = tf.keras.layers.Dense(2, activation="relu", name="layer1")
-layer2 = tf.keras.layers.Dense(3, activation="relu", name="layer2")
-layer3 = tf.keras.layers.Dense(4, name="layer3")
-
-model = tf.keras.Sequential(name="my_sequential")
-model.add(tf.keras.Input(shape=(3, 3)))
-model.add(layer1)
-model.add(layer2)
-model.add(layer3)
-
-# Call layers on a test input
-x = tf.ones((3, 3))
-y = model(x)
-
-model.summary()
-
 # Use tensorboard
 log_dir = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 tensorboard_callback = tf.keras.callbacks.TensorBoard(

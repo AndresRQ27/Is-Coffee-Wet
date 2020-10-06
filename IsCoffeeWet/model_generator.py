@@ -2,14 +2,13 @@ import tensorflow as tf
 
 
 def check_ifint(value, size):
-
     if isinstance(value, int):
-        value = [value]*size
+        value = [value] * size
 
     elif len(value) < size:
         # Completes the list by duplicating the las value
         difference = abs(size - len(value))
-        value.extend([value[-1]*difference])
+        value.extend([value[-1] * difference])
 
     elif size < len(value):
         # Trims the list

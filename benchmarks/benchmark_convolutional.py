@@ -103,7 +103,7 @@ def tearDownModule():
         all_history.to_csv(file)
 
 
-def compile_and_fit(model, window, patience=2):
+def compile_and_fit(model, window, patience=5):
     # TODO documentation
     global max_epochs
 
