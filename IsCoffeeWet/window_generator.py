@@ -4,11 +4,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
 
-
 # ! Dataset must be at least of size 300
 # but be serious, that size is not even enough to learn anything
 
 class WindowGenerator:
+
     # TODO: documentation
 
     def __init__(self, input_width, label_width, shift,

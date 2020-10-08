@@ -2,6 +2,25 @@ import tensorflow as tf
 
 
 def check_ifint(value, size):
+    """
+    Function that checks the value size.
+    - If it's an int, makes it a list of the desire size.
+    - If it's a list smaller than size, replicates the last value to complete it
+    - If it's a list bigger than the size, trims it to the desire size
+
+    Parameters
+    ----------
+
+    value: int or list[int]
+            Value to analyze the shape.
+    size: int
+          Size of the value we want.
+
+    Returns
+    -------
+    list
+        List with its size fixed.
+    """
     if isinstance(value, int):
         value = [value] * size
 
@@ -21,10 +40,44 @@ def convolutional_model(filter_size, kernel_size, pool_size,
                         input_size, output_size, dropout=0.2,
                         graph_path=None):
     """
-    docstring
-    """
-    # TODO
+    Function that generates a convolutional model with the shape declared
+    by the inputs.
 
+    Parameters
+    ----------
+
+    filter_size: int or list[int]
+        Number of filters to use in the convolutional layers. Can be
+        thought as a neuron in a dense layer.
+    kernel_size: int or list[int]
+        Number of data the filter will see. A number of dimensions
+        equals to the kernel size will be subtracted as there's no
+        padding in the convolutional layers.
+    pool_size: int or list[int]
+        Size of the max pooling layer. Helps reduce the dimensionality
+        of big inputs instead of making a big chain of un-padded
+        convolutional layers to achieve the desire dimension.
+    input_size: tuple[int]
+        Shape of the input for the network. It has the number of
+        data to receive and the number of features to use.
+    output_size: tuple[int]
+        Shape of the output for the network. It has the number of
+        data to generates and the number of features the predict.
+    dropout: float, optional
+        Float between 0 and 1. Fraction of the input units to drop. By
+        default, it's 0.2
+    graph_path: string, optional
+        String with the path to save the graph of the model created. By
+        default, its `None` so no graph will be generated.
+
+    Returns
+    -------
+
+    tensorflow.keras.Model
+        Created model of the network.
+    """
+
+    # Check if the inputs are numbers. Convert them to lists
     filter_size = check_ifint(filter_size, 3)
     kernel_size = check_ifint(kernel_size, 3)
     pool_size = check_ifint(pool_size, 2)

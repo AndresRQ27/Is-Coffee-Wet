@@ -7,25 +7,16 @@ from IsCoffeeWet import model_generator as mg
 from IsCoffeeWet import neural_network as nn
 from IsCoffeeWet import window_generator as wg
 
-# Path for Linux
-# PATH_TEST = "/media/andres/DATA/Code-Projects/Is-Coffee-Wet/resources/"
-# Path for Windows
-# PATH_TEST = "D:/VMWare/Shared/Is-Coffee-Wet/resources/"
 # Path for Docker
 PATH_TEST = "/opt/project/resources/"
 
 # Path to the configuration file
 JSON_TEST = PATH_TEST + "estXCompleta_hours.json"
-# JSON_TEST = PATH_TEST + "test.json"
 
-# Amount of neurons in a convolutional layer
-FILTER_SIZE = 32
-
-# Amount of data a filer can see (a day)
-KERNEL_SIZE = 24
-
-# Size of the pooling layers
-POOL_SIZE = 2
+# Neural network parameters
+FILTER_SIZE = 32  # Amount of neurons in a convolutional layer
+KERNEL_SIZE = 24  # Amount of data a filer can see (a day)
+POOL_SIZE = 2  # Size of the pooling layers
 
 print("******************************************")
 print("*** Welcome to the IsCoffeeWet project ***")
@@ -75,10 +66,10 @@ if config_ds.graph:
 config_ds.num_data, config_ds.num_features = dataset.shape
 
 # Normalize the dataset
-dataset = nn.normalize(dataset)
+dataset = nn.standardize(dataset)
 print(dataset.describe().transpose())
 
-# Show the graph of the normalize data
+# Show the graph of the standardize data
 if config_ds.graph:
     dg.graph_normalize(dataset, dataset.keys())
 

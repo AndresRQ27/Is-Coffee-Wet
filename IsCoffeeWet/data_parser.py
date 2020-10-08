@@ -11,14 +11,14 @@ def merge_datetime(dataset, config_file):
 
     Parameters
     ----------
-    - dataset: pd.DataFrame.
+    dataset: pandas.DataFrame
         Dataset to merge the date and time.
-    - config_file: ConfigFile object.
+    config_file: config_file.ConfigFile
         Object with the needed information to merge the dataset
 
     Returns
     -------
-    - dataset : pd.DataFrame.
+    pandas.DataFrame
         Dataset with a datetime column as its main
         index. Previous columns with date and time
         removed.
@@ -53,28 +53,27 @@ def merge_datetime(dataset, config_file):
 
 
 def convert_numeric(dataset, config_file):
-    # noinspection SpellCheckingInspection
     """
-        Sets the type of a column according to the given pair. Supported types for
-        conversion are `float` and `int` the moment. It's important that the index
-        is time-base as the interpolation uses time.
+    Sets the type of a column according to the given pair. Supported types for
+    conversion are `float` and `int` the moment. It's important that the index
+    is time-base as the interpolation uses time.
 
-        Returns a dataset with the column casted to the desired values for easier
-        manipulation.
+    Returns a dataset with the column casted to the desired values for easier
+    manipulation.
 
-        Parameters
-        ----------
-        - dataset: pd.DataFrame.
-            Dataset to change the `dtype`.
-        - config_file: ConfigFile object.
-            Object with the needed information to give format
+    Parameters
+    ----------
+    dataset: pandas.DataFrame
+        Dataset to change the `dtype`.
+    config_file: config_file.ConfigFile
+        Object with the needed information to give format
 
-        Returns
-        -------
-        - dataset : pd.DataFrame.
-            Dataset with columns type changed and missing
-            values interpolated.
-        """
+    Returns
+    -------
+    pandas.DataFrame
+        Dataset with columns type changed and missing
+        values interpolated.
+    """
 
     # Sets all "nullValues" to NaN
     for null in config_file.null:
@@ -121,14 +120,14 @@ def sample_dataset(dataset, config_file):
 
     Parameters
     ----------
-    - dataset: pd.DataFrame.
+    dataset: pandas.DataFrame
         Dataset to sample each column.
-    - config_file: ConfigFile object.
+    config_file: config_file.ConfigFile
         Object with the needed information to resample the dataset
 
     Returns
     -------
-    - dataset : pd.DataFrame.
+    pandas.DataFrame
         Dataset with the rows sample in the desired frequency.
 
     Notes
@@ -218,15 +217,17 @@ def cyclical_encoder(dataset, config_file):
 
     Parameters
     ----------
-    - dataset: pd.DataFrame. Dataset to extract the time from it's datetime
-        index.
-    - config_file: ConfigFile object. Object with the needed information to
-        create columns that represent cyclical trends
+    dataset: pandas.DataFrame
+        Dataset to extract the time from it's datetime index.
+    config_file: config_file.ConfigFile
+        Object with the needed information to create columns that represent
+        cyclical trends.
 
     Returns
     -------
-    - dataset : pd.DataFrame. Dataset with the decomposition of sin(x) and
-        cos(x) of the day and/or hour.
+    pandas.DataFrame
+        Dataset with the decomposition of sin(x) and cos(x) of the day
+        and/or hour.
 
     Notes
     -----

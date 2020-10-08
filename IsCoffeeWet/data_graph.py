@@ -5,7 +5,19 @@ import tensorflow._api.v2.signal
 
 
 def graph_normalize(dataset, columns):
-    # TODO: documentation
+    """
+    Function that graphs all the data to check its normalized values, in
+    search of any inconsistency.
+
+    Parameters
+    ----------
+    dataset: pandas.DataFrame
+        Dataset with the normalized data.
+    columns: list[string]
+        Names of the columns in the dataset to set the as labels in the
+        graph.
+
+    """
     df_std = dataset.melt(var_name='Column', value_name='Normalized')
     plt.figure(figsize=(12, 6))
     ax = sns.violinplot(x='Column', y='Normalized', data=df_std)
@@ -21,10 +33,10 @@ def graph_data(dataset, config_file):
 
     Parameters
     ----------
-    - dataset: pd.DataFrame.
+    dataset: pandas.DataFrame
         Dataset with the columns to graph
-    - config_file: list of strings.
-        List of the names of the columns to graph.
+    config_file: config_file.ConfigFile
+        Configuration file with the name of all the columns to graph
     """
 
     for name in config_file.columns:
@@ -44,14 +56,16 @@ def freq_domain(dataset, config_file):
 
     Parameters
     ----------
-    - dataset: pd.DataFrame.
+    dataset: pandas.DataFrame
         Dataset where to extract the columns to graph
-    - config_file: list of strings.
-        Names of the columns to graph after applying Fourier Transformation
-    """
-    # Use the first columns for the analysis
-    # name = config_file.columns[0]
+    config_file: config_file.ConfigFile
+        Configuration file with the name of all the columns to apply the
+        Real-valued Fast Fourier Transformation.
 
+    See Also
+    --------
+    tensorflow._api.v2.signal.rfft: Real-valued Fast Fourier Transformation.
+    """
     for name in config_file.columns:
         # Creates a new figure
         plt.figure()

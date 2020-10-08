@@ -1,10 +1,9 @@
 import unittest
 
-from IsCoffeeWet import neural_network
-
 from pandas import read_csv
 
 from IsCoffeeWet import config_file as cf
+from IsCoffeeWet import neural_network
 
 # Path for Linux
 # PATH_TEST = "/media/andres/DATA/Code-Projects/Is-Coffee-Wet/resources/"
@@ -25,18 +24,18 @@ class Test_TestNeuralNetwork(unittest.TestCase):
         cls.dataset = cls.dataset.asfreq(cls.dataset.index.inferred_freq)
 
     def test_normalize(self):
-        normalized_ds = neural_network.normalize(self.dataset)
+        normalized_ds = neural_network.standardize(self.dataset)
 
         # Only max of those columns as the sin/cos won't change
         max_original = self.dataset[["Temp Out", "Leaf Wet 1", "Leaf Wet Accum"]].max()
         max_normalize = normalized_ds[["Temp Out", "Leaf Wet 1", "Leaf Wet Accum"]].max()
 
-        # Max normalize must always be less than the original
+        # Max standardize must always be less than the original
         with self.subTest(msg="compare vs original"):
             # noinspection PyTypeChecker
             self.assertTrue(all(max_original > max_normalize))
 
-        # The normalize dataset must be less than 4 std to be correct
+        # The standardize dataset must be less than 4 std to be correct
         # At least in this dataset
         with self.subTest(msg="check if less than 4"):
             self.assertTrue(all(4 > max_normalize))

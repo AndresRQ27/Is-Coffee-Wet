@@ -9,15 +9,21 @@ class ConfigFile:
     for the corresponding dataset. This helps to not have the file open
     more than the necessary time, while retaining its data during the
     execution of the program.
-
-    Parameters
-    ----------
-    - config_path : string. Path of the JSON that has the configuration of
-        the dataset to use. Can be relative to the path where the program
-        is running or absolute.
     """
 
     def __init__(self, config_path=None):
+        """
+        Parameters
+        ----------
+        config_path : string, optional
+            Path of the JSON that has the configuration of the dataset to
+            use. Can be relative to the path where the program is running
+            or absolute.
+        """
+        # Number of rows (data) in the dataset. Not found in the
+        # configuration file
+        self.num_data = 0
+
         # When initialize without arguments
         if config_path is None:
             return

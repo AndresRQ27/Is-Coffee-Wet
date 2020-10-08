@@ -1,17 +1,58 @@
-def normalize(dataset):
-    # TODO: documentation
+def standardize(dataset):
+    """
+    Function that standardizes the values in all the columns present in the
+    dataset. Use the z-score standardization.
+    Parameters
+    ----------
+    dataset: pandas.DataFrame
+        Dataset with the data to standardize.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Dataset with the standardize data.
+
+    Notes
+    -----
+    The formula used in the standardization (z-score) is:
+
+    .. math:: z_{i} = \frac{x_{i} - \overline{x}}{s}
+
+    Where:
+    - :math:`x{i}` is a data point (x1, x2, ..., xn).
+    - :math:`\overline{x}` is the sample mean.
+    - :math:`s` is the sample standard deviation.
+    """
 
     # Computes the mean and standard deviation
     ds_mean = dataset.mean()
     ds_std = dataset.std()
 
+    # Apply the method to the dataset
     dataset = (dataset - ds_mean) / ds_std
 
     return dataset
 
 
 def split_dataset(dataset, config_file):
-    # TODO documentation
+    """
+    Function that split the dataset into groups in a proportion determined
+    previously in the configuration file.
+
+    Parameters
+    ----------
+    dataset: pandas.DataFrame
+        Dataset to divide into training, validation and test set.
+    config_file: config_file.ConfigFile
+        Configuration file with the total number of data available and the
+        distribution to split it.
+
+    Returns
+    -------
+    tuple[pandas.Series, pandas.DataFrame, pandas.DataFrame, pandas.DataFrame]
+        Returns the datetime index in a `pandas.Series`; the training set,
+        validation set and test set in a `pandas.DataFrame`.
+    """
 
     # Resets index to add datetime as a normal column
     dataset = dataset.reset_index()
@@ -34,23 +75,45 @@ def split_dataset(dataset, config_file):
 
 
 def load_model(path):
+    """
+    Function that loads a neural network model from a file, given a path to
+    it.
+
+    Parameters
+    ----------
+    path: string
+        Path where look for the the neural network model in the filesystem.
+
+    Returns
+    -------
+    tensorflow.keras.Model
+        Model of the neural network.
+    """
     # TODO: implement function
-    # TODO: documentation
     # TODO: test
     return
 
 
 def save_model(model, path):
     """
-    docstring
+    Function that saves a keras model to a given path in the filesystem.
+    The extension of the file is a `.tf` that keras uses to save all the
+    needed information. By default, it overwrites any existing file at the
+    target location.
+
+    Parameters
+    ----------
+    model: tensorflow.keras.Model
+        Model to save. It saves the I/O shape, the architecture of the
+        network, weights and state of the optimizer
+    path: string
+        Path in the filesystem to save the model.
+
     """
-    # TODO documentation
     # TODO: tests
 
     model.save(path)
     print("Your model has been save to '{}'".format(path))
-    return
-
 
 """
 # Use tensorboard
