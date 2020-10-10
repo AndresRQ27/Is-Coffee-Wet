@@ -60,8 +60,10 @@ def setUpModule():
     # *** Config File
     # Use in the dataset partition
     g_config = cf.ConfigFile()
-    g_config.training = 0.7
-    g_config.validation = 0.2
+
+    # Use the entire data with the benchmarks, as the models won't be saved
+    g_config.training = 1
+    g_config.validation = 0.1
     g_config.num_data, g_config.num_features = g_dataset.shape
 
     # *** Dataset preparation
