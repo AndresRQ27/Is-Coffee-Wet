@@ -773,7 +773,7 @@ class Test_TestLearning(unittest.TestCase):
         global g_window
 
         # Name used to identify its data in the history
-        self.name = "learning_big"
+        self.name = "learning_small"
 
         # Generates a generic model
         model = model_generator.convolutional_model(g_filter_size,
@@ -804,6 +804,105 @@ class Test_TestLearning(unittest.TestCase):
 
         # Compiles using a big learning rate and fits the model
         self.history = compile_and_fit(model, g_window, 5, 0.01)
+
+
+class Test_TestBatchSize(unittest.TestCase):
+    """
+    Test class with variations to the batch size of the data during training.
+    """
+
+    def setUp(self):
+        """
+        Set up function executed before each individual test
+        """
+        self.history: tf.keras.callbacks.History
+        self.name: str
+
+    def tearDown(self):
+        """
+        Tear down function executed after each individual test
+        """
+        global all_history
+
+        # Creates a DataFrame with the history
+        history_df = pd.DataFrame(self.history.history)
+
+        # Creates a new column with the name of the test to identify its data
+        history_df["name"] = self.name
+
+        # Saves each model history into the global DataFrame
+        all_history = all_history.append(history_df)
+
+    def test_batch_64(self):
+        global g_train, g_val, g_test, g_dataset, g_input_size, g_output_size
+        global g_kernel_size, g_filter_size, g_pool_size
+
+        # Name used to identify its data in the history
+        self.name = "batch_64"
+
+        # *** Window
+        input_width = 7 * 24
+        label_width = input_width  # Label same width as the input
+        label_columns = g_dataset.columns.tolist()
+
+        # Removes th sin/cos columns from the labels
+        label_columns = label_columns[:-4]
+
+        # Generic window with a batch size of 64
+        window_64 = wg.WindowGenerator(input_width=input_width,
+                                       label_width=label_width,
+                                       shift=label_width,
+                                       train_ds=g_train,
+                                       val_ds=g_val,
+                                       test_ds=g_test,
+                                       label_columns=label_columns,
+                                       batch_size=64)
+
+        # Generates a generic model
+        model = model_generator.convolutional_model(g_filter_size,
+                                                    g_kernel_size,
+                                                    g_pool_size,
+                                                    g_input_size,
+                                                    g_output_size)
+
+        # Compiles and fits using a generic window with batch size of 64
+        self.history = compile_and_fit(model, window_64)
+
+    def test_batch_128(self):
+        global g_train, g_val, g_test, g_dataset, g_input_size, g_output_size
+        global g_kernel_size, g_filter_size, g_pool_size
+
+        # Name used to identify its data in the history
+        self.name = "batch_128"
+
+        # *** Window
+        input_width = 7 * 24
+        label_width = input_width  # Label same width as the input
+        label_columns = g_dataset.columns.tolist()
+
+        # Removes th sin/cos columns from the labels
+        label_columns = label_columns[:-4]
+
+        # Generic window with a batch size of 128
+        window_128 = wg.WindowGenerator(input_width=input_width,
+                                        label_width=label_width,
+                                        shift=label_width,
+                                        train_ds=g_train,
+                                        val_ds=g_val,
+                                        test_ds=g_test,
+                                        label_columns=label_columns,
+                                        batch_size=128)
+
+        # Generates a generic model
+        model = model_generator.convolutional_model(g_filter_size,
+                                                    g_kernel_size,
+                                                    g_pool_size,
+                                                    g_input_size,
+                                                    g_output_size)
+
+        # Compiles and fits using a generic window with batch size of 128
+        self.history = compile_and_fit(model, window_128)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -17,7 +17,7 @@ class WindowGenerator:
 
     def __init__(self, input_width, label_width, shift,
                  train_ds=None, val_ds=None, test_ds=None,
-                 batch_size=32, label_columns=None):
+                 label_columns=None, batch_size=32):
         """
         Initialization class. Assigns the datasets to the object and creates
         the necessary objects (slices, enums) for the neural network to go
@@ -39,13 +39,13 @@ class WindowGenerator:
             Dataset used for training, validation and testing. Stored as a
             DataFrame and converted to `tensorflow.data.Dataset` when its
             property is called.
-        batch_size: int, optional
-            Size of the batch when feeding the dataset to the NN. By
-            default, the batch size is 32.
         label_columns: list[string], optional
             Names of the columns to make predictions. Columns not included
             here will be used for the input but not the output. By default
             it's empty, so no label would be predicted.
+        batch_size: int, optional
+            Size of the batch when feeding the dataset to the NN. By
+            default, the batch size is 32.
 
         Notes
         -----
