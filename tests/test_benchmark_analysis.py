@@ -26,8 +26,8 @@ class MyTestCase(unittest.TestCase):
         ba.benchmark_graph_all(self.dataset)
         self.assertTrue(True)
 
-    def test_benchmark_graph_minmax(self):
-        ba.benchmark_graph_minmax(self.dataset)
+    def test_benchmark_graph_summary(self):
+        ba.benchmark_graph_summary(self.dataset)
         self.assertTrue(True)
 
 

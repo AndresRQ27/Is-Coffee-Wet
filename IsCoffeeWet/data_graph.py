@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
-import tensorflow._api.v2.signal
+import tensorflow._api.v2.signal as signal
 
 
 def graph_normalize(dataset, columns):
@@ -70,7 +70,7 @@ def freq_domain(dataset, config_file):
         # Creates a new figure
         plt.figure()
 
-        fft = tensorflow._api.v2.signal.rfft(dataset[name])
+        fft = signal.rfft(dataset[name])
         f_per_dataset = np.arange(0, len(fft))
 
         n_samples_h = len(dataset[name])

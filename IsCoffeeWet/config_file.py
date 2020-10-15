@@ -1,6 +1,6 @@
 import json
 
-from pandas import read_csv
+import pandas as pd
 
 
 class ConfigFile:
@@ -65,9 +65,9 @@ class ConfigFile:
                 delete_columns = config_file["pre-process"]["delete_columns"]
 
                 # List of columns to use
-                self.columns = read_csv(self.path,
-                                        engine="c",
-                                        nrows=1).columns.tolist()
+                self.columns = pd.read_csv(self.path,
+                                           engine="c",
+                                           nrows=1).columns.tolist()
 
                 # Removes the unwanted columns
                 for column_name in delete_columns:
