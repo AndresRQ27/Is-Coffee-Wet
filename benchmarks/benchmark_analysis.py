@@ -1,14 +1,15 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-# List of colors to use in the graph. There are 15 different colors
+# List of colors to use in the graph. There are 20 different colors
 COLOR_LIST = ["red", "green", "blue", "cyan", "magenta", "yellow",
               "black", "dodgerblue", "slategray", "hotpink", "darkmagenta",
-              "turquoise", "orange", "skyblue", "darkviolet"]
+              "turquoise", "orange", "skyblue", "darkviolet", "pink",
+              "navy", "chartreuse", "darkkhaki", "gray", "coral"]
 
-# List of markers to use in the graph. There are 15 different colors
-MARKER_LIST = [".", "v", "^", "<", ">", "1", "2", "3", "s",
-               "p", "P", "*", "h", "+", "X"]
+# List of markers to use in the graph. There are 20 different colors
+MARKER_LIST = [".", "v", "^", "<", ">", "1", "2", "3", "s", "x",
+               "p", "P", "*", "h", "+", "X", "D", "4", "H", "8"]
 
 # Size of the graphs to make
 FIG_SIZE = (30, 10)
@@ -16,10 +17,13 @@ FIG_SIZE = (30, 10)
 
 def benchmark_graph_all(dataset):
     """
-        TODO: description
+        Function that graphs the reported metrics from the history according
+        to the epoch of the training in which they were taken.
+
         Parameters
         ----------
         dataset: pandas.DataFrame
+            Dataset of the history from the tests
     """
 
     # Retrieves the unique test names in the dataset
@@ -50,12 +54,15 @@ def benchmark_graph_all(dataset):
     plt.show()
 
 
-def benchmark_graph_minmax(dataset):
+def benchmark_graph_summary(dataset):
     """
-        TODO: description
+        Function that graphs a summary of the most important values inside
+        the history. These are min, max, mean and last reported value.
+
         Parameters
         ----------
         dataset: pandas.DataFrame
+            Dataset of the history from the tests
     """
 
     # Retrieves the unique test names in the dataset
@@ -113,4 +120,5 @@ def benchmark_graph_minmax(dataset):
 
         plt.ylabel("Value")
         plt.legend()
+
     plt.show()
