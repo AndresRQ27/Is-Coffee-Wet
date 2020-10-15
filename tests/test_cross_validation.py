@@ -2,13 +2,13 @@ import unittest
 
 import pandas as pd
 
-from benchmarks import benchmark_analysis as ba
+from benchmarks import cross_validation as cv
 
 # Path for Docker
 PATH_TEST = "/opt/project/resources/benchmark/"
 
 
-class MyTestCase(unittest.TestCase):
+class Test_CrossValidation(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         # Name of the columns in the dataset
@@ -23,11 +23,11 @@ class MyTestCase(unittest.TestCase):
         cls.dataset = dataset.drop("Number", axis=1)
 
     def test_benchmark_graph_all(self):
-        ba.benchmark_graph_all(self.dataset)
+        cv.benchmark_graph_all(self.dataset)
         self.assertTrue(True)
 
     def test_benchmark_graph_summary(self):
-        ba.benchmark_graph_summary(self.dataset)
+        cv.benchmark_graph_summary(self.dataset)
         self.assertTrue(True)
 
 
