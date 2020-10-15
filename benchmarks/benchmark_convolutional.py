@@ -149,8 +149,9 @@ def compile_and_fit(model, window, patience=5, learning_rate=0.001):
     # TODO: add tensorboard to the callback
     # Sets an early stopping callback to prevent over-fitting
     early_stopping = tf.keras.callbacks.EarlyStopping(monitor='val_loss',
+                                                      min_delta=0.01,
                                                       patience=patience,
-                                                      mode='min')
+                                                      mode="min")
 
     # Compiles the model with the loss function, optimizer to use and metric to watch
     model.compile(loss=tf.losses.MeanSquaredError(),
@@ -347,7 +348,7 @@ class Test_TestDropout(unittest.TestCase):
         global g_window
 
         # Name used to identify its data in the history
-        self.name = "dropout"
+        self.name = "no_dropout"
 
         # Generates a model without dropout layers
         model = model_generator.convolutional_model(g_filter_size,
@@ -675,10 +676,10 @@ class Test_TestModels(unittest.TestCase):
         global g_input_size, g_output_size, g_window, g_filter_size
 
         # Name used to identify its data in the history
-        self.name = "kernel_reduction"
+        self.name = "kernel_increment"
 
         # Arguments for the model. Custom kernel size and pooling layer by extend
-        kernel_size = [48, 24, 12]
+        kernel_size = [5, 11, 24]
         pool_size = [2, 3]
 
         # Generates a model with custom kernel size and pooling layer
@@ -706,8 +707,8 @@ class Test_TestModels(unittest.TestCase):
 
         # Arguments for the model. Custom kernel sizes as we need 15 outputs
         # in the last conv layer. Custom filter sizes are just flavor (no need to change)
-        kernel_size = [12, 48, 1]
-        filter_size = [48, 24, 12]
+        kernel_size = [6, 12, 21]
+        filter_size = [32, 32, 32]
         pool_size = [2, 2]
 
         # Input shape is the same
@@ -728,6 +729,63 @@ class Test_TestModels(unittest.TestCase):
                                    activation="relu")(x)
         # Dense units will only be the number of predictions, instead of (no. predictions) * (features)
         dense = tf.keras.layers.Dense(units=g_output_size[0],
+                                      activation="linear")(x)
+        outputs = tf.keras.layers.Reshape([g_output_size[0], g_output_size[1]])(dense)
+
+        # Generates a model by using a functional method
+        model = tf.keras.Model(inputs=inputs, outputs=outputs, name="conv_model")
+
+        # Train the model using the default window
+        self.history = compile_and_fit(model, g_window)
+
+    def test_large_network(self):
+        """
+        Function that uses a model where all the dimension reductions are
+        done by convolutional layers.
+        """
+        global g_input_size, g_output_size, g_window
+
+        # Name used to identify its data in the history
+        self.name = "large_network"
+
+        # Arguments for the model. Custom kernel sizes as we need 15 outputs
+        # in the last conv layer. Custom filter sizes are just flavor (no need to change)
+        kernel_size = [3, 3, 3, 3, 3]
+        filter_size = [32, 32, 32, 32, 32]
+        pool_size = [2, 3, 5]
+
+        # Input is shape (None, 168, 19)
+        inputs = tf.keras.layers.Input(shape=g_input_size)
+
+        x = tf.keras.layers.Conv1D(filters=filter_size.pop(0),
+                                   kernel_size=kernel_size.pop(0),
+                                   activation="relu")(inputs)
+        x = tf.keras.layers.Dropout(0.1)(x)
+        x = tf.keras.layers.MaxPool1D(pool_size=pool_size.pop(0))(x)
+
+        x = tf.keras.layers.Conv1D(filters=filter_size.pop(0),
+                                   kernel_size=kernel_size.pop(0),
+                                   activation="relu")(x)
+        x = tf.keras.layers.Dropout(0.1)(x)
+        x = tf.keras.layers.MaxPool1D(pool_size=pool_size.pop(0))(x)
+
+        x = tf.keras.layers.Conv1D(filters=filter_size.pop(0),
+                                   kernel_size=kernel_size.pop(0),
+                                   activation="relu")(x)
+        x = tf.keras.layers.Dropout(0.1)(x)
+        x = tf.keras.layers.MaxPool1D(pool_size=pool_size.pop(0))(x)
+
+        x = tf.keras.layers.Conv1D(filters=filter_size.pop(0),
+                                   kernel_size=kernel_size.pop(0),
+                                   activation="relu")(x)
+        x = tf.keras.layers.Dropout(0.1)(x)
+
+        x = tf.keras.layers.Conv1D(filters=filter_size.pop(0),
+                                   kernel_size=kernel_size.pop(0),
+                                   activation="relu")(x)
+        x = tf.keras.layers.Dropout(0.1)(x)
+
+        dense = tf.keras.layers.Dense(units=g_output_size[0] * g_output_size[1],
                                       activation="linear")(x)
         outputs = tf.keras.layers.Reshape([g_output_size[0], g_output_size[1]])(dense)
 
