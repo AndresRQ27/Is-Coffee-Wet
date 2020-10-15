@@ -1,4 +1,8 @@
 import tensorflow as tf
+import tensorflow.keras.layers as layers
+
+from IsCoffeeWet import activation
+from IsCoffeeWet import temporal_convolutional as tcn
 
 
 def check_ifint(value, size):
@@ -18,7 +22,7 @@ def check_ifint(value, size):
 
     Returns
     -------
-    list
+    list[int]
         List with its size fixed.
     """
     if isinstance(value, int):
@@ -82,38 +86,70 @@ def convolutional_model(filter_size, kernel_size, pool_size,
     kernel_size = check_ifint(kernel_size, 3)
     pool_size = check_ifint(pool_size, 2)
 
-    inputs = tf.keras.layers.Input(shape=input_size)
+    # Shape => [batch, input_width, features]
+    inputs = layers.Input(shape=input_size)
 
-    x = tf.keras.layers.Conv1D(filters=filter_size.pop(0),
-                               kernel_size=kernel_size.pop(0),
-                               activation="relu")(inputs)
-
-    if dropout:
-        x = tf.keras.layers.Dropout(dropout)(x)
-
-    x = tf.keras.layers.MaxPool1D(pool_size=pool_size.pop(0))(x)
-
-    x = tf.keras.layers.Conv1D(filters=filter_size.pop(0),
-                               kernel_size=kernel_size.pop(0),
-                               activation="relu")(x)
+    x = layers.Conv1D(filters=filter_size.pop(0),
+                      kernel_size=kernel_size.pop(0),
+                      activation="relu")(inputs)
 
     if dropout:
-        x = tf.keras.layers.Dropout(dropout)(x)
+        x = layers.Dropout(dropout)(x)
 
-    x = tf.keras.layers.MaxPool1D(pool_size=pool_size.pop(0))(x)
+    x = layers.MaxPool1D(pool_size=pool_size.pop(0))(x)
 
-    x = tf.keras.layers.Conv1D(filters=filter_size.pop(0),
-                               kernel_size=kernel_size.pop(0),
-                               activation="relu")(x)
+    x = layers.Conv1D(filters=filter_size.pop(0),
+                      kernel_size=kernel_size.pop(0),
+                      activation="relu")(x)
 
-    # Shape => [batch, 1,  label_width*features]
-    dense = tf.keras.layers.Dense(units=output_size[0] * output_size[1],
-                                  activation="linear")(x)
+    if dropout:
+        x = layers.Dropout(dropout)(x)
 
-    # Shape => [batch, label_width, features]
-    outputs = tf.keras.layers.Reshape([output_size[0], output_size[1]])(dense)
+    x = layers.MaxPool1D(pool_size=pool_size.pop(0))(x)
+
+    x = layers.Conv1D(filters=filter_size.pop(0),
+                      kernel_size=kernel_size.pop(0),
+                      activation="relu")(x)
+
+    # Shape => [batch, 1,  label_width*label_columns]
+    dense = layers.Dense(units=output_size[0] * output_size[1],
+                         activation="linear")(x)
+
+    # Shape => [batch, label_width, label_columns]
+    outputs = layers.Reshape([output_size[0], output_size[1]])(dense)
 
     model = tf.keras.Model(inputs=inputs, outputs=outputs, name="conv_model")
+
+    if graph_path:
+        # ! Printing may require extra libraries
+        tf.keras.utils.plot_model(model, graph_path, show_shapes=True)
+
+    return model
+
+
+def temp_conv_model(filter_size, kernel_size, dilations, input_size,
+                    output_size, dropout=0.2, graph_path=None):
+    # TODO: documentation
+    # Shape => [batch, input_width, features]
+    inputs = tf.keras.layers.Input(shape=input_size)
+
+    x = tcn.ResidualBlock(filters=filter_size, kernel_size=kernel_size)(inputs)
+    y = layers.Conv1D(filters=filter_size, kernel_size=1,
+                      activation=activation.gated_activation)(inputs)
+    z = layers.add([x, y])
+
+    for factor in range(1, dilations):
+        dilation = 2 ** factor
+        x = tcn.ResidualBlock(filters=filter_size, kernel_size=kernel_size,
+                              dilation=dilation, dropout=dropout)(z)
+        y = layers.Conv1D(filters=filter_size, kernel_size=1,
+                          activation=activation.gated_activation)(z)
+        z = layers.add([x, y])
+
+    # Shape => [batch, label_width, label_columns]
+    output = layers.Dense(output_size[1])(z)
+
+    model = tf.keras.Model(inputs=inputs, outputs=output, name="tcn_model")
 
     if graph_path:
         # ! Printing may require extra libraries
