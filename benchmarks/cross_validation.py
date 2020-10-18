@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # List of colors to use in the graph. There are 20 different colors
-COLOR_LIST = ["red", "green", "blue", "cyan", "magenta", "yellow",
+COLOR_LIST = ["red", "green", "blue", "cyan", "magenta", "gold",
               "black", "dodgerblue", "slategray", "hotpink", "darkmagenta",
               "turquoise", "orange", "skyblue", "darkviolet", "pink",
               "navy", "chartreuse", "darkkhaki", "gray", "coral"]
@@ -15,7 +15,7 @@ MARKER_LIST = [".", "v", "^", "<", ">", "1", "2", "3", "s", "x",
 FIG_SIZE = (30, 10)
 
 
-def benchmark_graph_all(dataset):
+def benchmark_graph_all(dataset, max_epochs=100):
     """
         Function that graphs the reported metrics from the history according
         to the epoch of the training in which they were taken.
@@ -24,6 +24,9 @@ def benchmark_graph_all(dataset):
         ----------
         dataset: pandas.DataFrame
             Dataset of the history from the tests
+        max_epochs: int, optional
+            Limit of the number of epochs to show for a test. By default,
+            only shows the 100 epochs.
     """
 
     # Retrieves the unique test names in the dataset
@@ -43,7 +46,10 @@ def benchmark_graph_all(dataset):
         for name in name_dict:
             name_id = name_dict[name]
             data = dataset.loc[dataset["Name"] == name, column]
-            plt.plot(range(len(data)), data, label=name,
+
+            epochs = max_epochs if len(data) > max_epochs else len(data)
+
+            plt.plot(range(epochs), data[-epochs:], label=name,
                      color=COLOR_LIST[name_id],
                      marker=MARKER_LIST[name_id])
 
