@@ -1,28 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import seaborn as sns
 import tensorflow._api.v2.signal as signal
-
-
-def graph_normalize(dataset, columns):
-    """
-    Function that graphs all the data to check its normalized values, in
-    search of any inconsistency.
-
-    Parameters
-    ----------
-    dataset: pandas.DataFrame
-        Dataset with the normalized data.
-    columns: list[string]
-        Names of the columns in the dataset to set the as labels in the
-        graph.
-
-    """
-    df_std = dataset.melt(var_name='Column', value_name='Normalized')
-    plt.figure(figsize=(12, 6))
-    ax = sns.violinplot(x='Column', y='Normalized', data=df_std)
-    _ = ax.set_xticklabels(columns, rotation=90)
-    plt.show()
 
 
 def graph_data(dataset, config_file):
