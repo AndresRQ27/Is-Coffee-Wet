@@ -1,4 +1,4 @@
-from pandas import read_csv
+import pandas as pd
 
 from IsCoffeeWet import config_file as cf
 from IsCoffeeWet import data_graph as dg
@@ -28,7 +28,7 @@ print("******************************************")
 config_ds = cf.ConfigFile(JSON_TEST)
 
 # Loads the dataset
-dataset = read_csv(config_ds.path, engine="c")
+dataset = pd.read_csv(config_ds.path, engine="c")
 
 # *********************************
 # ******** Dataset Parsing ********
@@ -68,10 +68,6 @@ config_ds.num_data, config_ds.num_features = dataset.shape
 # Normalize the dataset
 dataset = nn.standardize(dataset)
 print(dataset.describe().transpose())
-
-# Show the graph of the standardize data
-if config_ds.graph:
-    dg.graph_normalize(dataset, dataset.keys())
 
 datetime_index, train_ds, val_ds, test_ds = nn.split_dataset(dataset, config_ds)
 

@@ -5,7 +5,7 @@ import pandas as pd
 from benchmarks import cross_validation as cv
 
 # Path for Docker
-PATH_TEST = "/opt/project/resources/benchmark/"
+PATH_TEST = "/opt/project/resources/benchmark/results/"
 
 
 class Test_CrossValidation(unittest.TestCase):
@@ -23,7 +23,7 @@ class Test_CrossValidation(unittest.TestCase):
         cls.dataset = dataset.drop("Number", axis=1)
 
     def test_benchmark_graph_all(self):
-        cv.benchmark_graph_all(self.dataset)
+        cv.benchmark_graph_all(self.dataset, 30)
         self.assertTrue(True)
 
     def test_benchmark_graph_summary(self):

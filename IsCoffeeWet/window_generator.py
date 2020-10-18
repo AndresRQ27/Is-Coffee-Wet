@@ -17,7 +17,7 @@ class WindowGenerator:
 
     def __init__(self, input_width, label_width, shift,
                  train_ds=None, val_ds=None, test_ds=None,
-                 label_columns=None, batch_size=32):
+                 label_columns=None, batch_size=64):
         """
         Initialization class. Assigns the datasets to the object and creates
         the necessary objects (slices, enums) for the neural network to go

@@ -41,7 +41,7 @@ def check_ifint(value, size):
 
 
 def convolutional_model(filter_size, kernel_size, pool_size,
-                        input_size, output_size, dropout=0.2,
+                        input_size, output_size, dropout=0.1,
                         graph_path=None):
     """
     Function that generates a convolutional model with the shape declared
@@ -89,26 +89,26 @@ def convolutional_model(filter_size, kernel_size, pool_size,
     # Shape => [batch, input_width, features]
     inputs = layers.Input(shape=input_size)
 
-    x = layers.Conv1D(filters=filter_size.pop(0),
-                      kernel_size=kernel_size.pop(0),
+    x = layers.Conv1D(filters=filter_size[0],
+                      kernel_size=kernel_size[0],
                       activation="relu")(inputs)
 
     if dropout:
         x = layers.Dropout(dropout)(x)
 
-    x = layers.MaxPool1D(pool_size=pool_size.pop(0))(x)
+    x = layers.MaxPool1D(pool_size=pool_size[0])(x)
 
-    x = layers.Conv1D(filters=filter_size.pop(0),
-                      kernel_size=kernel_size.pop(0),
+    x = layers.Conv1D(filters=filter_size[1],
+                      kernel_size=kernel_size[1],
                       activation="relu")(x)
 
     if dropout:
         x = layers.Dropout(dropout)(x)
 
-    x = layers.MaxPool1D(pool_size=pool_size.pop(0))(x)
+    x = layers.MaxPool1D(pool_size=pool_size[1])(x)
 
-    x = layers.Conv1D(filters=filter_size.pop(0),
-                      kernel_size=kernel_size.pop(0),
+    x = layers.Conv1D(filters=filter_size[2],
+                      kernel_size=kernel_size[2],
                       activation="relu")(x)
 
     # Shape => [batch, 1,  label_width*label_columns]
