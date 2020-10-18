@@ -9,10 +9,6 @@ from IsCoffeeWet import model_generator
 from IsCoffeeWet import neural_network as nn
 from IsCoffeeWet import window_generator as wg
 
-# Path for Linux
-# PATH_BENCHMARK = "/media/andres/DATA/Code-Projects/Is-Coffee-Wet/resources/benchmark/"
-# Path for Windows
-# PATH_BENCHMARK = "D:/VMWare/Shared/Is-Coffee-Wet/resources/benchmark/"
 # Path for Docker
 PATH_BENCHMARK = "/opt/project/resources/benchmark/"
 
@@ -31,11 +27,10 @@ g_kernel_size: int
 g_pool_size: int
 g_input_size: tuple
 g_output_size: tuple
-max_epochs: int
 
 all_history: pd.DataFrame
 
-
+# TODO: use a seed for weight initialization
 # ************************************
 
 def setUpModule():
@@ -46,11 +41,11 @@ def setUpModule():
     """
 
     global g_dataset, g_config, g_train, g_val, g_test, g_window, all_history
-    global g_filter_size, g_kernel_size, g_pool_size, g_input_size, g_output_size, max_epochs
+    global g_filter_size, g_kernel_size, g_pool_size, g_input_size, g_output_size
 
     # *** Dataset
     # Loads the dataset
-    g_dataset = pd.read_csv(PATH_BENCHMARK + "benchmark_hour.csv",
+    g_dataset = pd.read_csv(PATH_BENCHMARK + "datasets/dataset_hour.csv",
                             engine="c", index_col="Datetime", parse_dates=True)
 
     # Information of the dataset
@@ -89,15 +84,15 @@ def setUpModule():
                                   train_ds=g_train,
                                   val_ds=g_val,
                                   test_ds=g_test,
-                                  label_columns=label_columns)
+                                  label_columns=label_columns,
+                                  batch_size=64)
 
     # Arguments of the default NN
-    g_filter_size = 32  # Neurons in a conv layer
+    g_filter_size = [96, 192, 208]  # Neurons in a conv layer
     g_kernel_size = 24  # The kernel will see a day of data
     g_pool_size = 2  # Pooling of the data to reduce the dimensions
     g_input_size = (input_width, g_dataset.shape[1])  # Input size of the model
     g_output_size = (label_width, len(label_columns))  # Output size of the model
-    max_epochs = 100  # Max training epochs
 
     # *** Dataframe
     # Dataframe use to store the history of each training, then save it
@@ -114,12 +109,13 @@ def tearDownModule():
     global all_history
 
     # Save to csv:
-    csv_file = PATH_BENCHMARK + "benchmark_convolutional.csv"
+    csv_file = PATH_BENCHMARK + "results/benchmark_convolutional.csv"
     with open(csv_file, mode='w') as file:
         all_history.to_csv(file)
 
 
-def compile_and_fit(model, window, patience=5, learning_rate=0.001):
+def compile_and_fit(model, window, patience=20, learning_rate=0.0001,
+                    max_epochs=100):
     """
     Function that compiles and train the model. It's a generic function as
     multiple modules are compiled and trained.
@@ -137,6 +133,8 @@ def compile_and_fit(model, window, patience=5, learning_rate=0.001):
     learning_rate: float, optional
         Number passed to the optimizer. Used when updating the weights
         of the network.
+    max_epochs: int, optional
+        Max number of epochs to train the neural network
 
     Returns
     -------
@@ -144,12 +142,10 @@ def compile_and_fit(model, window, patience=5, learning_rate=0.001):
     tf.keras.callbacks.History
         Objects that contains the history of the model training.
     """
-    global max_epochs
-
     # TODO: add tensorboard to the callback
     # Sets an early stopping callback to prevent over-fitting
     early_stopping = tf.keras.callbacks.EarlyStopping(monitor='val_loss',
-                                                      min_delta=0.01,
+                                                      min_delta=0,
                                                       patience=patience,
                                                       mode="min")
 
@@ -212,151 +208,6 @@ class Test_TestBase(unittest.TestCase):
                                                     g_pool_size,
                                                     g_input_size,
                                                     g_output_size)
-
-        # Train the model using the default window
-        self.history = compile_and_fit(model, g_window)
-
-
-class Test_TestFilters(unittest.TestCase):
-    """
-    Test class with variations of the filter size (amount of neurons in a
-    convolutional layer).
-    """
-
-    def setUp(self):
-        """
-        Set up function executed before each individual test
-        """
-        self.history: tf.keras.callbacks.History
-        self.name: str
-
-    def tearDown(self):
-        """
-        Tear down function executed after each individual test
-        """
-        global all_history
-
-        # Creates a DataFrame with the history
-        history_df = pd.DataFrame(self.history.history)
-
-        # Creates a new column with the name of the test to identify its data
-        history_df["name"] = self.name
-
-        # Saves each model history into the global DataFrame
-        all_history = all_history.append(history_df)
-
-    def test_filter_16(self):
-        """
-        Test case with a filter size of 16
-        """
-        global g_kernel_size, g_pool_size, g_input_size, g_output_size
-        global g_window
-
-        # Name used to identify its data in the history
-        self.name = "filter_16"
-
-        # Filter size to test
-        filter_size = 16
-
-        # Compiles the model with the custom filter size
-        model = model_generator.convolutional_model(filter_size,
-                                                    g_kernel_size,
-                                                    g_pool_size,
-                                                    g_input_size,
-                                                    g_output_size)
-
-        # Train the model using the default window
-        self.history = compile_and_fit(model, g_window)
-
-    def test_filter_64(self):
-        """
-        Test case with a filter size of 64
-        """
-        global g_kernel_size, g_pool_size, g_input_size, g_output_size
-        global g_window
-
-        # Name used to identify its data in the history
-        self.name = "filter_64"
-
-        # Filter size to test
-        filter_size = 64
-
-        # Compiles the model with the custom filter size
-        model = model_generator.convolutional_model(filter_size,
-                                                    g_kernel_size,
-                                                    g_pool_size,
-                                                    g_input_size,
-                                                    g_output_size)
-
-        # Train the model using the default window
-        self.history = compile_and_fit(model, g_window)
-
-    def test_filter_128(self):
-        """
-        Test case with a filter size of 128
-        """
-        global g_kernel_size, g_pool_size, g_input_size, g_output_size
-        global g_window
-
-        # Name used to identify its data in the history
-        self.name = "filter_128"
-
-        # Filter size to test
-        filter_size = 128
-
-        # Compiles the model with the custom filter size
-        model = model_generator.convolutional_model(filter_size,
-                                                    g_kernel_size,
-                                                    g_pool_size,
-                                                    g_input_size,
-                                                    g_output_size)
-
-        # Train the model using the default window
-        self.history = compile_and_fit(model, g_window)
-
-
-class Test_TestDropout(unittest.TestCase):
-    """
-    Test class with variations of the architectural layer. Removes the dropout
-    layer in the model and test the performance with the validation set.
-    """
-
-    def setUp(self):
-        """
-        Set up function executed before each individual test
-        """
-        self.history: tf.keras.callbacks.History
-        self.name: str
-
-    def tearDown(self):
-        """
-        Tear down function executed after each individual test
-        """
-        global all_history
-
-        # Creates a DataFrame with the history
-        history_df = pd.DataFrame(self.history.history)
-
-        # Creates a new column with the name of the test to identify its data
-        history_df["name"] = self.name
-
-        # Saves each model history into the global DataFrame
-        all_history = all_history.append(history_df)
-
-    def test_no_dropout(self):
-        global g_filter_size, g_kernel_size, g_pool_size, g_input_size, g_output_size
-        global g_window
-
-        # Name used to identify its data in the history
-        self.name = "no_dropout"
-
-        # Generates a model without dropout layers
-        model = model_generator.convolutional_model(g_filter_size,
-                                                    g_kernel_size,
-                                                    g_pool_size,
-                                                    g_input_size,
-                                                    g_output_size,
-                                                    None)
 
         # Train the model using the default window
         self.history = compile_and_fit(model, g_window)
@@ -477,7 +328,7 @@ class Test_TestDay(unittest.TestCase):
 
         # *** Dataset. All parsing process for new dataset
         # Loads the dataset
-        dataset_day = pd.read_csv(PATH_BENCHMARK + "benchmark_day.csv",
+        dataset_day = pd.read_csv(PATH_BENCHMARK + "datasets/dataset_day.csv",
                                   engine="c", index_col="Datetime", parse_dates=True)
 
         # *** Dataset preparation
@@ -521,7 +372,7 @@ class Test_TestDay(unittest.TestCase):
                                                     output_size)
 
         # Compiles and fit the model using a window that sees days
-        self.history = compile_and_fit(model, window_day)
+        self.history = compile_and_fit(model, window_day, 250)
 
 
 class Test_TestWindow(unittest.TestCase):
@@ -692,52 +543,6 @@ class Test_TestModels(unittest.TestCase):
         # Train the model using the default window
         self.history = compile_and_fit(model, g_window)
 
-    def test_dense_15(self):
-        """
-        Function that uses a model in which the last convolutional layer
-        has an output of 15 (in contrast to 1 in all the other networks).
-
-        Tests if more information before expanding the dimensionality with
-        the dense layer can lead to better outputs.
-        """
-        global g_input_size, g_output_size, g_window
-
-        # Name used to identify its data in the history
-        self.name = "dense_15"
-
-        # Arguments for the model. Custom kernel sizes as we need 15 outputs
-        # in the last conv layer. Custom filter sizes are just flavor (no need to change)
-        kernel_size = [6, 12, 21]
-        filter_size = [32, 32, 32]
-        pool_size = [2, 2]
-
-        # Input shape is the same
-        inputs = tf.keras.layers.Input(shape=g_input_size)
-        x = tf.keras.layers.Conv1D(filters=filter_size.pop(0),
-                                   kernel_size=kernel_size.pop(0),
-                                   activation="relu")(inputs)
-        x = tf.keras.layers.Dropout(0.2)(x)
-        x = tf.keras.layers.MaxPool1D(pool_size=pool_size.pop(0))(x)
-        x = tf.keras.layers.Conv1D(filters=filter_size.pop(0),
-                                   kernel_size=kernel_size.pop(0),
-                                   activation="relu")(x)
-        x = tf.keras.layers.Dropout(0.1)(x)
-        x = tf.keras.layers.MaxPool1D(pool_size=pool_size.pop(0))(x)
-        # Layer must have an output of 15
-        x = tf.keras.layers.Conv1D(filters=filter_size.pop(0),
-                                   kernel_size=kernel_size.pop(0),
-                                   activation="relu")(x)
-        # Dense units will only be the number of predictions, instead of (no. predictions) * (features)
-        dense = tf.keras.layers.Dense(units=g_output_size[0],
-                                      activation="linear")(x)
-        outputs = tf.keras.layers.Reshape([g_output_size[0], g_output_size[1]])(dense)
-
-        # Generates a model by using a functional method
-        model = tf.keras.Model(inputs=inputs, outputs=outputs, name="conv_model")
-
-        # Train the model using the default window
-        self.history = compile_and_fit(model, g_window)
-
     def test_large_network(self):
         """
         Function that uses a model where all the dimension reductions are
@@ -793,75 +598,7 @@ class Test_TestModels(unittest.TestCase):
         model = tf.keras.Model(inputs=inputs, outputs=outputs, name="conv_model")
 
         # Train the model using the default window
-        self.history = compile_and_fit(model, g_window)
-
-
-class Test_TestLearning(unittest.TestCase):
-    """
-    Test class with variations to the learning rate used in the optimizer.
-    """
-
-    def setUp(self):
-        """
-        Set up function executed before each individual test
-        """
-        self.history: tf.keras.callbacks.History
-        self.name: str
-
-    def tearDown(self):
-        """
-        Tear down function executed after each individual test
-        """
-        global all_history
-
-        # Creates a DataFrame with the history
-        history_df = pd.DataFrame(self.history.history)
-
-        # Creates a new column with the name of the test to identify its data
-        history_df["name"] = self.name
-
-        # Saves each model history into the global DataFrame
-        all_history = all_history.append(history_df)
-
-    def test_learning_small(self):
-        """
-        Function with a small learning rate than the generic.
-        """
-        global g_filter_size, g_kernel_size, g_pool_size, g_input_size, g_output_size
-        global g_window
-
-        # Name used to identify its data in the history
-        self.name = "learning_small"
-
-        # Generates a generic model
-        model = model_generator.convolutional_model(g_filter_size,
-                                                    g_kernel_size,
-                                                    g_pool_size,
-                                                    g_input_size,
-                                                    g_output_size)
-
-        # Compiles using a small learning rate and fits the model
-        self.history = compile_and_fit(model, g_window, 5, 0.0001)
-
-    def test_learning_big(self):
-        """
-        Function with a big learning rate than the generic
-        """
-        global g_filter_size, g_kernel_size, g_pool_size, g_input_size, g_output_size
-        global g_window
-
-        # Name used to identify its data in the history
-        self.name = "learning_big"
-
-        # Generates a generic model
-        model = model_generator.convolutional_model(g_filter_size,
-                                                    g_kernel_size,
-                                                    g_pool_size,
-                                                    g_input_size,
-                                                    g_output_size)
-
-        # Compiles using a big learning rate and fits the model
-        self.history = compile_and_fit(model, g_window, 5, 0.01)
+        self.history = compile_and_fit(model, g_window, max_epochs=250)
 
 
 class Test_TestBatchSize(unittest.TestCase):
@@ -891,41 +628,6 @@ class Test_TestBatchSize(unittest.TestCase):
         # Saves each model history into the global DataFrame
         all_history = all_history.append(history_df)
 
-    def test_batch_64(self):
-        global g_train, g_val, g_test, g_dataset, g_input_size, g_output_size
-        global g_kernel_size, g_filter_size, g_pool_size
-
-        # Name used to identify its data in the history
-        self.name = "batch_64"
-
-        # *** Window
-        input_width = 7 * 24
-        label_width = input_width  # Label same width as the input
-        label_columns = g_dataset.columns.tolist()
-
-        # Removes th sin/cos columns from the labels
-        label_columns = label_columns[:-4]
-
-        # Generic window with a batch size of 64
-        window_64 = wg.WindowGenerator(input_width=input_width,
-                                       label_width=label_width,
-                                       shift=label_width,
-                                       train_ds=g_train,
-                                       val_ds=g_val,
-                                       test_ds=g_test,
-                                       label_columns=label_columns,
-                                       batch_size=64)
-
-        # Generates a generic model
-        model = model_generator.convolutional_model(g_filter_size,
-                                                    g_kernel_size,
-                                                    g_pool_size,
-                                                    g_input_size,
-                                                    g_output_size)
-
-        # Compiles and fits using a generic window with batch size of 64
-        self.history = compile_and_fit(model, window_64)
-
     def test_batch_128(self):
         global g_train, g_val, g_test, g_dataset, g_input_size, g_output_size
         global g_kernel_size, g_filter_size, g_pool_size
@@ -941,7 +643,7 @@ class Test_TestBatchSize(unittest.TestCase):
         # Removes th sin/cos columns from the labels
         label_columns = label_columns[:-4]
 
-        # Generic window with a batch size of 128
+        # Generic window with a batch size of 64
         window_128 = wg.WindowGenerator(input_width=input_width,
                                         label_width=label_width,
                                         shift=label_width,
@@ -958,8 +660,78 @@ class Test_TestBatchSize(unittest.TestCase):
                                                     g_input_size,
                                                     g_output_size)
 
-        # Compiles and fits using a generic window with batch size of 128
+        # Compiles and fits using a generic window with batch size of 64
         self.history = compile_and_fit(model, window_128)
+
+    def test_batch_512(self):
+        global g_train, g_val, g_test, g_dataset, g_input_size, g_output_size
+        global g_kernel_size, g_filter_size, g_pool_size
+
+        # Name used to identify its data in the history
+        self.name = "batch_512"
+
+        # *** Window
+        input_width = 7 * 24
+        label_width = input_width  # Label same width as the input
+        label_columns = g_dataset.columns.tolist()
+
+        # Removes th sin/cos columns from the labels
+        label_columns = label_columns[:-4]
+
+        # Generic window with a batch size of 128
+        window_512 = wg.WindowGenerator(input_width=input_width,
+                                        label_width=label_width,
+                                        shift=label_width,
+                                        train_ds=g_train,
+                                        val_ds=g_val,
+                                        test_ds=g_test,
+                                        label_columns=label_columns,
+                                        batch_size=512)
+
+        # Generates a generic model
+        model = model_generator.convolutional_model(g_filter_size,
+                                                    g_kernel_size,
+                                                    g_pool_size,
+                                                    g_input_size,
+                                                    g_output_size)
+
+        # Compiles and fits using a generic window with batch size of 128
+        self.history = compile_and_fit(model, window_512)
+
+    def test_batch_256(self):
+        global g_train, g_val, g_test, g_dataset, g_input_size, g_output_size
+        global g_kernel_size, g_filter_size, g_pool_size
+
+        # Name used to identify its data in the history
+        self.name = "batch_256"
+
+        # *** Window
+        input_width = 7 * 24
+        label_width = input_width  # Label same width as the input
+        label_columns = g_dataset.columns.tolist()
+
+        # Removes th sin/cos columns from the labels
+        label_columns = label_columns[:-4]
+
+        # Generic window with a batch size of 128
+        window_256 = wg.WindowGenerator(input_width=input_width,
+                                        label_width=label_width,
+                                        shift=label_width,
+                                        train_ds=g_train,
+                                        val_ds=g_val,
+                                        test_ds=g_test,
+                                        label_columns=label_columns,
+                                        batch_size=256)
+
+        # Generates a generic model
+        model = model_generator.convolutional_model(g_filter_size,
+                                                    g_kernel_size,
+                                                    g_pool_size,
+                                                    g_input_size,
+                                                    g_output_size)
+
+        # Compiles and fits using a generic window with batch size of 128
+        self.history = compile_and_fit(model, window_256)
 
 
 if __name__ == '__main__':
