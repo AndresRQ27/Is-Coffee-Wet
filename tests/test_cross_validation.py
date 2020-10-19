@@ -23,7 +23,7 @@ class Test_CrossValidation(unittest.TestCase):
         cls.dataset = dataset.drop("Number", axis=1)
 
     def test_benchmark_graph_all(self):
-        cv.benchmark_graph_all(self.dataset, 30)
+        cv.benchmark_graph_all(self.dataset, 100)
         self.assertTrue(True)
 
     def test_benchmark_graph_summary(self):
