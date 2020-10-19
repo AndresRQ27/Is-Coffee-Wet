@@ -1,8 +1,10 @@
+# based on the model from S. Bai, J. Z. Kolter, and V. Koltun,
+# “An empirical evaluation of generic convolutional and recurrent
+# networks for sequence modeling,”
+
 import tensorflow as tf
 import tensorflow.keras.layers as layers
 import tensorflow_addons.layers as layers_addon
-
-from IsCoffeeWet import activation
 
 
 class ResidualBlock(tf.keras.Model):
@@ -15,7 +17,7 @@ class ResidualBlock(tf.keras.Model):
                                                                     strides=stride,
                                                                     padding=padding,
                                                                     dilation_rate=dilation))
-        self.activation1 = layers.Activation(activation.gated_activation)
+        self.activation1 = layers.Activation("relu")
         self.dropout1 = layers.Dropout(dropout)
 
         self.conv2 = layers_addon.WeightNormalization(layers.Conv1D(filters=filters,
@@ -23,8 +25,15 @@ class ResidualBlock(tf.keras.Model):
                                                                     strides=stride,
                                                                     padding=padding,
                                                                     dilation_rate=dilation))
-        self.activation2 = layers.Activation(activation.gated_activation)
+        self.activation2 = layers.Activation("relu")
         self.dropout2 = layers.Dropout(dropout)
+
+        # Residual layer of conv 1x1 for feature mapping
+        self.residual = layers.Conv1D(filters=filters,
+                                      kernel_size=1)
+
+        # Layer to add the residual layer with the rest
+        self.add = layers.Add()
 
     def call(self, inputs, training=False):
         x = self.conv1(inputs)
@@ -36,4 +45,9 @@ class ResidualBlock(tf.keras.Model):
         x = self.activation2(x)
         if training:
             x = self.dropout2(x)
+
+        # Adds the residual layer
+        y = self.residual(inputs)
+        x = self.add([x, y])
+
         return x

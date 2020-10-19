@@ -130,24 +130,26 @@ def convolutional_model(filter_size, kernel_size, pool_size,
 def temp_conv_model(filter_size, kernel_size, dilations, input_size,
                     output_size, dropout=0.2, graph_path=None):
     # TODO: documentation
+    # Check if the inputs are numbers. Convert them to lists
+    filter_size = check_ifint(filter_size, dilations)
+    kernel_size = check_ifint(kernel_size, dilations)
+
     # Shape => [batch, input_width, features]
-    inputs = tf.keras.layers.Input(shape=input_size)
+    inputs = layers.Input(shape=input_size)
 
-    x = tcn.ResidualBlock(filters=filter_size, kernel_size=kernel_size)(inputs)
-    y = layers.Conv1D(filters=filter_size, kernel_size=1,
-                      activation=activation.gated_activation)(inputs)
-    z = layers.add([x, y])
+    # Tune the number of filters in the first convolutional layer
+    x = tcn.ResidualBlock(filters=filter_size[0], kernel_size=kernel_size[0])(inputs)
 
+    # Generates new residual layers based on the dilatation
     for factor in range(1, dilations):
+        # Creates a residual layer
         dilation = 2 ** factor
-        x = tcn.ResidualBlock(filters=filter_size, kernel_size=kernel_size,
-                              dilation=dilation, dropout=dropout)(z)
-        y = layers.Conv1D(filters=filter_size, kernel_size=1,
-                          activation=activation.gated_activation)(z)
-        z = layers.add([x, y])
+        x = tcn.ResidualBlock(filters=filter_size[factor],
+                              kernel_size=kernel_size[factor],
+                              dilation=dilation)(x)
 
     # Shape => [batch, label_width, label_columns]
-    output = layers.Dense(output_size[1])(z)
+    output = layers.Dense(15)(x)
 
     model = tf.keras.Model(inputs=inputs, outputs=output, name="tcn_model")
 
