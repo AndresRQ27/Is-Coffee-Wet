@@ -154,7 +154,7 @@ resources/*.xlsx
 # TODO: Maybe add later
 doc/papers/*
 doc/images/*
-resources/preprocess_images/*
+resources/images/preprocess/*
 
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio, WebStorm and Rider
 # Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
@@ -230,3 +230,8 @@ fabric.properties
 
 # All the other files
 .idea/*
+
+# Don't upload graphs or tuner
+resources/benchmark/tuner_convolutional/*
+resources/benchmark/tuner_temporal/*
+resources/images/crossvalidation/*
