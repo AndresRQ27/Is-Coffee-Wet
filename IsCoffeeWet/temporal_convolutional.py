@@ -8,8 +8,8 @@ import tensorflow_addons.layers as layers_addon
 
 
 class ResidualBlock(tf.keras.Model):
-    def __init__(self, filters, kernel_size=4, stride=1, dilation=1,
-                 padding="causal", dropout=0.2):
+    def __init__(self, filters, kernel_size, stride=1, dilation=1,
+                 padding="causal", dropout=0.2, activation="relu"):
         super(ResidualBlock, self).__init__()
 
         self.conv1 = layers_addon.WeightNormalization(layers.Conv1D(filters=filters,
@@ -17,7 +17,7 @@ class ResidualBlock(tf.keras.Model):
                                                                     strides=stride,
                                                                     padding=padding,
                                                                     dilation_rate=dilation))
-        self.activation1 = layers.Activation("relu")
+        self.activation1 = layers.Activation(activation)
         self.dropout1 = layers.Dropout(dropout)
 
         self.conv2 = layers_addon.WeightNormalization(layers.Conv1D(filters=filters,
@@ -25,7 +25,7 @@ class ResidualBlock(tf.keras.Model):
                                                                     strides=stride,
                                                                     padding=padding,
                                                                     dilation_rate=dilation))
-        self.activation2 = layers.Activation("relu")
+        self.activation2 = layers.Activation(activation)
         self.dropout2 = layers.Dropout(dropout)
 
         # Residual layer of conv 1x1 for feature mapping
