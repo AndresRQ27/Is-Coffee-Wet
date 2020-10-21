@@ -138,7 +138,9 @@ def temp_conv_model(filter_size, kernel_size, dilations, input_size,
     inputs = layers.Input(shape=input_size)
 
     # Tune the number of filters in the first convolutional layer
-    x = tcn.ResidualBlock(filters=filter_size[0], kernel_size=kernel_size[0])(inputs)
+    x = tcn.ResidualBlock(filters=filter_size[0],
+                          kernel_size=kernel_size[0],
+                          dropout=dropout)(inputs)
 
     # Generates new residual layers based on the dilatation
     for factor in range(1, dilations):
@@ -146,10 +148,11 @@ def temp_conv_model(filter_size, kernel_size, dilations, input_size,
         dilation = 2 ** factor
         x = tcn.ResidualBlock(filters=filter_size[factor],
                               kernel_size=kernel_size[factor],
-                              dilation=dilation)(x)
+                              dilation=dilation,
+                              dropout=dropout)(x)
 
     # Shape => [batch, label_width, label_columns]
-    output = layers.Dense(15)(x)
+    output = layers.Dense(units=output_size[1])(x)
 
     model = tf.keras.Model(inputs=inputs, outputs=output, name="tcn_model")
 
