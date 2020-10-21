@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 
 # List of colors to use in the graph. There are 20 different colors
 COLOR_LIST = ["red", "green", "blue", "cyan", "magenta", "gold",
@@ -15,7 +16,7 @@ MARKER_LIST = [".", "v", "^", "<", ">", "1", "2", "3", "s", "x",
 FIG_SIZE = (30, 10)
 
 
-def benchmark_graph_all(dataset, max_epochs=100):
+def benchmark_graph_all(dataset, path, max_epochs=100):
     """
         Function that graphs the reported metrics from the history according
         to the epoch of the training in which they were taken.
@@ -24,10 +25,17 @@ def benchmark_graph_all(dataset, max_epochs=100):
         ----------
         dataset: pandas.DataFrame
             Dataset of the history from the tests
+        path: string
+            Path to the parent folder to save the graphs
         max_epochs: int, optional
             Limit of the number of epochs to show for a test. By default,
             only shows the 100 epochs.
     """
+    path = path + "/crossvalidation"
+    try:
+        os.mkdir(path)
+    except FileExistsError:
+        print("{} already exists".format(path))
 
     # Retrieves the unique test names in the dataset
     # Assign an id to a test name. Use for colors and markers
@@ -56,11 +64,11 @@ def benchmark_graph_all(dataset, max_epochs=100):
         plt.xlabel("Epochs")
         plt.ylabel(column)
         plt.legend()
+        # Saves the image
+        plt.savefig("{}/{}.png".format(path, column))
 
-    plt.show()
 
-
-def benchmark_graph_summary(dataset):
+def benchmark_graph_summary(dataset, path):
     """
         Function that graphs a summary of the most important values inside
         the history. These are min, max, mean and last reported value.
@@ -69,7 +77,14 @@ def benchmark_graph_summary(dataset):
         ----------
         dataset: pandas.DataFrame
             Dataset of the history from the tests
+        path: string
+            Path to the parent folder to save the graphs
     """
+    path = path + "/crossvalidation"
+    try:
+        os.mkdir(path)
+    except FileExistsError:
+        print("{} already exists".format(path))
 
     # Retrieves the unique test names in the dataset
     # Assign an id to a test name. Use for colors and markers
@@ -126,5 +141,5 @@ def benchmark_graph_summary(dataset):
 
         plt.ylabel("Value")
         plt.legend()
-
-    plt.show()
+        # Saves the image
+        plt.savefig("{}/{}_bars.png".format(path, column))

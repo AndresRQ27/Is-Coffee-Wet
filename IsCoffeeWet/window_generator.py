@@ -1,8 +1,10 @@
 #! Code obtain from https://www.tensorflow.org/tutorials/structured_data/time_series#1_indexes_and_offsets
 
+import os
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
+
 
 # ! Dataset must be at least of size 300
 # but be serious, that size is not even enough to learn anything
@@ -19,7 +21,7 @@ class WindowGenerator:
                  train_ds=None, val_ds=None, test_ds=None,
                  label_columns=None, batch_size=64):
         """
-        Initialization class. Assigns the datasets to the object and creates
+        Initialization class. Assigns the database to the object and creates
         the necessary objects (slices, enums) for the neural network to go
         over during the training and prediction.
 
@@ -149,7 +151,7 @@ class WindowGenerator:
 
         return inputs, labels
 
-    def plot(self, plot_col, model=None, max_subplots=3):
+    def plot(self, plot_col, path, model=None, max_subplots=3):
         """
         Function that plots an example taken from the train dataset to show
         the accuracy of the predictions vs the real values.
@@ -158,12 +160,21 @@ class WindowGenerator:
         ----------
         plot_col: string
             Column name of the data to plot.
+        path: string
+            Path to the parent folder to save the graphs
         model: tensorflow.keras.Model, optional
             Model to obtain the predictions when graphing. Only works if
             `plot_col` is in `label_columns`
         max_subplots: int, optional
             Maximum amount of subplots to show.
         """
+        # Creates the folder to save the graphs
+        path = path + "/windows"
+        try:
+            os.mkdir(path)
+        except FileExistsError:
+            print("{} already exists".format(path))
+
         # Takes the inputs and labels from the example
         inputs, labels = self.example
 
@@ -212,7 +223,8 @@ class WindowGenerator:
                 plt.legend()
 
         plt.xlabel('Time [h]')
-        plt.show()
+        # Saves the image
+        plt.savefig("{}/{}.png".format(path, plot_col))
 
     def make_dataset(self, data):
         """

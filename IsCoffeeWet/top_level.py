@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 
 from IsCoffeeWet import config_file as cf
@@ -7,16 +8,13 @@ from IsCoffeeWet import model_generator as mg
 from IsCoffeeWet import neural_network as nn
 from IsCoffeeWet import window_generator as wg
 
-# Path for Docker
-PATH_TEST = "/opt/project/resources/"
+# Gets directory parent of the file
+PATH_RESOURCES = os.getcwd() + "/resources"
+PATH_IMAGES = PATH_RESOURCES + "/images"
 
+# TEST
 # Path to the configuration file
-JSON_TEST = PATH_TEST + "estXCompleta_hours.json"
-
-# Neural network parameters
-FILTER_SIZE = 32  # Amount of neurons in a convolutional layer
-KERNEL_SIZE = 24  # Amount of data a filer can see (a day)
-POOL_SIZE = 2  # Size of the pooling layers
+JSON_TEST = PATH_RESOURCES + "/config/test.json"
 
 print("******************************************")
 print("*** Welcome to the IsCoffeeWet project ***")
@@ -33,6 +31,7 @@ dataset = pd.read_csv(config_ds.path, engine="c")
 # *********************************
 # ******** Dataset Parsing ********
 # *********************************
+
 # convert_numeric twice to fill empty values after sampling
 dataset = (dataset.pipe(dp.merge_datetime, config_file=config_ds)
            .pipe(dp.convert_numeric, config_file=config_ds)
@@ -41,64 +40,58 @@ dataset = (dataset.pipe(dp.merge_datetime, config_file=config_ds)
            .pipe(dp.cyclical_encoder, config_file=config_ds)
            )
 
-new_path = config_ds.path
-new_path = new_path.replace(".csv", "_parsed.csv")
-
-# Saves the parsed dataset
-# ! Can be change to save file in a new format
-dataset.to_csv(new_path)
-print("A copy of your dataset has been save into: " + new_path)
-
 # Information of the dataset
 print(dataset.info(verbose=True))
 print(dataset.describe().transpose())
 
 # ! Program will stop until the graphs are checked
 if config_ds.graph:
-    dg.graph_data(dataset, config_ds)
-    dg.freq_domain(dataset, config_ds)
+    dg.graph_data(dataset, config_ds, PATH_IMAGES)
+    dg.freq_domain(dataset, config_ds, PATH_IMAGES)
 
 # **********************************
 # *** Neural Network preparation ***
 # **********************************
 
 # Number of rows in the dataset. Added in config_file only during execution
-config_ds.num_data, config_ds.num_features = dataset.shape
+config_ds.num_data = dataset.shape[0]
 
 # Normalize the dataset
-dataset = nn.standardize(dataset)
+dataset, mean, std = nn.standardize(dataset)
 print(dataset.describe().transpose())
 
+# Datetime index still useful for graphs
 datetime_index, train_ds, val_ds, test_ds = nn.split_dataset(dataset, config_ds)
 
-# INFO: Input width and shift size are the same. Could be change
-window = wg.WindowGenerator(input_width=config_ds.forecast * 24, label_width=config_ds.forecast * 24,
-                            shift=config_ds.forecast * 24, train_ds=train_ds,
-                            val_ds=val_ds, test_ds=test_ds,
+# Generates a window for the training of the neural network
+window = wg.WindowGenerator(input_width=config_ds.forecast * 24,
+                            label_width=config_ds.forecast * 24,
+                            shift=config_ds.forecast * 24,
+                            train_ds=train_ds,
+                            val_ds=val_ds,
+                            test_ds=test_ds,
                             label_columns=config_ds.columns)
 
-window.plot("Temp Out")
+# Plots a random window from the test dataset to show the label
+if config_ds.graph:
+    for name in config_ds.columns:
+        window.plot(name, PATH_IMAGES)
 
 # **********************************
 # **** Neural Network training *****
 # **********************************
 
-# Constructs the convolutional model
-conv_model = mg.convolutional_model(FILTER_SIZE,
-                                    KERNEL_SIZE,
-                                    POOL_SIZE,
-                                    (window.input_width, dataset.shape[1]),
-                                    (window.label_width, len(window.label_columns))
-                                    )
+# Constructs the  model
+# model = mg.
 
 # Show the model summary (layers, i/o data, etc.)
-conv_model.summary()
+# model.summary()
 
 # TODO: implement compile and fitting
 # history = nn.compile_and_fit(conv_model, window, 5)
 
 # Shows graphs for each column
-for name in window.label_columns:
-    window.plot(name, model=conv_model)
+# for name in window.label_columns:
+#     window.plot(name, model=model)
 
 input("Stop?")

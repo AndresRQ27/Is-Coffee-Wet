@@ -1,6 +1,7 @@
-import copy
 import unittest
 
+import copy
+import os
 import pandas as pd
 import tensorflow as tf
 
@@ -9,8 +10,7 @@ from IsCoffeeWet import model_generator
 from IsCoffeeWet import neural_network as nn
 from IsCoffeeWet import window_generator as wg
 
-# Path for Docker
-PATH_BENCHMARK = "/opt/project/resources/benchmark/"
+PATH = os.getcwd() + "/resources/benchmark"
 
 # ************************************
 # ********* Global Variables *********
@@ -30,6 +30,7 @@ g_output_size: tuple
 
 all_history: pd.DataFrame
 
+
 # TODO: use a seed for weight initialization
 # ************************************
 
@@ -45,7 +46,7 @@ def setUpModule():
 
     # *** Dataset
     # Loads the dataset
-    g_dataset = pd.read_csv(PATH_BENCHMARK + "datasets/dataset_hour.csv",
+    g_dataset = pd.read_csv(PATH + "/database/dataset_hour.csv",
                             engine="c", index_col="Datetime", parse_dates=True)
 
     # Information of the dataset
@@ -63,7 +64,7 @@ def setUpModule():
 
     # *** Dataset preparation
     # Normalize the dataset
-    g_dataset = nn.standardize(g_dataset)
+    g_dataset, _, _ = nn.standardize(g_dataset)
 
     # Partition the dataset
     _, g_train, g_val, g_test = nn.split_dataset(g_dataset, g_config)
@@ -109,7 +110,7 @@ def tearDownModule():
     global all_history
 
     # Save to csv:
-    csv_file = PATH_BENCHMARK + "results/benchmark_convolutional.csv"
+    csv_file = PATH + "/results/benchmark_convolutional.csv"
     with open(csv_file, mode='w') as file:
         all_history.to_csv(file)
 
@@ -244,7 +245,7 @@ class Test_TestNoEncoding(unittest.TestCase):
     def test_no_encoding(self):
         """
         Function that removes the encoded columns from the partitioned
-        datasets stored in the window
+        database stored in the window
         """
         global g_filter_size, g_kernel_size, g_pool_size, g_test, g_val, g_train
         global g_output_size, g_window
@@ -257,9 +258,9 @@ class Test_TestNoEncoding(unittest.TestCase):
 
         # Drops the encoding for each set present in the window
         window_ne.test_ds = g_test.drop(["day sin",
-                                    "day cos",
-                                    "year sin",
-                                    "year cos"], axis=1)
+                                         "day cos",
+                                         "year sin",
+                                         "year cos"], axis=1)
 
         window_ne.train_ds = g_train.drop(["day sin",
                                            "day cos",
@@ -328,7 +329,7 @@ class Test_TestDay(unittest.TestCase):
 
         # *** Dataset. All parsing process for new dataset
         # Loads the dataset
-        dataset_day = pd.read_csv(PATH_BENCHMARK + "datasets/dataset_day.csv",
+        dataset_day = pd.read_csv(PATH + "database/dataset_day.csv",
                                   engine="c", index_col="Datetime", parse_dates=True)
 
         # *** Dataset preparation
@@ -629,29 +630,15 @@ class Test_TestBatchSize(unittest.TestCase):
         all_history = all_history.append(history_df)
 
     def test_batch_128(self):
-        global g_train, g_val, g_test, g_dataset, g_input_size, g_output_size
+        global g_window, g_input_size, g_output_size
         global g_kernel_size, g_filter_size, g_pool_size
 
         # Name used to identify its data in the history
         self.name = "batch_128"
 
         # *** Window
-        input_width = 7 * 24
-        label_width = input_width  # Label same width as the input
-        label_columns = g_dataset.columns.tolist()
-
-        # Removes th sin/cos columns from the labels
-        label_columns = label_columns[:-4]
-
-        # Generic window with a batch size of 64
-        window_128 = wg.WindowGenerator(input_width=input_width,
-                                        label_width=label_width,
-                                        shift=label_width,
-                                        train_ds=g_train,
-                                        val_ds=g_val,
-                                        test_ds=g_test,
-                                        label_columns=label_columns,
-                                        batch_size=128)
+        window_128 = copy.deepcopy(g_window)
+        window_128.batch_size = 128
 
         # Generates a generic model
         model = model_generator.convolutional_model(g_filter_size,
@@ -660,33 +647,19 @@ class Test_TestBatchSize(unittest.TestCase):
                                                     g_input_size,
                                                     g_output_size)
 
-        # Compiles and fits using a generic window with batch size of 64
+        # Compiles and fits using a generic window with batch size of 128
         self.history = compile_and_fit(model, window_128)
 
     def test_batch_512(self):
-        global g_train, g_val, g_test, g_dataset, g_input_size, g_output_size
+        global g_window, g_input_size, g_output_size
         global g_kernel_size, g_filter_size, g_pool_size
 
         # Name used to identify its data in the history
         self.name = "batch_512"
 
         # *** Window
-        input_width = 7 * 24
-        label_width = input_width  # Label same width as the input
-        label_columns = g_dataset.columns.tolist()
-
-        # Removes th sin/cos columns from the labels
-        label_columns = label_columns[:-4]
-
-        # Generic window with a batch size of 128
-        window_512 = wg.WindowGenerator(input_width=input_width,
-                                        label_width=label_width,
-                                        shift=label_width,
-                                        train_ds=g_train,
-                                        val_ds=g_val,
-                                        test_ds=g_test,
-                                        label_columns=label_columns,
-                                        batch_size=512)
+        window_512 = copy.deepcopy(g_window)
+        window_512.batch_size = 512
 
         # Generates a generic model
         model = model_generator.convolutional_model(g_filter_size,
@@ -695,33 +668,19 @@ class Test_TestBatchSize(unittest.TestCase):
                                                     g_input_size,
                                                     g_output_size)
 
-        # Compiles and fits using a generic window with batch size of 128
+        # Compiles and fits using a generic window with batch size of 512
         self.history = compile_and_fit(model, window_512)
 
     def test_batch_256(self):
-        global g_train, g_val, g_test, g_dataset, g_input_size, g_output_size
+        global g_window, g_input_size, g_output_size
         global g_kernel_size, g_filter_size, g_pool_size
 
         # Name used to identify its data in the history
         self.name = "batch_256"
 
         # *** Window
-        input_width = 7 * 24
-        label_width = input_width  # Label same width as the input
-        label_columns = g_dataset.columns.tolist()
-
-        # Removes th sin/cos columns from the labels
-        label_columns = label_columns[:-4]
-
-        # Generic window with a batch size of 128
-        window_256 = wg.WindowGenerator(input_width=input_width,
-                                        label_width=label_width,
-                                        shift=label_width,
-                                        train_ds=g_train,
-                                        val_ds=g_val,
-                                        test_ds=g_test,
-                                        label_columns=label_columns,
-                                        batch_size=256)
+        window_256 = copy.deepcopy(g_window)
+        window_256.batch_size = 256
 
         # Generates a generic model
         model = model_generator.convolutional_model(g_filter_size,
@@ -730,7 +689,7 @@ class Test_TestBatchSize(unittest.TestCase):
                                                     g_input_size,
                                                     g_output_size)
 
-        # Compiles and fits using a generic window with batch size of 128
+        # Compiles and fits using a generic window with batch size of 256
         self.history = compile_and_fit(model, window_256)
 
 

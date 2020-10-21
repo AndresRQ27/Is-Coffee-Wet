@@ -1,23 +1,18 @@
 import unittest
 
-from pandas import read_csv, date_range
+import os
+import pandas as pd
 
 from IsCoffeeWet import data_parser
 from IsCoffeeWet import config_file as cf
 
-
-# Path for Linux
-# PATH_TEST = "/media/andres/DATA/Code-Projects/Is-Coffee-Wet/resources/"
-# Path for Windows
-# PATH_TEST = "D:/VMWare/Shared/Is-Coffee-Wet/resources/"
-# Path for Docker
-PATH_TEST = "/opt/project/resources/"
+PATH = os.getcwd() + "/resources/database"
 
 
 class Test_TestDataParser(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        raw_dataset = read_csv(PATH_TEST + "test.csv")
+        raw_dataset = pd.read_csv(PATH + "/test.csv")
 
         # Uses a list of columns with the date as the config file
         cls.config_file = cf.ConfigFile()
@@ -33,10 +28,9 @@ class Test_TestDataParser(unittest.TestCase):
         cls.converted_ds = data_parser.convert_numeric(cls.datetime_ds, cls.config_file)
 
     def test_merge_datetime(self):
-
-        result = date_range("2010-04-07 00:00:00",
-                            "2010-04-07 00:04:00",
-                            freq="min")
+        result = pd.date_range("2010-04-07 00:00:00",
+                               "2010-04-07 00:04:00",
+                               freq="min")
 
         # Test to see if the resulting format is as the desired one
         # All the values must match to generate a True

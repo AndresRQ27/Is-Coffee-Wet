@@ -1,9 +1,13 @@
+import os
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow._api.v2.signal as signal
 
+# Size of the graphs to make
+FIG_SIZE = (30, 10)
 
-def graph_data(dataset, config_file):
+
+def graph_data(dataset, config_file, path):
     """
     Function that graph the data in a column vs the time when it was
     taken. Help visualizing big gaps where the data was interpolated
@@ -15,17 +19,25 @@ def graph_data(dataset, config_file):
         Dataset with the columns to graph
     config_file: config_file.ConfigFile
         Configuration file with the name of all the columns to graph
+    path: string
+        Path to the parent folder to save the graphs
     """
+    # Creates the folder to save the graphs
+    path = path + "/data"
+    try:
+        os.mkdir(path)
+    except FileExistsError:
+        print("{} already exists".format(path))
 
     for name in config_file.columns:
         # Creates a new figure
-        plt.figure()
+        plt.figure(figsize=FIG_SIZE)
         dataset[name].plot().set_ylabel(name)
+        # Saves the image
+        plt.savefig("{}/{}.png".format(path, name))
 
-    plt.show()
 
-
-def freq_domain(dataset, config_file):
+def freq_domain(dataset, config_file, path):
     """
     Function that graph the data in the frequency domain by using Fourier Transform.
     Useful when analyzing the information to see which frequencies are the 
@@ -39,14 +51,23 @@ def freq_domain(dataset, config_file):
     config_file: config_file.ConfigFile
         Configuration file with the name of all the columns to apply the
         Real-valued Fast Fourier Transformation.
+    path: string
+        Path to the parent folder to save the graphs
 
     See Also
     --------
     tensorflow._api.v2.signal.rfft: Real-valued Fast Fourier Transformation.
     """
+    # Creates the folder to save the graphs
+    path = path + "/freq_domain"
+    try:
+        os.mkdir(path)
+    except FileExistsError:
+        print("{} already exists".format(path))
+
     for name in config_file.columns:
         # Creates a new figure
-        plt.figure()
+        plt.figure(figsize=FIG_SIZE)
 
         fft = signal.rfft(dataset[name])
         f_per_dataset = np.arange(0, len(fft))
@@ -67,4 +88,5 @@ def freq_domain(dataset, config_file):
         _ = plt.xlabel('Frequency (log scale)')
         _ = plt.ylabel(name)
 
-    plt.show()
+        # Saves the image
+        plt.savefig("{}/{}.png".format(path, name))

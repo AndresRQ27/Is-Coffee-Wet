@@ -1,16 +1,12 @@
 import unittest
 
-from pandas import read_csv
+import os
+import pandas as pd
 
 from IsCoffeeWet import config_file as cf
 from IsCoffeeWet import neural_network
 
-# Path for Linux
-# PATH_TEST = "/media/andres/DATA/Code-Projects/Is-Coffee-Wet/resources/"
-# Path for Windows
-# PATH_TEST = "D:/VMWare/Shared/Is-Coffee-Wet/resources/"
-# Path for Docker
-PATH_TEST = "/opt/project/resources/"
+PATH = os.getcwd() + "/resources"
 
 
 class Test_TestNeuralNetwork(unittest.TestCase):
@@ -18,13 +14,13 @@ class Test_TestNeuralNetwork(unittest.TestCase):
     def setUpClass(cls):
         # Sets the index using Datetime column
 
-        cls.dataset = read_csv(PATH_TEST + "test_parsed.csv",
+        cls.dataset = pd.read_csv(PATH + "/database/test_parsed.csv",
                                engine="c", index_col="Datetime", parse_dates=True)
         # Infers the frequency
         cls.dataset = cls.dataset.asfreq(cls.dataset.index.inferred_freq)
 
     def test_normalize(self):
-        normalized_ds = neural_network.standardize(self.dataset)
+        normalized_ds, _, _ = neural_network.standardize(self.dataset)
 
         # Only max of those columns as the sin/cos won't change
         max_original = self.dataset[["Temp Out", "Leaf Wet 1", "Leaf Wet Accum"]].max()
