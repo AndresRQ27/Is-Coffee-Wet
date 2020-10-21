@@ -2,6 +2,7 @@ def standardize(dataset):
     """
     Function that standardizes the values in all the columns present in the
     dataset. Use the z-score standardization.
+
     Parameters
     ----------
     dataset: pandas.DataFrame
@@ -9,17 +10,19 @@ def standardize(dataset):
 
     Returns
     -------
-    pandas.DataFrame
-        Dataset with the standardize data.
+    tuple[pandas.DataFrame, pandas.Series, pandas.Series]
+        Dataset with the standardize data, plus the mean and standard
+        deviation of each column to de-normalize later.
 
     Notes
     -----
     The formula used in the standardization (z-score) is:
 
-    .. math:: z_{i} = \frac{x_{i} - \overline{x}}{s}
+    .. math:: z_{i} = x_{i} - \overline{x}_{s}
 
     Where:
-    - :math:`x{i}` is a data point (x1, x2, ..., xn).
+
+    - :math:`x_{i}` is a data point :math:`(x_{1}, x_{2}, ..., x_{n})`
     - :math:`\overline{x}` is the sample mean.
     - :math:`s` is the sample standard deviation.
     """
@@ -31,7 +34,7 @@ def standardize(dataset):
     # Apply the method to the dataset
     dataset = (dataset - ds_mean) / ds_std
 
-    return dataset
+    return dataset, ds_mean, ds_std
 
 
 def split_dataset(dataset, config_file):
