@@ -1,5 +1,5 @@
 {
-  "dataset_path": "/opt/project/resources/test.csv",
+  "dataset_path": "/opt/project/resources/database/test.csv",
   "frequency": "1H",
   "forecast_window": 7,
   "graph_data": true,

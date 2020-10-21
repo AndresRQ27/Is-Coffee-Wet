@@ -1,5 +1,5 @@
 {
-  "dataset_path": "/opt/project/resources/estXCompleta.csv",
+  "dataset_path": "/opt/project/resources/database/estXCompleta.csv",
   "frequency": "1H",
   "forecast_window": 7,
   "graph_data": false,
