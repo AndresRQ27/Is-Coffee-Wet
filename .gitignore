@@ -234,4 +234,4 @@ fabric.properties
 # Don't upload graphs or tuner
 resources/benchmark/tuner_convolutional/*
 resources/benchmark/tuner_temporal/*
-resources/images/crossvalidation/*
+resources/images/*
