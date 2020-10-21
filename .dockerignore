@@ -21,5 +21,10 @@
 **/obj
 **/secrets.dev.yaml
 **/values.dev.yaml
-**/.idea
+*/.idea
 README.md
+
+*/resources
+*/tests
+*/benchmarks
+*/docs

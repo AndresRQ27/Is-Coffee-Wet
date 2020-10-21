@@ -14,11 +14,4 @@ RUN pip install \
       pydot==1.4.1 \
       tensorflow-addons==0.11.2
 
-VOLUME ["/data/neural-network"]
-
-WORKDIR /data
-
-# Comment line for production
-#COPY . ./
-
 CMD ["/bin/sh"]

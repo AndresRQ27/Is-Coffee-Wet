@@ -14,4 +14,10 @@ RUN pip install \
       pydot==1.4.1 \
       tensorflow-addons==0.11.2
 
-CMD ["/bin/sh"]
+VOLUME ["/data/neural-network"]
+
+WORKDIR /data
+
+COPY . ./
+
+CMD ["python3", "IsCoffeeWet/top_level.py"]
