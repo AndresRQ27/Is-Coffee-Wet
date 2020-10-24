@@ -1,4 +1,4 @@
-# Dockerfile with tensorflow gpu support on python3, pandas, matplotlib,
+# Dockerfile with tensorflow on python3, pandas, matplotlib,
 # pydot and tensorflow-addons while using GPU enhancement
 FROM tensorflow/tensorflow:2.3.1
 

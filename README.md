@@ -14,34 +14,40 @@ An installation guide is available
 
 ## To run the container
 
-`docker container run --name is-coffee-wet -v $(pwd):/opt/project/resources`
+### Debug
 
-# Using Linux or Windows
+#### With CPU
 
-## Requirements
+- Build the image:
 
-The project was run using:
+`docker build -f Dockerfile.cpu -t is-coffee-wet:cpu .`
 
-- Numpy 1.16
-- Matplotlib 3.3
-- Python 3.6 (at least >3.4)
-- Pandas 1.1
-- Tensorflow 2.3
-- Tensorflow Addon 0.11
+- Run the container:
 
-### Optionals (GPU enhancement):
+`docker run -it --name coffee-debug -v $(pwd):/data is-coffee-wet:cpu bash`
 
-- Cuda 11.0
-- Cudnn-11 v8.0
+#### With GPU
 
-## Before you start
+- Build the image:
 
-Set up your `$PYTHONPATH` to include this directory (`Is-Coffee-Wet`) as
-the file hierarchy needs it.
+`docker build -f Dockerfile.gpu -t is-coffee-wet:gpu .`
 
-### In Ubuntu
-1. Open a terminal in your Home folder
-2. Open `~/.bashrc` in your favorite text editor (e.g. nano)
-3. Go to the last line and write `export PYTHONPATH=$PYTHONPATH:/path/to/folder/Is-Coffee-Wet`
-4. Save & exit, then close the terminal
-5. Re-open the terminal and type `echo $PYTHONPATH` to check if it worked
+- Run the container:
+
+`docker run -it --name coffee-gpu-debug -v $(pwd):/data -gpus all is-coffee-wet:gpu bash`
+
+### For production
+
+This following instructions does:
+
+- Creates a container from the production image
+- Opens a terminal using bash
+- Maps a volume name _neural-network_ to `/data/neural-network`
+- Binds the resources folder where the host console is running to `/data/resources`
+- Name the container _coffee-production_
+
+`docker run -it 
+-v neural-network:/data/neural-network 
+-v $PWD/resources:/data/resources 
+--name coffee-production 
+is-coffee-wet:release bash`
