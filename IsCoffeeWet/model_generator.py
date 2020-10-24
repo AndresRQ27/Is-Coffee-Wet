@@ -1,7 +1,6 @@
 import tensorflow as tf
 import tensorflow.keras.layers as layers
 
-from IsCoffeeWet import activation
 from IsCoffeeWet import temporal_convolutional as tcn
 
 
@@ -128,7 +127,8 @@ def convolutional_model(filter_size, kernel_size, pool_size,
 
 
 def temp_conv_model(filter_size, kernel_size, dilations, input_size,
-                    output_size, dropout=0.2, graph_path=None):
+                    output_size, activation="relu", dropout=0.2,
+                    graph_path=None):
     # TODO: documentation
     # Check if the inputs are numbers. Convert them to lists
     filter_size = check_ifint(filter_size, dilations)
@@ -140,7 +140,8 @@ def temp_conv_model(filter_size, kernel_size, dilations, input_size,
     # Tune the number of filters in the first convolutional layer
     x = tcn.ResidualBlock(filters=filter_size[0],
                           kernel_size=kernel_size[0],
-                          dropout=dropout)(inputs)
+                          dropout=dropout,
+                          activation=activation)(inputs)
 
     # Generates new residual layers based on the dilatation
     for factor in range(1, dilations):
@@ -149,7 +150,8 @@ def temp_conv_model(filter_size, kernel_size, dilations, input_size,
         x = tcn.ResidualBlock(filters=filter_size[factor],
                               kernel_size=kernel_size[factor],
                               dilation=dilation,
-                              dropout=dropout)(x)
+                              dropout=dropout,
+                              activation=activation)(x)
 
     # Shape => [batch, label_width, label_columns]
     output = layers.Dense(units=output_size[1])(x)

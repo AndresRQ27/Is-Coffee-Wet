@@ -1,12 +1,12 @@
-import unittest
-
 import copy
 import os
+import unittest
+
 import pandas as pd
 import tensorflow as tf
 
 from IsCoffeeWet import config_file as cf
-from IsCoffeeWet import model_generator
+from IsCoffeeWet import model_generator as mg
 from IsCoffeeWet import neural_network as nn
 from IsCoffeeWet import window_generator as wg
 
@@ -204,11 +204,11 @@ class Test_TestBase(unittest.TestCase):
         self.name = "generic"
 
         # Compiles the model with the default values
-        model = model_generator.convolutional_model(g_filter_size,
-                                                    g_kernel_size,
-                                                    g_pool_size,
-                                                    g_input_size,
-                                                    g_output_size)
+        model = mg.convolutional_model(g_filter_size,
+                                       g_kernel_size,
+                                       g_pool_size,
+                                       g_input_size,
+                                       g_output_size)
 
         # Train the model using the default window
         self.history = compile_and_fit(model, g_window)
@@ -280,11 +280,11 @@ class Test_TestNoEncoding(unittest.TestCase):
         input_size = (input_width, label_columns)
 
         # Generates a model with a custom input size as the encoding columns are not present
-        model = model_generator.convolutional_model(g_filter_size,
-                                                    g_kernel_size,
-                                                    g_pool_size,
-                                                    input_size,
-                                                    g_output_size)
+        model = mg.convolutional_model(g_filter_size,
+                                       g_kernel_size,
+                                       g_pool_size,
+                                       input_size,
+                                       g_output_size)
 
         # Compiles and train the model using a window with custom training and validation sets
         self.history = compile_and_fit(model, window_ne)
@@ -334,7 +334,7 @@ class Test_TestDay(unittest.TestCase):
 
         # *** Dataset preparation
         # Normalize the dataset
-        dataset_day = nn.standardize(dataset_day)
+        dataset_day, _, _ = nn.standardize(dataset_day)
 
         # Copy config file
         config_day = copy.deepcopy(g_config)
@@ -366,11 +366,11 @@ class Test_TestDay(unittest.TestCase):
         output_size = (label_width, len(label_columns))  # Model's output shape
 
         # Generates a model with custom kernel size as I/O are different
-        model = model_generator.convolutional_model(g_filter_size,
-                                                    kernel_size,
-                                                    pool_size,
-                                                    input_size,
-                                                    output_size)
+        model = mg.convolutional_model(g_filter_size,
+                                       kernel_size,
+                                       pool_size,
+                                       input_size,
+                                       output_size)
 
         # Compiles and fit the model using a window that sees days
         self.history = compile_and_fit(model, window_day, 250)
@@ -409,40 +409,33 @@ class Test_TestWindow(unittest.TestCase):
         Function that uses a window size of 14 days in the past to predict
         the next 14 days.
         """
-        global g_train, g_val, g_test, g_dataset, g_filter_size
+        global g_window, g_filter_size
 
         # Name used to identify its data in the history
         self.name = "window_14"
 
         # *** Window
-        input_width = 14 * 24  # Window of 14 days in hours
-        label_width = input_width  # Label same width as the input
-        label_columns = g_dataset.columns.tolist()
+        window_14 = copy.deepcopy(g_window)
+        input_width = 14 * 24
+        label_width = input_width
 
-        # Removes th sin/cos columns from the labels
-        label_columns = label_columns[:-4]
-
-        # Window of 14 days with the same training/validation set
-        window_14 = wg.WindowGenerator(input_width=input_width,
-                                       label_width=label_width,
-                                       shift=label_width,
-                                       train_ds=g_train,
-                                       val_ds=g_val,
-                                       test_ds=g_test,
-                                       label_columns=label_columns)
+        # Change the window values
+        window_14.input_width = input_width
+        window_14.label_width = label_width
+        window_14.shift = label_width
 
         # Arguments for the model. Different input shape requires different NN configuration
         kernel_size = [48, 24, 12]  # Reduce the kernel size in each layer
         pool_size = 4  # Pool size divides by 4 to reduce dimensionality
-        input_size = (input_width, g_dataset.shape[1])  # New input shape
-        output_size = (label_width, len(label_columns))  # New output shape
+        input_size = (input_width, window_14.train_ds.shape[1])  # New input shape
+        output_size = (label_width, len(window_14.label_columns))  # New output shape
 
         # Generates a new model with custom I/O, kernel and pool size
-        model = model_generator.convolutional_model(g_filter_size,
-                                                    kernel_size,
-                                                    pool_size,
-                                                    input_size,
-                                                    output_size)
+        model = mg.convolutional_model(g_filter_size,
+                                       kernel_size,
+                                       pool_size,
+                                       input_size,
+                                       output_size)
 
         # Compiles and fits using a window of 14 days to predict 14 days
         self.history = compile_and_fit(model, window_14)
@@ -452,40 +445,33 @@ class Test_TestWindow(unittest.TestCase):
         Function that uses a window size of 14 days in the past to predict
         the next 7 days.
         """
-        global g_train, g_val, g_test, g_dataset, g_filter_size
+        global g_window, g_filter_size
 
         # Name used to identify its data in the history
         self.name = "window_14x7"
 
         # *** Window
+        window_14x7 = copy.deepcopy(g_window)
         input_width = 14 * 24  # Reads 14 days in the past in hours
         label_width = 7 * 24  # Predicts 7 days in the future in hours
-        label_columns = g_dataset.columns.tolist()
 
-        # Removes th sin/cos columns from the labels
-        label_columns = label_columns[:-4]
-
-        # Window of 14 days that predicts the next 7 days
-        window_14x7 = wg.WindowGenerator(input_width=input_width,
-                                         label_width=label_width,
-                                         shift=label_width,
-                                         train_ds=g_train,
-                                         val_ds=g_val,
-                                         test_ds=g_test,
-                                         label_columns=label_columns)
+        # Change the window values
+        window_14x7.input_width = input_width
+        window_14x7.label_width = label_width
+        window_14x7.shift = label_width
 
         # Arguments for the model. Different input shape requires different NN configuration
         kernel_size = [48, 24, 12]  # Reduce the kernel size in each layer
         pool_size = 4  # Pool size divides by 4 to reduce dimensionality
-        input_size = (input_width, g_dataset.shape[1])  # New input shape
-        output_size = (label_width, len(label_columns))  # New output shape
+        input_size = (input_width, window_14x7.train_ds.shape[1])  # New input shape
+        output_size = (label_width, len(window_14x7.label_columns))  # New output shape
 
         # Generates a new model with custom I/O, kernel and pool size
-        model = model_generator.convolutional_model(g_filter_size,
-                                                    kernel_size,
-                                                    pool_size,
-                                                    input_size,
-                                                    output_size)
+        model = mg.convolutional_model(g_filter_size,
+                                       kernel_size,
+                                       pool_size,
+                                       input_size,
+                                       output_size)
 
         # Compiles and fits using a window that sees 14 days to predict 7 days
         self.history = compile_and_fit(model, window_14x7)
@@ -535,11 +521,11 @@ class Test_TestModels(unittest.TestCase):
         pool_size = [2, 3]
 
         # Generates a model with custom kernel size and pooling layer
-        model = model_generator.convolutional_model(g_filter_size,
-                                                    kernel_size,
-                                                    pool_size,
-                                                    g_input_size,
-                                                    g_output_size)
+        model = mg.convolutional_model(g_filter_size,
+                                       kernel_size,
+                                       pool_size,
+                                       g_input_size,
+                                       g_output_size)
 
         # Train the model using the default window
         self.history = compile_and_fit(model, g_window)
@@ -641,11 +627,11 @@ class Test_TestBatchSize(unittest.TestCase):
         window_128.batch_size = 128
 
         # Generates a generic model
-        model = model_generator.convolutional_model(g_filter_size,
-                                                    g_kernel_size,
-                                                    g_pool_size,
-                                                    g_input_size,
-                                                    g_output_size)
+        model = mg.convolutional_model(g_filter_size,
+                                       g_kernel_size,
+                                       g_pool_size,
+                                       g_input_size,
+                                       g_output_size)
 
         # Compiles and fits using a generic window with batch size of 128
         self.history = compile_and_fit(model, window_128)
@@ -662,11 +648,11 @@ class Test_TestBatchSize(unittest.TestCase):
         window_512.batch_size = 512
 
         # Generates a generic model
-        model = model_generator.convolutional_model(g_filter_size,
-                                                    g_kernel_size,
-                                                    g_pool_size,
-                                                    g_input_size,
-                                                    g_output_size)
+        model = mg.convolutional_model(g_filter_size,
+                                       g_kernel_size,
+                                       g_pool_size,
+                                       g_input_size,
+                                       g_output_size)
 
         # Compiles and fits using a generic window with batch size of 512
         self.history = compile_and_fit(model, window_512)
@@ -683,11 +669,11 @@ class Test_TestBatchSize(unittest.TestCase):
         window_256.batch_size = 256
 
         # Generates a generic model
-        model = model_generator.convolutional_model(g_filter_size,
-                                                    g_kernel_size,
-                                                    g_pool_size,
-                                                    g_input_size,
-                                                    g_output_size)
+        model = mg.convolutional_model(g_filter_size,
+                                       g_kernel_size,
+                                       g_pool_size,
+                                       g_input_size,
+                                       g_output_size)
 
         # Compiles and fits using a generic window with batch size of 256
         self.history = compile_and_fit(model, window_256)

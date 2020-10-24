@@ -1,7 +1,6 @@
-import unittest
-
 import os
-from pandas import read_csv
+import unittest
+import pandas as pd
 
 from IsCoffeeWet import config_file as cf
 from IsCoffeeWet import data_graph
@@ -13,8 +12,8 @@ class Test_TestDataGraph(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         # Sets the index using Datetime column
-        dataset = read_csv(PATH + "/database/test_parsed.csv",
-                           engine="c", index_col="Datetime", parse_dates=True)
+        dataset = pd.read_csv(PATH + "/database/test_parsed.csv",
+                              engine="c", index_col="Datetime", parse_dates=True)
         # Infers the frequency
         cls.dataset = dataset.asfreq(dataset.index.inferred_freq)
 

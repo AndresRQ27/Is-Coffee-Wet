@@ -1,6 +1,7 @@
 #! Code obtain from https://www.tensorflow.org/tutorials/structured_data/time_series#1_indexes_and_offsets
 
 import os
+
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf

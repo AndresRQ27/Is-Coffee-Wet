@@ -1,10 +1,9 @@
-import unittest
-
 import os
+import unittest
 import pandas as pd
 
-from IsCoffeeWet import data_parser
 from IsCoffeeWet import config_file as cf
+from IsCoffeeWet import data_parser
 
 PATH = os.getcwd() + "/resources/database"
 
