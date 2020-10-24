@@ -335,7 +335,7 @@ class Test_TestDay(unittest.TestCase):
 
         # *** Dataset preparation
         # Normalize the dataset
-        dataset_day = nn.standardize(dataset_day)
+        dataset_day, _, _ = nn.standardize(dataset_day)
 
         # Copy config file
         config_day = copy.deepcopy(g_config)
