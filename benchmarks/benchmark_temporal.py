@@ -466,5 +466,246 @@ class Test_TestBatchSize(unittest.TestCase):
         self.history = compile_and_fit(model, window_256)
 
 
+class Test_TestActivation(unittest.TestCase):
+    """
+    Test class with variations to the batch size of the data during training.
+    """
+
+    def setUp(self):
+        """
+        Set up function executed before each individual test
+        """
+        self.history: tf.keras.callbacks.History
+        self.name: str
+
+    def tearDown(self):
+        """
+        Tear down function executed after each individual test
+        """
+        global all_history
+
+        # Creates a DataFrame with the history
+        history_df = pd.DataFrame(self.history.history)
+
+        # Creates a new column with the name of the test to identify its data
+        history_df["name"] = self.name
+
+        # Saves each model history into the global DataFrame
+        all_history = all_history.append(history_df)
+
+    def test_gated_activation(self):
+        global g_input_size, g_output_size, g_window
+        global g_filter_size, g_kernel_size, g_dilations
+
+        # Name used to identify its data in the history
+        self.name = "gated_activation"
+
+        # Generates a generic model
+        model = mg.temp_conv_model(g_filter_size,
+                                   g_kernel_size,
+                                   g_dilations,
+                                   g_input_size,
+                                   g_output_size,
+                                   activation=activation.gated_activation)
+
+        # Compiles and fits using a generic window with batch size of 128
+        self.history = compile_and_fit(model, g_window)
+
+
+class Test_TestWindow(unittest.TestCase):
+    """
+    Test class with variations of the time window that the NN sees to do a
+    prediction. This changes the window and the I/O shapes of the NN.
+    """
+
+    def setUp(self):
+        """
+        Set up function executed before each individual test
+        """
+        self.history: tf.keras.callbacks.History
+        self.name: str
+
+    def tearDown(self):
+        """
+        Tear down function executed after each individual test
+        """
+        global all_history
+
+        # Creates a DataFrame with the history
+        history_df = pd.DataFrame(self.history.history)
+
+        # Creates a new column with the name of the test to identify its data
+        history_df["name"] = self.name
+
+        # Saves each model history into the global DataFrame
+        all_history = all_history.append(history_df)
+
+    def test_window_14(self):
+        """
+        Function that uses a window size of 14 days in the past to predict
+        the next 14 days.
+        """
+        global g_window, g_filter_size, g_kernel_size, g_dilations
+
+        # Name used to identify its data in the history
+        self.name = "window_14"
+
+        # *** Window
+        window_14 = copy.deepcopy(g_window)
+        input_width = 14 * 24
+        label_width = input_width
+
+        # Change the window values
+        window_14.input_width = input_width
+        window_14.label_width = label_width
+        window_14.shift = label_width
+
+        # Arguments for the model. Different input shape requires different NN configuration
+        input_size = (input_width, window_14.train_ds.shape[1])  # New input shape
+        output_size = (label_width, len(window_14.label_columns))  # New output shape
+
+        # Generates a new model with custom I/O, kernel and pool size
+        model = mg.convolutional_model(g_filter_size,
+                                       g_kernel_size,
+                                       g_dilations,
+                                       input_size,
+                                       output_size)
+
+        # Compiles and fits using a window of 14 days to predict 14 days
+        self.history = compile_and_fit(model, window_14)
+
+    def test_window_21(self):
+        """
+        Function that uses a window size of 14 days in the past to predict
+        the next 14 days.
+        """
+        global g_window, g_filter_size, g_kernel_size, g_dilations
+
+        # Name used to identify its data in the history
+        self.name = "window_21"
+
+        # *** Window
+        window_21 = copy.deepcopy(g_window)
+        input_width = 21 * 24
+        label_width = input_width
+
+        # Change the window values
+        window_21.input_width = input_width
+        window_21.label_width = label_width
+        window_21.shift = label_width
+
+        # Arguments for the model. Different input shape requires different NN configuration
+        input_size = (input_width, window_21.train_ds.shape[1])  # New input shape
+        output_size = (label_width, len(window_21.label_columns))  # New output shape
+
+        # Generates a new model with custom I/O, kernel and pool size
+        model = mg.convolutional_model(g_filter_size,
+                                       g_kernel_size,
+                                       g_dilations,
+                                       input_size,
+                                       output_size)
+
+        # Compiles and fits using a window of 21 days to predict 21 days
+        self.history = compile_and_fit(model, window_21)
+
+
+class Test_TestModels(unittest.TestCase):
+    """
+    Test class with variations of the architectural configurations of the model.
+    This includes changes in the kernel size, filters and dilation,
+    """
+
+    def setUp(self):
+        """
+        Set up function executed before each individual test
+        """
+        self.history: tf.keras.callbacks.History
+        self.name: str
+
+    def tearDown(self):
+        """
+        Tear down function executed after each individual test
+        """
+        global all_history
+
+        # Creates a DataFrame with the history
+        history_df = pd.DataFrame(self.history.history)
+
+        # Creates a new column with the name of the test to identify its data
+        history_df["name"] = self.name
+
+        # Saves each model history into the global DataFrame
+        all_history = all_history.append(history_df)
+
+    def test_model_2(self):
+        """
+        Function that compiles and train the default CNN to use as baseline.
+        """
+        global g_output_size, g_input_size, g_window
+
+        # Name used to identify its data in the history
+        self.name = "model_2"
+
+        filter_size = [160, 160, 96]
+        kernel_size = [10, 2, 2]
+        dilations = 3
+
+        # Compiles the model with the default values
+        model = mg.temp_conv_model(filter_size,
+                                   kernel_size,
+                                   dilations,
+                                   g_input_size,
+                                   g_output_size)
+
+        # Train the model using the default window
+        self.history = compile_and_fit(model, g_window)
+
+    def test_model_3(self):
+        """
+        Function that compiles and train the default CNN to use as baseline.
+        """
+        global g_output_size, g_input_size, g_window
+
+        # Name used to identify its data in the history
+        self.name = "model_3"
+
+        filter_size = [256, 96, 96, 192, 128]
+        kernel_size = [6, 10, 2, 6, 12]
+        dilations = 5
+
+        # Compiles the model with the default values
+        model = mg.temp_conv_model(filter_size,
+                                   kernel_size,
+                                   dilations,
+                                   g_input_size,
+                                   g_output_size)
+
+        # Train the model using the default window
+        self.history = compile_and_fit(model, g_window)
+
+    def test_model_4(self):
+        """
+        Function that compiles and train the default CNN to use as baseline.
+        """
+        global g_output_size, g_input_size, g_window
+
+        # Name used to identify its data in the history
+        self.name = "model_4"
+
+        filter_size = [192, 64, 128, 96, 128, 64]
+        kernel_size = [6, 12, 10, 6, 10, 6]
+        dilations = 6
+
+        # Compiles the model with the default values
+        model = mg.temp_conv_model(filter_size,
+                                   kernel_size,
+                                   dilations,
+                                   g_input_size,
+                                   g_output_size)
+
+        # Train the model using the default window
+        self.history = compile_and_fit(model, g_window)
+
+
 if __name__ == '__main__':
     unittest.main()
