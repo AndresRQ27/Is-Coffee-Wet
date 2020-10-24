@@ -39,7 +39,7 @@ class Test_TestDataParser(unittest.TestCase):
         # Test if there is a NaN value
         # noinspection SpellCheckingInspection
         with self.subTest(msg="NaN test"):
-            # isna() returns False in value is NaN
+            # notna() returns False in value is NaN
             # Use all() to detect if there is a single False value (NaN)
             # First all check for True in all columns
             # Second all check for True across all columns
