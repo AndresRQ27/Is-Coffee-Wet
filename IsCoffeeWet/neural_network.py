@@ -37,6 +37,12 @@ def standardize(dataset):
     return dataset, ds_mean, ds_std
 
 
+def de_standardize(dataset, mean, std):
+    # TODO: documentation
+    dataset = dataset * std + mean
+    return dataset
+
+
 def split_dataset(dataset, config_file):
     """
     Function that split the dataset into groups in a proportion determined
@@ -117,6 +123,7 @@ def save_model(model, path):
 
     model.save(path)
     print("Your model has been save to '{}'".format(path))
+
 
 """
 # Use tensorboard

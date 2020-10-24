@@ -1,6 +1,6 @@
-import unittest
-
 import os
+import unittest
+import numpy as np
 import pandas as pd
 
 from IsCoffeeWet import config_file as cf
@@ -15,7 +15,7 @@ class Test_TestNeuralNetwork(unittest.TestCase):
         # Sets the index using Datetime column
 
         cls.dataset = pd.read_csv(PATH + "/database/test_parsed.csv",
-                               engine="c", index_col="Datetime", parse_dates=True)
+                                  engine="c", index_col="Datetime", parse_dates=True)
         # Infers the frequency
         cls.dataset = cls.dataset.asfreq(cls.dataset.index.inferred_freq)
 
@@ -46,6 +46,17 @@ class Test_TestNeuralNetwork(unittest.TestCase):
 
         # Original size must remain
         self.assertEqual(len(train_ds) + len(val_ds) + len(test_ds), len(datetime_index))
+
+    def test_de_normalize(self):
+        # We first need to normalize a dataset
+        normalized_ds, mean, std = neural_network.standardize(self.dataset)
+        restored_ds = neural_network.de_standardize(normalized_ds, mean, std)
+
+        # Calculates the smallest value non-zero representable and multiplies by 10
+        least_value = np.finfo("float64").resolution*10
+
+        # Restored dataset must be equal to the original
+        self.assertTrue((self.dataset-restored_ds < least_value).all().all())
 
 
 if __name__ == '__main__':
