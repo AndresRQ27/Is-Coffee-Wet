@@ -114,10 +114,10 @@ def benchmark_graph_summary(dataset, path, name):
         # Obtains the values to plot from each test
         for name in name_dict:
             data = dataset.loc[dataset["Name"] == name, column]
-            min_value.append(round(data.min(), 3))
-            max_value.append(round(data.max(), 3))
-            avg_value.append(round(data.mean(), 3))
-            last_value.append(round(data.iloc[-1], 3))
+            min_value.append(data.min())
+            max_value.append(data.max())
+            avg_value.append(data.mean())
+            last_value.append(data.iloc[-1])
 
         # Set position of bar on X axis
         min_pos = np.arange(len(min_value))
@@ -140,10 +140,10 @@ def benchmark_graph_summary(dataset, path, name):
                 edgecolor="white", label="last")
 
         for i in range(len(min_value)):
-            plt.text(min_pos[i]-0.09, 0, min_value[i], fontsize=9, color="white")
-            plt.text(max_pos[i]-0.09, 0, max_value[i], fontsize=9, color="white")
-            plt.text(avg_pos[i]-0.09, 0, avg_value[i], fontsize=9, color="white")
-            plt.text(last_pos[i]-0.09, 0, last_value[i], fontsize=9, color="white")
+            plt.text(min_pos[i]-0.09, 0, round(min_value[i], 3), fontsize=9, color="white")
+            plt.text(max_pos[i]-0.09, 0, round(max_value[i], 3), fontsize=9, color="white")
+            plt.text(avg_pos[i]-0.09, 0, round(avg_value[i], 3), fontsize=9, color="white")
+            plt.text(last_pos[i]-0.09, 0, round(last_value[i], 3), fontsize=9, color="white")
 
         # Add xticks on the middle of the group bars
         plt.xlabel(column, fontweight="bold")
