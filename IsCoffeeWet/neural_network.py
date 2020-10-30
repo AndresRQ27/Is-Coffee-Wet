@@ -1,3 +1,6 @@
+import pandas as pd
+
+
 def standardize(dataset):
     """
     Function that standardizes the values in all the columns present in the
@@ -61,6 +64,43 @@ def de_standardize(dataset, mean, std):
     """
     dataset = dataset * std + mean
     return dataset
+
+
+def mape(dataset, config, model):
+    """
+    Calculates the Mean-Absolute-Percentage-Error (MAPE) for an un-standardize
+    dataset. It is done only for the last window of the dataset, with the
+    window size given by `config.forecast`.
+
+    Parameters
+    ----------
+    dataset: pandas.DataFrame
+        Weather dataset without standardization/normalization
+    config: config_file.ConfigFile
+        Config file of the program to read the forecast
+    model: tensorflow.keras.Model
+        Trained NN to generate the predictions
+
+    Returns
+    -------
+    pandas.DataFrame
+        MAPE for each value in the last window of the dataset. Can contain
+        NaNs
+    """
+    last_data = dataset.iloc[-config.forecast:]
+    last_label = dataset[config.labels].iloc[-config.forecast:]
+    prediction = model(last_data.to_numpy(), training=False)
+
+    # Transform predictions to a DataFrame
+    prediction = pd.DataFrame(prediction.numpy(),
+                              columns=config.labels,
+                              index=last_label.index)
+
+    # TODO: fix infinites
+    # Calculates the MAPE.
+    prediction = 100 * (last_label - prediction).abs() / last_label
+
+    return prediction
 
 
 def split_dataset(dataset, config_file):
