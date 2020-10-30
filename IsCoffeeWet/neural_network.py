@@ -38,7 +38,27 @@ def standardize(dataset):
 
 
 def de_standardize(dataset, mean, std):
-    # TODO: documentation
+    """
+    Inverse function of the standarization. Restores the dataset to the
+    normal values to obtain the real prediction used in the final output.
+
+    Parameters
+    ----------
+    dataset: pandas.DataFrame
+        Dataset with the data to de-standardize.
+    mean: pandas.DataFrame
+        DataFrame with the mean of each column, obtained from the standardize
+        function.
+    std: pandas.DataFrame
+        DataFrame with the std of each column, obtained from the standardize
+        function.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Dataset with the data de-standardized. Can no longer be used to feed
+        into the neural network.
+    """
     dataset = dataset * std + mean
     return dataset
 
