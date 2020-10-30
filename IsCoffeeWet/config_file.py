@@ -1,5 +1,7 @@
 import json
+import warnings
 
+import numpy as np
 import pandas as pd
 
 
@@ -44,7 +46,22 @@ class ConfigFile:
                 self.freq = config_file["frequency"]
 
                 # Amount of days to forecast
-                self.forecast = config_file["forecast_window"]
+                forecast = config_file["forecast_window"]
+
+                # Analyzes if the forecast window is bigger than the
+                # frequency of the dataset
+
+                # Transforms the frequency from string to Timedelta
+                delta_freq = pd.Timedelta(self.freq)
+                # Threshold that represent the amount of days in int
+                threshold = delta_freq.days + delta_freq.seconds / 86400
+
+                if threshold >= forecast:
+                    # If the frequency of the dataset is bigger than the forecast window, NN won't work
+                    raise ValueError("Frequency can't be bigger than forecast window")
+                else:
+                    # Always round down. Forecast will always be in hours IN THE CODE!!!!
+                    self.forecast = np.floor(forecast / threshold)
 
                 # Boolean to graph the col
                 self.graph = config_file["graph_data"]
@@ -71,7 +88,12 @@ class ConfigFile:
 
                 # Removes the unwanted columns
                 for column_name in delete_columns:
-                    self.columns.remove(column_name)
+                    try:
+                        self.columns.remove(column_name)
+                    except ValueError:
+                        warnings.warn("Some column names to remove don't exist. "
+                                      "Check that the names in the Config File match the "
+                                      "ones on the dataset")
 
                 # Creates an empty dictionary for the column encoding
                 self.encode = {}
@@ -97,3 +119,8 @@ class ConfigFile:
 
                 self.training = config_file["neural_network"]["training_set"]
                 self.validation = config_file["neural_network"]["validation_set"]
+
+                labels = config_file["neural_network"]["labels"]
+
+                # If no labels are provided, use the columns as labels
+                self.labels = labels if labels else self.columns
