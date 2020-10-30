@@ -20,18 +20,17 @@ g_dataset: pd.DataFrame
 g_config: cf.ConfigFile
 g_train: pd.DataFrame
 g_val: pd.DataFrame
-g_test: pd.DataFrame
 g_window: wg.WindowGenerator
 g_filter_size: int
 g_kernel_size: int
 g_pool_size: int
 g_input_size: tuple
 g_output_size: tuple
+g_label_columns: list
 
 all_history: pd.DataFrame
 
 
-# TODO: use a seed for weight initialization
 # ************************************
 
 def setUpModule():
@@ -41,7 +40,7 @@ def setUpModule():
     Initialize all the global values used by the latter tests.
     """
 
-    global g_dataset, g_config, g_train, g_val, g_test, g_window, all_history
+    global g_dataset, g_config, g_train, g_val, g_window, all_history, g_label_columns
     global g_filter_size, g_kernel_size, g_pool_size, g_input_size, g_output_size
 
     # *** Dataset
@@ -60,23 +59,23 @@ def setUpModule():
     # Use the entire data with the benchmarks, as the models won't be saved
     g_config.training = 1
     g_config.validation = 0.1
-    g_config.num_data, g_config.num_features = g_dataset.shape
+    g_config.num_data = g_dataset.shape[0]
 
     # *** Dataset preparation
     # Normalize the dataset
     g_dataset, _, _ = nn.standardize(g_dataset)
 
     # Partition the dataset
-    _, g_train, g_val, g_test = nn.split_dataset(g_dataset, g_config)
+    _, g_train, g_val, _ = nn.split_dataset(g_dataset, g_config)
 
     # *** Window
     # A week in hours
     input_width = 7 * 24
     label_width = input_width
-    label_columns = g_dataset.columns.tolist()
+    g_label_columns = g_dataset.columns.tolist()
 
     # Removes th sin/cos columns from the labels
-    label_columns = label_columns[:-4]
+    g_label_columns = g_label_columns[:-4]
 
     # Window of 7 days for testing the NN
     g_window = wg.WindowGenerator(input_width=input_width,
@@ -84,8 +83,8 @@ def setUpModule():
                                   shift=label_width,
                                   train_ds=g_train,
                                   val_ds=g_val,
-                                  test_ds=g_test,
-                                  label_columns=label_columns,
+                                  test_ds=_,
+                                  label_columns=g_label_columns,
                                   batch_size=64)
 
     # Arguments of the default NN
@@ -93,11 +92,19 @@ def setUpModule():
     g_kernel_size = 24  # The kernel will see a day of data
     g_pool_size = 2  # Pooling of the data to reduce the dimensions
     g_input_size = (input_width, g_dataset.shape[1])  # Input size of the model
-    g_output_size = (label_width, len(label_columns))  # Output size of the model
+    g_output_size = (label_width, len(g_label_columns))  # Output size of the model
 
     # *** Dataframe
     # Dataframe use to store the history of each training, then save it
-    all_history = pd.DataFrame()
+    try:
+        # Overwrites past results. Resets the index for no deletion of incorrect data
+        all_history = pd.read_csv(PATH + "/results/benchmark_convolutional.csv",
+                                  engine="c", index_col=0)
+        all_history = all_history.reset_index()
+        all_history.pop("index")
+    except FileNotFoundError:
+        # Creates new results
+        all_history = pd.DataFrame()
 
 
 def tearDownModule():
@@ -115,7 +122,7 @@ def tearDownModule():
         all_history.to_csv(file)
 
 
-def compile_and_fit(model, window, patience=20, learning_rate=0.0001,
+def compile_and_fit(model, window, patience=10, learning_rate=0.0001,
                     max_epochs=100):
     """
     Function that compiles and train the model. It's a generic function as
@@ -143,7 +150,6 @@ def compile_and_fit(model, window, patience=20, learning_rate=0.0001,
     tf.keras.callbacks.History
         Objects that contains the history of the model training.
     """
-    # TODO: add tensorboard to the callback
     # Sets an early stopping callback to prevent over-fitting
     early_stopping = tf.keras.callbacks.EarlyStopping(monitor='val_loss',
                                                       min_delta=0,
@@ -183,6 +189,16 @@ class Test_TestBase(unittest.TestCase):
         Tear down function executed after each individual test
         """
         global all_history
+
+        # Dataframe is not empty
+        if all_history.shape != (0, 0):
+            # Resets all index so it doesn't eliminate wrong data
+            all_history.reset_index(inplace=True, drop=True)
+            # Locates the rows with the same name
+            # Gets the index of the rows
+            # Drop those rows
+            all_history = all_history.drop(
+                (all_history.loc[all_history["name"] == self.name]).index)
 
         # Creates a DataFrame with the history
         history_df = pd.DataFrame(self.history.history)
@@ -233,6 +249,16 @@ class Test_TestNoEncoding(unittest.TestCase):
         """
         global all_history
 
+        # Dataframe is not empty
+        if all_history.shape != (0, 0):
+            # Resets all index so it doesn't eliminate wrong data
+            all_history.reset_index(inplace=True, drop=True)
+            # Locates the rows with the same name
+            # Gets the index of the rows
+            # Drop those rows
+            all_history = all_history.drop(
+                (all_history.loc[all_history["name"] == self.name]).index)
+
         # Creates a DataFrame with the history
         history_df = pd.DataFrame(self.history.history)
 
@@ -247,37 +273,36 @@ class Test_TestNoEncoding(unittest.TestCase):
         Function that removes the encoded columns from the partitioned
         database stored in the window
         """
-        global g_filter_size, g_kernel_size, g_pool_size, g_test, g_val, g_train
-        global g_output_size, g_window
+        global g_filter_size, g_kernel_size, g_pool_size, g_val, g_train
+        global g_output_size, g_label_columns, g_val, g_train
 
         # Name used to identify its data in the history
         self.name = "no_encoding"
 
-        # Copy the original window to modify only the sets
-        window_ne = copy.deepcopy(g_window)
-
         # Drops the encoding for each set present in the window
-        window_ne.test_ds = g_test.drop(["day sin",
-                                         "day cos",
-                                         "year sin",
-                                         "year cos"], axis=1)
+        train_ds = g_train.drop(["day sin",
+                                 "day cos",
+                                 "year sin",
+                                 "year cos"], axis=1)
 
-        window_ne.train_ds = g_train.drop(["day sin",
-                                           "day cos",
-                                           "year sin",
-                                           "year cos"], axis=1)
+        val_ds = g_val.drop(["day sin",
+                             "day cos",
+                             "year sin",
+                             "year cos"], axis=1)
 
-        window_ne.val_ds = g_val.drop(["day sin",
-                                       "day cos",
-                                       "year sin",
-                                       "year cos"], axis=1)
+        # *** Window
+        input_width = 7 * 24
 
-        # Re-define the input/output size for the model
-        input_width = 24 * 7  # A week in hours
-        label_columns = window_ne.train_ds.shape[1]  # Number of features as an input
+        # Change the window values
+        window_ne = wg.WindowGenerator(input_width=input_width,
+                                       label_width=input_width,
+                                       shift=input_width,
+                                       train_ds=train_ds,
+                                       val_ds=val_ds,
+                                       label_columns=g_label_columns)
 
         # Re-defines only the input size as it's the one that changed
-        input_size = (input_width, label_columns)
+        input_size = (input_width, len(g_label_columns))
 
         # Generates a model with a custom input size as the encoding columns are not present
         model = mg.convolutional_model(g_filter_size,
@@ -308,6 +333,16 @@ class Test_TestDay(unittest.TestCase):
         Tear down function executed after each individual test
         """
         global all_history
+
+        # Dataframe is not empty
+        if all_history.shape != (0, 0):
+            # Resets all index so it doesn't eliminate wrong data
+            all_history.reset_index(inplace=True, drop=True)
+            # Locates the rows with the same name
+            # Gets the index of the rows
+            # Drop those rows
+            all_history = all_history.drop(
+                (all_history.loc[all_history["name"] == self.name]).index)
 
         # Creates a DataFrame with the history
         history_df = pd.DataFrame(self.history.history)
@@ -345,25 +380,20 @@ class Test_TestDay(unittest.TestCase):
 
         # *** Window
         input_width = 7  # No longer hours, so only 7 days
-        label_width = input_width  # Label same size as the input
-        label_columns = dataset_day.columns.tolist()  # Number of features
-
-        # Removes th sin/cos columns from the labels
-        label_columns = label_columns[:-4]
 
         # Window of 7 days using a dataset resampled by days
         window_day = wg.WindowGenerator(input_width=input_width,
-                                        label_width=label_width,
-                                        shift=label_width,
+                                        label_width=input_width,
+                                        shift=input_width,
                                         train_ds=train_day,
                                         val_ds=val_day,
                                         test_ds=test_day,
-                                        label_columns=label_columns)
+                                        label_columns=g_label_columns)
 
         kernel_size = 2  # Days the filter will see
         pool_size = [2, 1]  # Pool size to reduce dimensions
         input_size = (input_width, g_dataset.shape[1])  # Model's input shape
-        output_size = (label_width, len(label_columns))  # Model's output shape
+        output_size = (input_width, len(g_label_columns))  # Model's output shape
 
         # Generates a model with custom kernel size as I/O are different
         model = mg.convolutional_model(g_filter_size,
@@ -395,6 +425,16 @@ class Test_TestWindow(unittest.TestCase):
         """
         global all_history
 
+        # Dataframe is not empty
+        if all_history.shape != (0, 0):
+            # Resets all index so it doesn't eliminate wrong data
+            all_history.reset_index(inplace=True, drop=True)
+            # Locates the rows with the same name
+            # Gets the index of the rows
+            # Drop those rows
+            all_history = all_history.drop(
+                (all_history.loc[all_history["name"] == self.name]).index)
+
         # Creates a DataFrame with the history
         history_df = pd.DataFrame(self.history.history)
 
@@ -409,26 +449,27 @@ class Test_TestWindow(unittest.TestCase):
         Function that uses a window size of 14 days in the past to predict
         the next 14 days.
         """
-        global g_window, g_filter_size
+        global g_window, g_filter_size, g_label_columns
 
         # Name used to identify its data in the history
         self.name = "window_14"
 
         # *** Window
-        window_14 = copy.deepcopy(g_window)
         input_width = 14 * 24
-        label_width = input_width
 
         # Change the window values
-        window_14.input_width = input_width
-        window_14.label_width = label_width
-        window_14.shift = label_width
+        window_14 = wg.WindowGenerator(input_width=input_width,
+                                       label_width=input_width,
+                                       shift=input_width,
+                                       train_ds=g_train,
+                                       val_ds=g_val,
+                                       label_columns=g_label_columns)
 
         # Arguments for the model. Different input shape requires different NN configuration
         kernel_size = [48, 24, 12]  # Reduce the kernel size in each layer
         pool_size = 4  # Pool size divides by 4 to reduce dimensionality
-        input_size = (input_width, window_14.train_ds.shape[1])  # New input shape
-        output_size = (label_width, len(window_14.label_columns))  # New output shape
+        input_size = (input_width, len(window_14.column_indices))  # New input shape
+        output_size = (input_width, len(g_label_columns))  # New output shape
 
         # Generates a new model with custom I/O, kernel and pool size
         model = mg.convolutional_model(g_filter_size,
@@ -451,20 +492,22 @@ class Test_TestWindow(unittest.TestCase):
         self.name = "window_14x7"
 
         # *** Window
-        window_14x7 = copy.deepcopy(g_window)
         input_width = 14 * 24  # Reads 14 days in the past in hours
         label_width = 7 * 24  # Predicts 7 days in the future in hours
 
         # Change the window values
-        window_14x7.input_width = input_width
-        window_14x7.label_width = label_width
-        window_14x7.shift = label_width
+        window_14x7 = wg.WindowGenerator(input_width=input_width,
+                                         label_width=label_width,
+                                         shift=label_width,
+                                         train_ds=g_train,
+                                         val_ds=g_val,
+                                         label_columns=g_label_columns)
 
         # Arguments for the model. Different input shape requires different NN configuration
         kernel_size = [48, 24, 12]  # Reduce the kernel size in each layer
         pool_size = 4  # Pool size divides by 4 to reduce dimensionality
-        input_size = (input_width, window_14x7.train_ds.shape[1])  # New input shape
-        output_size = (label_width, len(window_14x7.label_columns))  # New output shape
+        input_size = (input_width, len(window_14x7.column_indices))  # New input shape
+        output_size = (input_width, len(g_label_columns))  # New output shape
 
         # Generates a new model with custom I/O, kernel and pool size
         model = mg.convolutional_model(g_filter_size,
@@ -496,6 +539,16 @@ class Test_TestModels(unittest.TestCase):
         Tear down function executed after each individual test
         """
         global all_history
+
+        # Dataframe is not empty
+        if all_history.shape != (0, 0):
+            # Resets all index so it doesn't eliminate wrong data
+            all_history.reset_index(inplace=True, drop=True)
+            # Locates the rows with the same name
+            # Gets the index of the rows
+            # Drop those rows
+            all_history = all_history.drop(
+                (all_history.loc[all_history["name"] == self.name]).index)
 
         # Creates a DataFrame with the history
         history_df = pd.DataFrame(self.history.history)
@@ -605,6 +658,16 @@ class Test_TestBatchSize(unittest.TestCase):
         Tear down function executed after each individual test
         """
         global all_history
+
+        # Dataframe is not empty
+        if all_history.shape != (0, 0):
+            # Resets all index so it doesn't eliminate wrong data
+            all_history.reset_index(inplace=True, drop=True)
+            # Locates the rows with the same name
+            # Gets the index of the rows
+            # Drop those rows
+            all_history = all_history.drop(
+                (all_history.loc[all_history["name"] == self.name]).index)
 
         # Creates a DataFrame with the history
         history_df = pd.DataFrame(self.history.history)
