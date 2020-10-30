@@ -153,7 +153,7 @@ def temp_conv_model(filter_size, kernel_size, dilations, input_size,
     output_size: tuple[int]
         Shape of the output for the network. It has the number of
         data to generates and the number of features the predict.
-    activation: string or activation, optional
+    activation: string or activation.function, optional
         Activation function to use in the residual layers. Can be a string
         if using the name of a generic function provided by tensorflow or a
         custom function from the activation file
@@ -167,6 +167,8 @@ def temp_conv_model(filter_size, kernel_size, dilations, input_size,
     Returns
     -------
 
+    tensorflow.keras.Model
+        Created model of the network.
     """
     # Check if the inputs are numbers. Convert them to lists
     filter_size = check_ifint(filter_size, dilations)
