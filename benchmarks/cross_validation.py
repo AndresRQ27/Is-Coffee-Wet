@@ -69,6 +69,7 @@ def benchmark_graph_all(dataset, path, name, max_epochs=100):
         plt.legend()
         # Saves the image
         plt.savefig("{}/{}.png".format(path, column))
+        plt.close()
 
 
 def benchmark_graph_summary(dataset, path, name):
@@ -140,10 +141,10 @@ def benchmark_graph_summary(dataset, path, name):
                 edgecolor="white", label="last")
 
         for i in range(len(min_value)):
-            plt.text(min_pos[i]-0.09, 0, round(min_value[i], 3), fontsize=9, color="white")
-            plt.text(max_pos[i]-0.09, 0, round(max_value[i], 3), fontsize=9, color="white")
-            plt.text(avg_pos[i]-0.09, 0, round(avg_value[i], 3), fontsize=9, color="white")
-            plt.text(last_pos[i]-0.09, 0, round(last_value[i], 3), fontsize=9, color="white")
+            plt.text(min_pos[i]-0.09, 0, round(min_value[i], 3), fontsize=9, color="black")
+            plt.text(max_pos[i]-0.09, 0, round(max_value[i], 3), fontsize=9, color="black")
+            plt.text(avg_pos[i]-0.09, 0, round(avg_value[i], 3), fontsize=9, color="black")
+            plt.text(last_pos[i]-0.09, 0, round(last_value[i], 3), fontsize=9, color="black")
 
         # Add xticks on the middle of the group bars
         plt.xlabel(column, fontweight="bold")
@@ -154,3 +155,4 @@ def benchmark_graph_summary(dataset, path, name):
         plt.legend()
         # Saves the image
         plt.savefig("{}/{}_bars.png".format(path, column))
+        plt.close()
