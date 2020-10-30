@@ -56,6 +56,13 @@ def setUpModule():
     config.num_data = dataset.shape[0]
 
     # *** Dataset preparation
+
+    # Drops the encoding for each set present in the window
+    dataset = dataset.drop(["day sin",
+                            "day cos",
+                            "year sin",
+                            "year cos"], axis=1)
+
     # Normalize the dataset
     dataset, _, _ = nn.standardize(dataset)
 
@@ -70,7 +77,7 @@ def setUpModule():
     # Removes th sin/cos columns from the labels
     label_columns = label_columns[:-4]
 
-    # Window of 7 days for testing the NN
+    # Window of 7 days for testing the NN. Batch size of 512
     g_window = wg.WindowGenerator(input_width=input_width,
                                   label_width=input_width,
                                   shift=input_width,
@@ -78,12 +85,12 @@ def setUpModule():
                                   val_ds=val_ds,
                                   test_ds=_,
                                   label_columns=label_columns,
-                                  batch_size=64)
+                                  batch_size=512)
 
-    # Arguments of the default NN
+    # Arguments of the default NN. Use kernel increment values
     g_filter_size = [96, 192, 208]  # Neurons in a conv layer
-    g_kernel_size = 24  # The kernel will see a day of data
-    g_pool_size = 2  # Pooling of the data to reduce the dimensions
+    g_kernel_size = [5, 11, 24]  # The kernel will see a day of data
+    g_pool_size = [2, 3]  # Pooling of the data to reduce the dimensions
     g_input_size = (input_width, dataset.shape[1])  # Input size of the model
 
     # *** Dataframe
