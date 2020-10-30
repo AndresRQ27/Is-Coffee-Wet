@@ -129,7 +129,45 @@ def convolutional_model(filter_size, kernel_size, pool_size,
 def temp_conv_model(filter_size, kernel_size, dilations, input_size,
                     output_size, activation="relu", dropout=0.2,
                     graph_path=None):
-    # TODO: documentation
+    """
+    Function that generates a temporal convolutional model with the shape
+    declared by the inputs.
+
+    Parameters
+    ----------
+
+    filter_size: int or list[int]
+        Number of filters to use in the convolutional layers. Can be
+        thought as a neuron in a dense layer.
+    kernel_size: int or list[int]
+        Number of data the filter will see. A number of dimensions
+        equals to the kernel size will be subtracted as there's no
+        padding in the convolutional layers.
+    dilations: int
+        Number of dilations to do. This is reflected in the number of layers
+        created. Dilation is power to square in each layer (e.g. 1, 2, 4,
+        8, ...)
+    input_size: tuple[int]
+        Shape of the input for the network. It has the number of
+        data to receive and the number of features to use.
+    output_size: tuple[int]
+        Shape of the output for the network. It has the number of
+        data to generates and the number of features the predict.
+    activation: string or activation, optional
+        Activation function to use in the residual layers. Can be a string
+        if using the name of a generic function provided by tensorflow or a
+        custom function from the activation file
+    dropout: float, optional
+        Float between 0 and 1. Fraction of the input units to drop. By
+        default, it's 0.2
+    graph_path: string, optional
+        String with the path to save the graph of the model created. By
+        default, its `None` so no graph will be generated.
+
+    Returns
+    -------
+
+    """
     # Check if the inputs are numbers. Convert them to lists
     filter_size = check_ifint(filter_size, dilations)
     kernel_size = check_ifint(kernel_size, dilations)
