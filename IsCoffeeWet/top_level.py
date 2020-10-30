@@ -65,13 +65,13 @@ print(dataset.describe().transpose())
 datetime_index, train_ds, val_ds, test_ds = nn.split_dataset(dataset, config_ds)
 
 # Generates a window for the training of the neural network
-window = wg.WindowGenerator(input_width=config_ds.forecast * 24,
-                            label_width=config_ds.forecast * 24,
-                            shift=config_ds.forecast * 24,
+window = wg.WindowGenerator(input_width=config_ds.forecast,
+                            label_width=config_ds.forecast,
+                            shift=config_ds.forecast,
                             train_ds=train_ds,
                             val_ds=val_ds,
                             test_ds=test_ds,
-                            label_columns=config_ds.columns)
+                            label_columns=config_ds.labels)
 
 # Plots a random window from the test dataset to show the label
 if config_ds.graph:
