@@ -163,7 +163,7 @@ class WindowGenerator:
             Column name of the data to plot.
         path_images: string
             Path to the parent folder to save the graphs
-        data: tensorflow.data.Dataset, optional
+        data: tuple[numpy.ndarray, numpy.ndarray], optional
             Specific data to use to plot the graphs. Can be left empty to
             use an example data from the train set
         model: tensorflow.keras.Model, optional
@@ -180,7 +180,7 @@ class WindowGenerator:
             print("\n{} already exists".format(path_images))
 
         # Takes the inputs and labels from the example or the data
-        inputs, labels = next(iter(data)) if data is not None else self.example
+        inputs, labels = data if data is not None else self.example
 
         # Sets the figure size
         plt.figure(figsize=(12, 8))
@@ -229,6 +229,7 @@ class WindowGenerator:
         plt.xlabel('Time [h]')
         # Saves the image
         plt.savefig("{}/{}.png".format(path_images, plot_col))
+        plt.close()
 
     def make_dataset(self, data):
         """
