@@ -22,8 +22,13 @@ g_filter_size: int
 g_kernel_size: int
 g_dilations: int
 g_input_size: tuple
+prediction_data: pd.DataFrame
+prediction_label: pd.DataFrame
+g_mean: pd.DataFrame
+g_std: pd.DataFrame
 
 all_history: pd.DataFrame
+prediction_result: pd.DataFrame
 
 
 # ************************************
@@ -35,8 +40,8 @@ def setUpModule():
     Initialize all the global values used by the latter tests.
     """
 
-    global g_window, all_history, g_input_size
-    global g_filter_size, g_kernel_size, g_dilations
+    global g_window, all_history, g_input_size, prediction_data, g_mean, g_std
+    global g_filter_size, g_kernel_size, g_dilations, prediction_result, prediction_label
 
     # *** Dataset
     # Loads the dataset
@@ -58,7 +63,7 @@ def setUpModule():
 
     # *** Dataset preparation
     # Normalize the dataset
-    dataset, _, _ = nn.standardize(dataset)
+    dataset, g_mean, g_std = nn.standardize(dataset)
 
     # Partition the dataset
     _, train_ds, val_ds, _ = nn.split_dataset(dataset, config)
@@ -81,6 +86,15 @@ def setUpModule():
                                   label_columns=label_columns,
                                   batch_size=512)
 
+    # Saves the last window from the normalize dataset
+    # Used to evaluate results from group vs individual
+    prediction_data = dataset[-336:-168].to_numpy()
+    prediction_label = dataset[-168:].to_numpy()
+
+    # Expand dimensions as the model expects the data in a batch
+    prediction_data = tf.expand_dims(prediction_data, 0)
+    prediction_label = tf.expand_dims(prediction_label, 0)
+
     # Arguments of the default NN. Tested with the model 2
     g_filter_size = [160, 160, 96]
     g_kernel_size = [10, 2, 2]
@@ -88,6 +102,8 @@ def setUpModule():
     g_input_size = (input_width, dataset.shape[1])  # Input size of the model
 
     # *** Dataframe
+    prediction_result = pd.DataFrame()
+
     # Dataframe use to store the history of each training, then save it
     try:
         # Overwrites past results.
@@ -105,12 +121,17 @@ def tearDownModule():
     Saves the pandas DataFrame that contains the history of all the test into
     a csv for later evaluation.
     """
-    global all_history
+    global all_history, prediction_result
 
     # Save to csv:
-    csv_file = PATH + "/results/benchmark_labels_temporal.csv"
-    with open(csv_file, mode='w') as file:
+    history_csv = PATH + "/results/benchmark_labels_temporal.csv"
+    predict_csv = PATH + "/results/prediction/labels_temporal.csv"
+
+    with open(history_csv, mode='w') as file:
         all_history.to_csv(file)
+
+    with open(predict_csv, mode='w') as file:
+        prediction_result.to_csv(file)
 
 
 def compile_and_fit(model, window, patience=4, learning_rate=0.0001,
@@ -173,13 +194,14 @@ class Test_TestBase(unittest.TestCase):
         Set up function executed before each individual test
         """
         self.history: tf.keras.callbacks.History
+        self.predict: pd.DataFrame
         self.name: str
 
     def tearDown(self):
         """
         Tear down function executed after each individual test
         """
-        global all_history
+        global all_history, prediction_result
 
         # Dataframe is not empty
         if all_history.shape != (0, 0):
@@ -200,12 +222,15 @@ class Test_TestBase(unittest.TestCase):
         # Saves each model history into the global DataFrame
         all_history = all_history.append(history_df)
 
+        # Saves the test prediction into a global prediction table
+        prediction_result = prediction_result.append(self.predict)
+
     def test_generic_network(self):
         """
         Function that compiles and train the default CNN to use as baseline.
         """
-        global g_filter_size, g_kernel_size, g_dilations
-        global g_window, g_input_size
+        global g_filter_size, g_kernel_size, g_dilations, g_mean, g_std
+        global g_window, g_input_size, prediction_data, prediction_label
 
         # Name used to identify its data in the history
         self.name = "generic"
@@ -223,6 +248,20 @@ class Test_TestBase(unittest.TestCase):
         # Train the model using the default window
         self.history = compile_and_fit(model, g_window)
 
+        # Gets the prediction and saves it into a DataFrame
+        predict = pd.DataFrame(model(prediction_data).numpy().reshape((168, 15)),
+                               columns=g_window.label_columns)
+
+        # De-standardize the prediction
+        self.predict = nn.de_standardize(predict, g_mean, g_std)
+
+        # Graphs all the labels in the model
+        for label in g_window.label_columns:
+            g_window.plot(label,
+                          PATH + "/results/prediction/group_temporal/",
+                          (prediction_data, prediction_label),
+                          model)
+
 
 class Test_TestLabels(unittest.TestCase):
     """
@@ -235,13 +274,14 @@ class Test_TestLabels(unittest.TestCase):
         Set up function executed before each individual test
         """
         self.history: tf.keras.callbacks.History
+        self.predict: pd.DataFrame
         self.name: str
 
     def tearDown(self):
         """
         Tear down function executed after each individual test
         """
-        global all_history
+        global all_history, prediction_result
 
         # Dataframe is not empty
         if all_history.shape != (0, 0):
@@ -261,6 +301,9 @@ class Test_TestLabels(unittest.TestCase):
 
         # Saves each model history into the global DataFrame
         all_history = all_history.append(history_df)
+
+        # Saves the test prediction into a global prediction table
+        prediction_result = prediction_result.append(self.predict)
 
     def test_temp_out(self):
         """
@@ -294,6 +337,16 @@ class Test_TestLabels(unittest.TestCase):
         # Train the model using the default window
         self.history = compile_and_fit(model, window)
 
+        # Gets the prediction and saves it into a DataFrame
+        self.predict = pd.DataFrame(model(prediction_data).numpy().reshape((168, 1)),
+                                    columns=window.label_columns)
+
+        # Graphs all the labels in the model
+        window.plot(self.name,
+                    PATH + "/results/prediction/individual_temporal/",
+                    (prediction_data, prediction_label),
+                    model)
+
     def test_high_temp(self):
         """
         Function that compiles and train the default CNN to use as baseline.
@@ -325,6 +378,16 @@ class Test_TestLabels(unittest.TestCase):
 
         # Train the model using the default window
         self.history = compile_and_fit(model, window)
+
+        # Gets the prediction and saves it into a DataFrame
+        self.predict = pd.DataFrame(model(prediction_data).numpy().reshape((168, 1)),
+                                    columns=window.label_columns)
+
+        # Graphs all the labels in the model
+        window.plot(self.name,
+                    PATH + "/results/prediction/individual_temporal/",
+                    (prediction_data, prediction_label),
+                    model)
 
     def test_low_temp(self):
         """
@@ -358,6 +421,16 @@ class Test_TestLabels(unittest.TestCase):
         # Train the model using the default window
         self.history = compile_and_fit(model, window)
 
+        # Gets the prediction and saves it into a DataFrame
+        self.predict = pd.DataFrame(model(prediction_data).numpy().reshape((168, 1)),
+                                    columns=window.label_columns)
+
+        # Graphs all the labels in the model
+        window.plot(self.name,
+                    PATH + "/results/prediction/individual_temporal/",
+                    (prediction_data, prediction_label),
+                    model)
+
     def test_out_hum(self):
         """
         Function that compiles and train the default CNN to use as baseline.
@@ -389,6 +462,16 @@ class Test_TestLabels(unittest.TestCase):
 
         # Train the model using the default window
         self.history = compile_and_fit(model, window)
+
+        # Gets the prediction and saves it into a DataFrame
+        self.predict = pd.DataFrame(model(prediction_data).numpy().reshape((168, 1)),
+                                    columns=window.label_columns)
+
+        # Graphs all the labels in the model
+        window.plot(self.name,
+                    PATH + "/results/prediction/individual_temporal/",
+                    (prediction_data, prediction_label),
+                    model)
 
     def test_wind_speed(self):
         """
@@ -422,6 +505,16 @@ class Test_TestLabels(unittest.TestCase):
         # Train the model using the default window
         self.history = compile_and_fit(model, window)
 
+        # Gets the prediction and saves it into a DataFrame
+        self.predict = pd.DataFrame(model(prediction_data).numpy().reshape((168, 1)),
+                                    columns=window.label_columns)
+
+        # Graphs all the labels in the model
+        window.plot(self.name,
+                    PATH + "/results/prediction/individual_temporal/",
+                    (prediction_data, prediction_label),
+                    model)
+
     def test_hi_speed(self):
         """
         Function that compiles and train the default CNN to use as baseline.
@@ -453,6 +546,16 @@ class Test_TestLabels(unittest.TestCase):
 
         # Train the model using the default window
         self.history = compile_and_fit(model, window)
+
+        # Gets the prediction and saves it into a DataFrame
+        self.predict = pd.DataFrame(model(prediction_data).numpy().reshape((168, 1)),
+                                    columns=window.label_columns)
+
+        # Graphs all the labels in the model
+        window.plot(self.name,
+                    PATH + "/results/prediction/individual_temporal/",
+                    (prediction_data, prediction_label),
+                    model)
 
     def test_bar(self):
         """
@@ -486,6 +589,16 @@ class Test_TestLabels(unittest.TestCase):
         # Train the model using the default window
         self.history = compile_and_fit(model, window)
 
+        # Gets the prediction and saves it into a DataFrame
+        self.predict = pd.DataFrame(model(prediction_data).numpy().reshape((168, 1)),
+                                    columns=window.label_columns)
+
+        # Graphs all the labels in the model
+        window.plot(self.name,
+                    PATH + "/results/prediction/individual_temporal/",
+                    (prediction_data, prediction_label),
+                    model)
+
     def test_rain(self):
         """
         Function that compiles and train the default CNN to use as baseline.
@@ -517,6 +630,16 @@ class Test_TestLabels(unittest.TestCase):
 
         # Train the model using the default window
         self.history = compile_and_fit(model, window)
+
+        # Gets the prediction and saves it into a DataFrame
+        self.predict = pd.DataFrame(model(prediction_data).numpy().reshape((168, 1)),
+                                    columns=window.label_columns)
+
+        # Graphs all the labels in the model
+        window.plot(self.name,
+                    PATH + "/results/prediction/individual_temporal/",
+                    (prediction_data, prediction_label),
+                    model)
 
     def test_solar_rad(self):
         """
@@ -550,6 +673,16 @@ class Test_TestLabels(unittest.TestCase):
         # Train the model using the default window
         self.history = compile_and_fit(model, window)
 
+        # Gets the prediction and saves it into a DataFrame
+        self.predict = pd.DataFrame(model(prediction_data).numpy().reshape((168, 1)),
+                                    columns=window.label_columns)
+
+        # Graphs all the labels in the model
+        window.plot(self.name,
+                    PATH + "/results/prediction/individual_temporal/",
+                    (prediction_data, prediction_label),
+                    model)
+
     def test_hi_solar_rad(self):
         """
         Function that compiles and train the default CNN to use as baseline.
@@ -581,6 +714,16 @@ class Test_TestLabels(unittest.TestCase):
 
         # Train the model using the default window
         self.history = compile_and_fit(model, window)
+
+        # Gets the prediction and saves it into a DataFrame
+        self.predict = pd.DataFrame(model(prediction_data).numpy().reshape((168, 1)),
+                                    columns=window.label_columns)
+
+        # Graphs all the labels in the model
+        window.plot(self.name,
+                    PATH + "/results/prediction/individual_temporal/",
+                    (prediction_data, prediction_label),
+                    model)
 
     def test_in_temp(self):
         """
@@ -614,6 +757,16 @@ class Test_TestLabels(unittest.TestCase):
         # Train the model using the default window
         self.history = compile_and_fit(model, window)
 
+        # Gets the prediction and saves it into a DataFrame
+        self.predict = pd.DataFrame(model(prediction_data).numpy().reshape((168, 1)),
+                                    columns=window.label_columns)
+
+        # Graphs all the labels in the model
+        window.plot(self.name,
+                    PATH + "/results/prediction/individual_temporal/",
+                    (prediction_data, prediction_label),
+                    model)
+
     def test_in_hum(self):
         """
         Function that compiles and train the default CNN to use as baseline.
@@ -645,6 +798,16 @@ class Test_TestLabels(unittest.TestCase):
 
         # Train the model using the default window
         self.history = compile_and_fit(model, window)
+
+        # Gets the prediction and saves it into a DataFrame
+        self.predict = pd.DataFrame(model(prediction_data).numpy().reshape((168, 1)),
+                                    columns=window.label_columns)
+
+        # Graphs all the labels in the model
+        window.plot(self.name,
+                    PATH + "/results/prediction/individual_temporal/",
+                    (prediction_data, prediction_label),
+                    model)
 
     def test_soil_moist(self):
         """
@@ -678,6 +841,16 @@ class Test_TestLabels(unittest.TestCase):
         # Train the model using the default window
         self.history = compile_and_fit(model, window)
 
+        # Gets the prediction and saves it into a DataFrame
+        self.predict = pd.DataFrame(model(prediction_data).numpy().reshape((168, 1)),
+                                    columns=window.label_columns)
+
+        # Graphs all the labels in the model
+        window.plot(self.name,
+                    PATH + "/results/prediction/individual_temporal/",
+                    (prediction_data, prediction_label),
+                    model)
+
     def test_leaf_wet(self):
         """
         Function that compiles and train the default CNN to use as baseline.
@@ -710,6 +883,16 @@ class Test_TestLabels(unittest.TestCase):
         # Train the model using the default window
         self.history = compile_and_fit(model, window)
 
+        # Gets the prediction and saves it into a DataFrame
+        self.predict = pd.DataFrame(model(prediction_data).numpy().reshape((168, 1)),
+                                    columns=window.label_columns)
+
+        # Graphs all the labels in the model
+        window.plot(self.name,
+                    PATH + "/results/prediction/individual_temporal/",
+                    (prediction_data, prediction_label),
+                    model)
+
     def test_leaf_wet_accum(self):
         """
         Function that compiles and train the default CNN to use as baseline.
@@ -741,6 +924,16 @@ class Test_TestLabels(unittest.TestCase):
 
         # Train the model using the default window
         self.history = compile_and_fit(model, window)
+
+        # Gets the prediction and saves it into a DataFrame
+        self.predict = pd.DataFrame(model(prediction_data).numpy().reshape((168, 1)),
+                                    columns=window.label_columns)
+
+        # Graphs all the labels in the model
+        window.plot(self.name,
+                    PATH + "/results/prediction/individual_temporal/",
+                    (prediction_data, prediction_label),
+                    model)
 
 
 if __name__ == '__main__':

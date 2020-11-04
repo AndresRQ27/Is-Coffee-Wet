@@ -118,8 +118,8 @@ def tearDownModule():
     global all_history
 
     # Save to csv:
-    csv_file = PATH + "/results/benchmark_temporal.csv"
-    with open(csv_file, mode='w') as file:
+    history_csv = PATH + "/results/benchmark_temporal.csv"
+    with open(history_csv, mode='w') as file:
         all_history.to_csv(file)
 
 
