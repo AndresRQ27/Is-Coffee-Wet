@@ -1,4 +1,18 @@
 import os
+import sys
+
+# *** Configures the paths to use in the program ***
+
+# Main path where all the files are saved (modules, resources, neural networks)
+# By default, it should be `/data` but could be any other path
+PATH_MAIN = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# Path to the resources folder where all the persistent files are stored
+PATH_RESOURCES = PATH_MAIN + "/resources/"
+PATH_IMAGES = PATH_RESOURCES + "images/"
+
+# Appends the module IsCoffeeWet to the library
+sys.path.append(PATH_MAIN)
 
 import pandas as pd
 
@@ -9,13 +23,9 @@ from IsCoffeeWet import model_generator as mg
 from IsCoffeeWet import neural_network as nn
 from IsCoffeeWet import window_generator as wg
 
-# Gets directory parent of the file
-PATH_RESOURCES = os.getcwd() + "/resources"
-PATH_IMAGES = PATH_RESOURCES + "/images"
-
 # TEST
 # Path to the configuration file
-JSON_TEST = PATH_RESOURCES + "/config/test.json"
+JSON_TEST = PATH_RESOURCES + "config/test.json"
 
 print("******************************************")
 print("*** Welcome to the IsCoffeeWet project ***")
@@ -24,10 +34,10 @@ print("******************************************")
 # TODO: add read input for the config file
 
 # Dataset configuration extracted from the JSON
-config_ds = cf.ConfigFile(JSON_TEST)
+config_ds = cf.ConfigFile(JSON_TEST, PATH_RESOURCES)
 
 # Loads the dataset
-dataset = pd.read_csv(config_ds.path, engine="c")
+dataset = pd.read_csv(PATH_RESOURCES + config_ds.path, engine="c")
 
 # *********************************
 # ******** Dataset Parsing ********
@@ -94,5 +104,3 @@ if config_ds.graph:
 # Shows graphs for each column
 # for name in window.label_columns:
 #     window.plot(name, model=model)
-
-input("Stop?")

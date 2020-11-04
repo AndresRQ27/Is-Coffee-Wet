@@ -13,26 +13,29 @@ class ConfigFile:
     execution of the program.
     """
 
-    def __init__(self, config_path=None):
+    def __init__(self, path_config=None, path_resources=None):
         """
         Parameters
         ----------
-        config_path : string, optional
+        path_config : string, optional
             Path of the JSON that has the configuration of the dataset to
             use. Can be relative to the path where the program is running
             or absolute.
+        path_resources: string, optional
+            Path to the resources folder where all the persistent files 
+            are stored.
         """
         # Number of rows (data) in the dataset. Not found in the
         # configuration file
         self.num_data = 0
 
         # When initialize without arguments
-        if config_path is None:
+        if path_config is None:
             return
 
         # When initialize with a path
         else:
-            with open(config_path, 'r') as file:
+            with open(path_config, 'r') as file:
                 # Loads json file
                 config_file = json.load(file)
 
@@ -58,10 +61,11 @@ class ConfigFile:
 
                 if threshold >= forecast:
                     # If the frequency of the dataset is bigger than the forecast window, NN won't work
-                    raise ValueError("Frequency can't be bigger than forecast window")
+                    raise ValueError(
+                        "Frequency can't be bigger than forecast window")
                 else:
                     # Always round down. Forecast will always be in hours IN THE CODE!!!!
-                    self.forecast = np.floor(forecast / threshold)
+                    self.forecast = int(np.floor(forecast / threshold))
 
                 # Boolean to graph the col
                 self.graph = config_file["graph_data"]
@@ -82,7 +86,7 @@ class ConfigFile:
                 delete_columns = config_file["pre-process"]["delete_columns"]
 
                 # List of columns to use
-                self.columns = pd.read_csv(self.path,
+                self.columns = pd.read_csv(path_resources + self.path,
                                            engine="c",
                                            nrows=1).columns.tolist()
 

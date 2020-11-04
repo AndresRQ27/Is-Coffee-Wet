@@ -1,12 +1,11 @@
 {
-  "dataset_path": "/opt/project/resources/database/test.csv",
+  "dataset_path": "database/test.csv",
   "frequency": "1H",
   "forecast_window": 7,
   "graph_data": true,
-
   "pre-process": {
     "datetime": [
-      "Date", 
+      "Date",
       "Time"
     ],
     "datetime_format": "%d/%m/%Y %I:%M %p",
@@ -31,6 +30,7 @@
   "neural_network": {
     "training_set": 0.7,
     "validation_set": 0.2,
-    "path": "/opt/project/resources/models/convolutional.h5"
+    "path": "neural_network/convolutional.h5",
+    "labels": []
   }
 }

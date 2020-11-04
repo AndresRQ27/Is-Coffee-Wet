@@ -17,7 +17,7 @@ MARKER_LIST = [".", "v", "^", "<", ">", "1", "2", "3", "s", "x",
 FIG_SIZE = (30, 10)
 
 
-def benchmark_graph_all(dataset, path, name, max_epochs=100):
+def benchmark_graph_all(dataset, path_resources, name, max_epochs=100):
     """
         Function that graphs the reported metrics from the history according
         to the epoch of the training in which they were taken.
@@ -26,7 +26,7 @@ def benchmark_graph_all(dataset, path, name, max_epochs=100):
         ----------
         dataset: pandas.DataFrame
             Dataset of the history from the tests
-        path: string
+        path_resources: string
             Path to the parent folder to save the graphs
         name: string
             name of the cross-validation graphed
@@ -34,11 +34,11 @@ def benchmark_graph_all(dataset, path, name, max_epochs=100):
             Limit of the number of epochs to show for a test. By default,
             only shows the 100 epochs.
     """
-    path = path + "/" + name
+    path_resources = path_resources + "/" + name
     try:
-        os.mkdir(path)
+        os.makedirs(path_resources)
     except FileExistsError:
-        print("{} already exists".format(path))
+        print("\n{} already exists".format(path_resources))
 
     # Retrieves the unique test names in the dataset
     # Assign an id to a test name. Use for colors and markers
@@ -68,11 +68,11 @@ def benchmark_graph_all(dataset, path, name, max_epochs=100):
         plt.ylabel(column)
         plt.legend()
         # Saves the image
-        plt.savefig("{}/{}.png".format(path, column))
+        plt.savefig("{}/{}.png".format(path_resources, column))
         plt.close()
 
 
-def benchmark_graph_summary(dataset, path, name):
+def benchmark_graph_summary(dataset, path_resources, name):
     """
         Function that graphs a summary of the most important values inside
         the history. These are min, max, mean and last reported value.
@@ -81,16 +81,16 @@ def benchmark_graph_summary(dataset, path, name):
         ----------
         dataset: pandas.DataFrame
             Dataset of the history from the tests
-        path: string
+        path_resources: string
             Path to the parent folder to save the graphs
         name: string
             name of the cross-validation graphed
     """
-    path = path + "/" + name
+    path_resources = path_resources + "/" + name
     try:
-        os.mkdir(path)
+        os.makedirs(path_resources)
     except FileExistsError:
-        print("{} already exists".format(path))
+        print("\n{} already exists".format(path_resources))
 
     # Retrieves the unique test names in the dataset
     # Assign an id to a test name. Use for colors and markers
@@ -141,10 +141,10 @@ def benchmark_graph_summary(dataset, path, name):
                 edgecolor="white", label="last")
 
         for i in range(len(min_value)):
-            plt.text(min_pos[i]-0.09, 0, round(min_value[i], 3), fontsize=9, color="black")
-            plt.text(max_pos[i]-0.09, 0, round(max_value[i], 3), fontsize=9, color="black")
-            plt.text(avg_pos[i]-0.09, 0, round(avg_value[i], 3), fontsize=9, color="black")
-            plt.text(last_pos[i]-0.09, 0, round(last_value[i], 3), fontsize=9, color="black")
+            plt.text(min_pos[i] - 0.09, 0, round(min_value[i], 3), fontsize=7, color="black")
+            plt.text(max_pos[i] - 0.09, 0, round(max_value[i], 3), fontsize=7, color="black")
+            plt.text(avg_pos[i] - 0.09, 0, round(avg_value[i], 3), fontsize=7, color="black")
+            plt.text(last_pos[i] - 0.09, 0, round(last_value[i], 3), fontsize=7, color="black")
 
         # Add xticks on the middle of the group bars
         plt.xlabel(column, fontweight="bold")
@@ -154,5 +154,5 @@ def benchmark_graph_summary(dataset, path, name):
         plt.ylabel("Value")
         plt.legend()
         # Saves the image
-        plt.savefig("{}/{}_bars.png".format(path, column))
+        plt.savefig("{}/{}_bars.png".format(path_resources, column))
         plt.close()

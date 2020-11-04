@@ -152,7 +152,7 @@ class WindowGenerator:
 
         return inputs, labels
 
-    def plot(self, plot_col, path, model=None, max_subplots=3):
+    def plot(self, plot_col, path_images, data=None, model=None, max_subplots=3):
         """
         Function that plots an example taken from the train dataset to show
         the accuracy of the predictions vs the real values.
@@ -161,8 +161,11 @@ class WindowGenerator:
         ----------
         plot_col: string
             Column name of the data to plot.
-        path: string
+        path_images: string
             Path to the parent folder to save the graphs
+        data: tensorflow.data.Dataset, optional
+            Specific data to use to plot the graphs. Can be left empty to
+            use an example data from the train set
         model: tensorflow.keras.Model, optional
             Model to obtain the predictions when graphing. Only works if
             `plot_col` is in `label_columns`
@@ -170,14 +173,14 @@ class WindowGenerator:
             Maximum amount of subplots to show.
         """
         # Creates the folder to save the graphs
-        path = path + "/windows"
+        path_images = path_images + "window"
         try:
-            os.mkdir(path)
+            os.makedirs(path_images)
         except FileExistsError:
-            print("{} already exists".format(path))
+            print("\n{} already exists".format(path_images))
 
-        # Takes the inputs and labels from the example
-        inputs, labels = self.example
+        # Takes the inputs and labels from the example or the data
+        inputs, labels = next(iter(data)) if data is not None else self.example
 
         # Sets the figure size
         plt.figure(figsize=(12, 8))
@@ -225,7 +228,7 @@ class WindowGenerator:
 
         plt.xlabel('Time [h]')
         # Saves the image
-        plt.savefig("{}/{}.png".format(path, plot_col))
+        plt.savefig("{}/{}.png".format(path_images, plot_col))
 
     def make_dataset(self, data):
         """

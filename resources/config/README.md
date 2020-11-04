@@ -19,17 +19,17 @@ __Table of contents__
     - [`validation_set`](#validation_set)
     - [test_set](#test_set)
     - [`path`](#path)
+    - [`labels`](#labels)
 
 # JSON Format
 
 ## General values
 
-
 ### `dataset_path`
 
 (_string_) path of the dataset file to use.
 
-  - Recommended to use an absolute path.
+  - Relative path to the resources folder.
 
 ### `frequency`
 
@@ -154,3 +154,8 @@ That means that train will go from 0 to 0.5, validation will go from 0.5 to
 (_string_) Path to load/save the neural network model.
 
 - File extension is `.h5` that keras uses for this purpose.
+
+### `labels`
+
+List of (_string_) of the column names to predict. If left empty,
+all the columns, except the ones removed, are predicted.
