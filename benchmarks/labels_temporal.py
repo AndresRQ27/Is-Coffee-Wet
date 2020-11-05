@@ -2,6 +2,7 @@ import copy
 import os
 import unittest
 
+import numpy as np
 import pandas as pd
 import tensorflow as tf
 
@@ -22,8 +23,8 @@ g_filter_size: int
 g_kernel_size: int
 g_dilations: int
 g_input_size: tuple
-prediction_data: pd.DataFrame
-prediction_label: pd.DataFrame
+prediction_data: np.ndarray
+prediction_label: np.ndarray
 g_mean: pd.DataFrame
 g_std: pd.DataFrame
 
@@ -88,12 +89,8 @@ def setUpModule():
 
     # Saves the last window from the normalize dataset
     # Used to evaluate results from group vs individual
-    prediction_data = dataset[-336:-168].to_numpy()
-    prediction_label = dataset[-168:].to_numpy()
-
-    # Expand dimensions as the model expects the data in a batch
-    prediction_data = tf.expand_dims(prediction_data, 0)
-    prediction_label = tf.expand_dims(prediction_label, 0)
+    prediction_data = dataset[-336:-168].to_numpy().reshape((1, 168, 19))
+    prediction_label = dataset[-168:].to_numpy().reshape((1, 168, 19))
 
     # Arguments of the default NN. Tested with the model 2
     g_filter_size = [160, 160, 96]
@@ -259,7 +256,8 @@ class Test_TestBase(unittest.TestCase):
         for label in g_window.label_columns:
             g_window.plot(label,
                           PATH + "/results/prediction/group_temporal/",
-                          (prediction_data, prediction_label),
+                          (prediction_data,
+                           prediction_label),
                           model)
 
 
@@ -341,10 +339,14 @@ class Test_TestLabels(unittest.TestCase):
         self.predict = pd.DataFrame(model(prediction_data).numpy().reshape((168, 1)),
                                     columns=window.label_columns)
 
+        # Gets the column number from the label dictionary
+        label_col_index = g_window.label_columns_indices[self.name]
+
         # Graphs all the labels in the model
         window.plot(self.name,
                     PATH + "/results/prediction/individual_temporal/",
-                    (prediction_data, prediction_label),
+                    (prediction_data,
+                     prediction_label[:, :, label_col_index].reshape(1, 168, 1)),
                     model)
 
     def test_high_temp(self):
@@ -383,10 +385,14 @@ class Test_TestLabels(unittest.TestCase):
         self.predict = pd.DataFrame(model(prediction_data).numpy().reshape((168, 1)),
                                     columns=window.label_columns)
 
+        # Gets the column number from the label dictionary
+        label_col_index = g_window.label_columns_indices[self.name]
+
         # Graphs all the labels in the model
         window.plot(self.name,
                     PATH + "/results/prediction/individual_temporal/",
-                    (prediction_data, prediction_label),
+                    (prediction_data,
+                     prediction_label[:, :, label_col_index].reshape(1, 168, 1)),
                     model)
 
     def test_low_temp(self):
@@ -425,10 +431,14 @@ class Test_TestLabels(unittest.TestCase):
         self.predict = pd.DataFrame(model(prediction_data).numpy().reshape((168, 1)),
                                     columns=window.label_columns)
 
+        # Gets the column number from the label dictionary
+        label_col_index = g_window.label_columns_indices[self.name]
+
         # Graphs all the labels in the model
         window.plot(self.name,
                     PATH + "/results/prediction/individual_temporal/",
-                    (prediction_data, prediction_label),
+                    (prediction_data,
+                     prediction_label[:, :, label_col_index].reshape(1, 168, 1)),
                     model)
 
     def test_out_hum(self):
@@ -467,10 +477,14 @@ class Test_TestLabels(unittest.TestCase):
         self.predict = pd.DataFrame(model(prediction_data).numpy().reshape((168, 1)),
                                     columns=window.label_columns)
 
+        # Gets the column number from the label dictionary
+        label_col_index = g_window.label_columns_indices[self.name]
+
         # Graphs all the labels in the model
         window.plot(self.name,
                     PATH + "/results/prediction/individual_temporal/",
-                    (prediction_data, prediction_label),
+                    (prediction_data,
+                     prediction_label[:, :, label_col_index].reshape(1, 168, 1)),
                     model)
 
     def test_wind_speed(self):
@@ -509,10 +523,14 @@ class Test_TestLabels(unittest.TestCase):
         self.predict = pd.DataFrame(model(prediction_data).numpy().reshape((168, 1)),
                                     columns=window.label_columns)
 
+        # Gets the column number from the label dictionary
+        label_col_index = g_window.label_columns_indices[self.name]
+
         # Graphs all the labels in the model
         window.plot(self.name,
                     PATH + "/results/prediction/individual_temporal/",
-                    (prediction_data, prediction_label),
+                    (prediction_data,
+                     prediction_label[:, :, label_col_index].reshape(1, 168, 1)),
                     model)
 
     def test_hi_speed(self):
@@ -551,10 +569,14 @@ class Test_TestLabels(unittest.TestCase):
         self.predict = pd.DataFrame(model(prediction_data).numpy().reshape((168, 1)),
                                     columns=window.label_columns)
 
+        # Gets the column number from the label dictionary
+        label_col_index = g_window.label_columns_indices[self.name]
+
         # Graphs all the labels in the model
         window.plot(self.name,
                     PATH + "/results/prediction/individual_temporal/",
-                    (prediction_data, prediction_label),
+                    (prediction_data,
+                     prediction_label[:, :, label_col_index].reshape(1, 168, 1)),
                     model)
 
     def test_bar(self):
@@ -593,10 +615,14 @@ class Test_TestLabels(unittest.TestCase):
         self.predict = pd.DataFrame(model(prediction_data).numpy().reshape((168, 1)),
                                     columns=window.label_columns)
 
+        # Gets the column number from the label dictionary
+        label_col_index = g_window.label_columns_indices[self.name]
+
         # Graphs all the labels in the model
         window.plot(self.name,
                     PATH + "/results/prediction/individual_temporal/",
-                    (prediction_data, prediction_label),
+                    (prediction_data,
+                     prediction_label[:, :, label_col_index].reshape(1, 168, 1)),
                     model)
 
     def test_rain(self):
@@ -635,10 +661,14 @@ class Test_TestLabels(unittest.TestCase):
         self.predict = pd.DataFrame(model(prediction_data).numpy().reshape((168, 1)),
                                     columns=window.label_columns)
 
+        # Gets the column number from the label dictionary
+        label_col_index = g_window.label_columns_indices[self.name]
+
         # Graphs all the labels in the model
         window.plot(self.name,
                     PATH + "/results/prediction/individual_temporal/",
-                    (prediction_data, prediction_label),
+                    (prediction_data,
+                     prediction_label[:, :, label_col_index].reshape(1, 168, 1)),
                     model)
 
     def test_solar_rad(self):
@@ -677,10 +707,14 @@ class Test_TestLabels(unittest.TestCase):
         self.predict = pd.DataFrame(model(prediction_data).numpy().reshape((168, 1)),
                                     columns=window.label_columns)
 
+        # Gets the column number from the label dictionary
+        label_col_index = g_window.label_columns_indices[self.name]
+
         # Graphs all the labels in the model
         window.plot(self.name,
                     PATH + "/results/prediction/individual_temporal/",
-                    (prediction_data, prediction_label),
+                    (prediction_data,
+                     prediction_label[:, :, label_col_index].reshape(1, 168, 1)),
                     model)
 
     def test_hi_solar_rad(self):
@@ -719,10 +753,14 @@ class Test_TestLabels(unittest.TestCase):
         self.predict = pd.DataFrame(model(prediction_data).numpy().reshape((168, 1)),
                                     columns=window.label_columns)
 
+        # Gets the column number from the label dictionary
+        label_col_index = g_window.label_columns_indices[self.name]
+
         # Graphs all the labels in the model
         window.plot(self.name,
                     PATH + "/results/prediction/individual_temporal/",
-                    (prediction_data, prediction_label),
+                    (prediction_data,
+                     prediction_label[:, :, label_col_index].reshape(1, 168, 1)),
                     model)
 
     def test_in_temp(self):
@@ -761,10 +799,14 @@ class Test_TestLabels(unittest.TestCase):
         self.predict = pd.DataFrame(model(prediction_data).numpy().reshape((168, 1)),
                                     columns=window.label_columns)
 
+        # Gets the column number from the label dictionary
+        label_col_index = g_window.label_columns_indices[self.name]
+
         # Graphs all the labels in the model
         window.plot(self.name,
                     PATH + "/results/prediction/individual_temporal/",
-                    (prediction_data, prediction_label),
+                    (prediction_data,
+                     prediction_label[:, :, label_col_index].reshape(1, 168, 1)),
                     model)
 
     def test_in_hum(self):
@@ -803,10 +845,14 @@ class Test_TestLabels(unittest.TestCase):
         self.predict = pd.DataFrame(model(prediction_data).numpy().reshape((168, 1)),
                                     columns=window.label_columns)
 
+        # Gets the column number from the label dictionary
+        label_col_index = g_window.label_columns_indices[self.name]
+
         # Graphs all the labels in the model
         window.plot(self.name,
                     PATH + "/results/prediction/individual_temporal/",
-                    (prediction_data, prediction_label),
+                    (prediction_data,
+                     prediction_label[:, :, label_col_index].reshape(1, 168, 1)),
                     model)
 
     def test_soil_moist(self):
@@ -845,10 +891,14 @@ class Test_TestLabels(unittest.TestCase):
         self.predict = pd.DataFrame(model(prediction_data).numpy().reshape((168, 1)),
                                     columns=window.label_columns)
 
+        # Gets the column number from the label dictionary
+        label_col_index = g_window.label_columns_indices[self.name]
+
         # Graphs all the labels in the model
         window.plot(self.name,
                     PATH + "/results/prediction/individual_temporal/",
-                    (prediction_data, prediction_label),
+                    (prediction_data,
+                     prediction_label[:, :, label_col_index].reshape(1, 168, 1)),
                     model)
 
     def test_leaf_wet(self):
@@ -887,10 +937,14 @@ class Test_TestLabels(unittest.TestCase):
         self.predict = pd.DataFrame(model(prediction_data).numpy().reshape((168, 1)),
                                     columns=window.label_columns)
 
+        # Gets the column number from the label dictionary
+        label_col_index = g_window.label_columns_indices[self.name]
+
         # Graphs all the labels in the model
         window.plot(self.name,
                     PATH + "/results/prediction/individual_temporal/",
-                    (prediction_data, prediction_label),
+                    (prediction_data,
+                     prediction_label[:, :, label_col_index].reshape(1, 168, 1)),
                     model)
 
     def test_leaf_wet_accum(self):
@@ -929,10 +983,14 @@ class Test_TestLabels(unittest.TestCase):
         self.predict = pd.DataFrame(model(prediction_data).numpy().reshape((168, 1)),
                                     columns=window.label_columns)
 
+        # Gets the column number from the label dictionary
+        label_col_index = g_window.label_columns_indices[self.name]
+
         # Graphs all the labels in the model
         window.plot(self.name,
                     PATH + "/results/prediction/individual_temporal/",
-                    (prediction_data, prediction_label),
+                    (prediction_data,
+                     prediction_label[:, :, label_col_index].reshape(1, 168, 1)),
                     model)
 
 
