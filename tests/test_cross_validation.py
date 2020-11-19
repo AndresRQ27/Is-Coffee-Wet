@@ -1,5 +1,6 @@
 import os
 import unittest
+
 import pandas as pd
 
 from benchmarks import cross_validation as cv
@@ -11,71 +12,197 @@ class Test_CrossValidation(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         # Name of the columns in the dataset
-        column_names = ["Number", "Loss", "MAE", "MAPE", "Val_Loss",
-                        "Val_MAE", "Val_MAPE", "Name"]
+        cls.column_names = ["Number", "Loss", "MAE", "MAPE", "Val_Loss",
+                            "Val_MAE", "Val_MAPE", "Name"]
+        cls.prediction_names = ["Temp Out", "Hi Temp", "Low Temp",
+                                "Out Hum", "Wind Speed", "Hi Speed", "Bar  ",
+                                "Rain", "Solar Rad.", "Hi Solar Rad. ",
+                                "In Temp", "In Hum", "Soils 1 Moist.",
+                                "Leaf Wet 1", "Leaf Wet Accum"]
 
-        # Loads the dataset
-        dataset_convolutional = pd.read_csv(PATH_RESOURCES + "/benchmark/results/benchmark_convolutional.csv",
-                                            engine="c", header=0, names=column_names)
-        dataset_temporal = pd.read_csv(PATH_RESOURCES + "/benchmark/results/benchmark_temporal.csv",
-                                       engine="c", header=0, names=column_names)
-        labels_convolutional = pd.read_csv(PATH_RESOURCES + "/benchmark/results/benchmark_labels_convolutional.csv",
-                                           engine="c", header=0, names=column_names)
-        labels_temporal = pd.read_csv(PATH_RESOURCES + "/benchmark/results/benchmark_labels_temporal.csv",
-                                      engine="c", header=0, names=column_names)
+        # Loads all the datasets to graph in a list as a dictionary
+        datasets = {"convolutional": {"base": pd.read_csv(PATH_RESOURCES
+                                                          + "/benchmark/results/benchmark_convolutional.csv",
+                                                          engine="c", header=0, names=cls.column_names)},
+                    "temporal": {"base": pd.read_csv(PATH_RESOURCES +
+                                                     "/benchmark/results/benchmark_temporal.csv",
+                                                     engine="c", header=0, names=cls.column_names)},
+                    "indiv_conv": {"base": pd.read_csv(PATH_RESOURCES
+                                                       + "/benchmark/results/benchmark_prediction_convolutional.csv",
+                                                       engine="c", header=0, names=cls.column_names)},
+                    "indiv_temp": {"base": pd.read_csv(PATH_RESOURCES
+                                                       + "/benchmark/results/benchmark_prediction_temporal.csv",
+                                                       engine="c", header=0, names=cls.column_names)},
+                    "labels": {"base": pd.read_csv(PATH_RESOURCES
+                                                   + "/benchmark/database/dataset_hour.csv",
+                                                   engine="c")},
+                    "prediction conv": {"base": pd.read_csv(PATH_RESOURCES
+                                                            +
+                                                            "/benchmark/results/prediction/prediction_convolutional.csv",
+                                                            engine="c")},
+                    "prediction temp": {"base": pd.read_csv(PATH_RESOURCES
+                                                            + "/benchmark/results/prediction/prediction_temporal.csv",
+                                                            engine="c")}
+                    }
 
-        # Drops the previous index
-        cls.dataset_convolutional = dataset_convolutional.drop("Number", axis=1)
-        cls.dataset_temporal = dataset_temporal.drop("Number", axis=1)
-        cls.labels_convolutional = labels_convolutional.drop("Number", axis=1)
-        cls.labels_temporal = labels_temporal.drop("Number", axis=1)
+        # Creates a sub-dictionary of datasets to min-max
+        min_max = ["convolutional", "temporal", "indiv_conv", "indiv_temp"]
+        min_max = {name: datasets[name] for name in datasets if name in min_max}
+
+        # Creates a sub-dictionary of datasets with the predictions
+        predict = ["prediction conv", "prediction temp"]
+        predict = {name: datasets[name] for name in datasets if name in predict}
+
+        # Pre-process each DataFrames into a list of DataFrames of values to graph
+        for key, value in min_max.items():
+            # Drops the previous index
+            value["base"].drop("Number", axis=1, inplace=True)
+
+            # Retrieves the unique test names in the dataset
+            # Assign an id to a test name. Use for colors and markers
+            names = [name for name in value["base"]["Name"].drop_duplicates()]
+
+            # Obtains the list of columns to graph with numeric value
+            # Removes the last columns ("Name")
+            columns = value["base"].columns.tolist()[:-1]
+
+            # DataFrames are in order: 1-min, 2-max, 3-avg, 4-last
+            datasets[key]["min"] = pd.DataFrame()
+            datasets[key]["max"] = pd.DataFrame()
+            datasets[key]["avg"] = pd.DataFrame()
+            datasets[key]["last"] = pd.DataFrame()
+
+            # Obtains the values to plot from each test
+            # There is a DataFrame for each measurement
+            for name in names:
+                # Gets the data from a sub-test
+                data = value["base"].loc[value["base"]["Name"] == name]
+
+                # CHecks if a single value has NaN
+                if data.isna().any().any():
+                    data = data.dropna(axis=0)
+                    # If the data was all NaNs, don't add ir
+                    if data.empty:
+                        continue
+
+                # 1. Obtains the operation only from the numeric columns (that's why se use "columns")
+                # The columns generated by the operation will only be the ones in "columns" and is a pd.Series
+                # 2. Adds the name of the sub-test in the Series as a new row. Must be added as as pd.Series
+                # 3. Converts the pd.Series with the name into a pd.DataFrame
+                # 4. Transpose the Frame and append to the rest of the DataFrame's data
+                datasets[key]["min"] = datasets[key]["min"].append(data[columns]
+                                                                   .min()
+                                                                   .append(pd.Series({"Name": name}))
+                                                                   .to_frame()
+                                                                   .transpose(), ignore_index=True)
+                datasets[key]["avg"] = datasets[key]["avg"].append(data[columns]
+                                                                   .mean()
+                                                                   .append(pd.Series({"Name": name}))
+                                                                   .to_frame()
+                                                                   .transpose(), ignore_index=True)
+                datasets[key]["max"] = datasets[key]["max"].append(data[columns]
+                                                                   .max()
+                                                                   .append(pd.Series({"Name": name}))
+                                                                   .to_frame()
+                                                                   .transpose(), ignore_index=True)
+                datasets[key]["last"] = datasets[key]["last"].append(data[columns]
+                                                                     .iloc[-1]
+                                                                     .append(pd.Series({"Name": name}))
+                                                                     .to_frame()
+                                                                     .transpose(), ignore_index=True)
+
+        # Stores only the last 168 predictions
+        datasets["labels"]["base"].drop(["day sin", "day cos", "year sin", "year cos"],
+                                        axis=1, inplace=True)
+        datasets["labels"]["base"] = datasets["labels"]["base"].tail(168)
+        datasets["labels"]["base"].reset_index(drop=True, inplace=True)
+
+        # Divide predictions into a group and individual prediction
+        for key, value in predict.items():
+            datasets[key]["group"] = value["base"].head(168)
+            datasets[key]["indiv"] = value["base"].tail(-168)
+
+        cls.datasets = datasets
 
     def test_dataset_convolutional(self):
         # Makes a graph of all the values from the convolutional benchmarks
-        cv.benchmark_graph_all(self.dataset_convolutional,
-                               PATH_RESOURCES + "/images/cross-validation",
-                               "convolutional",
-                               100)
+        cv.graph_epochs(self.datasets["convolutional"]["base"],
+                        PATH_RESOURCES + "/images/cross-validation",
+                        "convolutional",
+                        100)
         # Makes a bar graph from the convolutional benchmarks
-        cv.benchmark_graph_summary(self.dataset_convolutional,
-                                   PATH_RESOURCES + "/images/cross-validation",
-                                   "convolutional")
+        keys = ["min", "max", "avg", "last"]
+        cv.graph_performance({key: self.datasets["convolutional"][key] for key in keys},
+                             self.column_names[1:-1],
+                             PATH_RESOURCES + "/images/cross-validation",
+                             "convolutional")
         self.assertTrue(True)
 
     def test_dataset_temporal(self):
-        # Makes a graph of all the values from the temporal benchmarks
-        cv.benchmark_graph_all(self.dataset_temporal,
-                               PATH_RESOURCES + "/images/cross-validation",
-                               "temporal",
-                               100)
-        # Makes a bar graph from the temporal benchmarks
-        cv.benchmark_graph_summary(self.dataset_temporal,
-                                   PATH_RESOURCES + "/images/cross-validation",
-                                   "temporal")
+
+        # Makes a graph of all the values from the convolutional benchmarks
+        cv.graph_epochs(self.datasets["temporal"]["base"],
+                        PATH_RESOURCES + "/images/cross-validation",
+                        "temporal",
+                        100)
+        # Makes a bar graph from the convolutional benchmarks
+        keys = ["min", "max", "avg", "last"]
+        cv.graph_performance({key: self.datasets["temporal"][key] for key in keys},
+                             self.column_names[1:-1],
+                             PATH_RESOURCES + "/images/cross-validation",
+                             "temporal")
         self.assertTrue(True)
 
-    def test_dataset_labels_convolutional(self):
-        # Makes a graph of all the values from the labels convolutional benchmarks
-        cv.benchmark_graph_all(self.labels_convolutional,
-                               PATH_RESOURCES + "/images/cross-validation",
-                               "labels_convolutional",
-                               100)
-        # Makes a bar graph from the labels convolutional benchmarks
-        cv.benchmark_graph_summary(self.labels_convolutional,
-                                   PATH_RESOURCES + "/images/cross-validation",
-                                   "labels_convolutional")
+    def test_dataset_indiv_convolutional(self):
+        # Makes a graph of all the values from the convolutional benchmarks
+        cv.graph_epochs(self.datasets["indiv_conv"]["base"],
+                        PATH_RESOURCES + "/images/cross-validation",
+                        "indiv_conv",
+                        100)
+        # Makes a bar graph from the convolutional benchmarks
+        keys = ["min", "max", "avg", "last"]
+        cv.graph_performance({key: self.datasets["indiv_conv"][key] for key in keys},
+                             self.column_names[1:-1],
+                             PATH_RESOURCES + "/images/cross-validation",
+                             "indiv_conv")
+
         self.assertTrue(True)
 
-    def test_dataset_labels_temporal(self):
-        # Makes a graph of all the values from the labels temporal benchmarks
-        cv.benchmark_graph_all(self.labels_temporal,
-                               PATH_RESOURCES + "/images/cross-validation",
-                               "labels_temporal",
-                               100)
-        # Makes a bar graph from the labels temporal benchmarks
-        cv.benchmark_graph_summary(self.labels_temporal,
-                                   PATH_RESOURCES + "/images/cross-validation",
-                                   "labels_temporal")
+    def test_dataset_indiv_temporal(self):
+        # Makes a graph of all the values from the convolutional benchmarks
+        cv.graph_epochs(self.datasets["indiv_temp"]["base"],
+                        PATH_RESOURCES + "/images/cross-validation",
+                        "indiv_temp",
+                        100)
+        # Makes a bar graph from the convolutional benchmarks
+        keys = ["min", "max", "avg", "last"]
+        cv.graph_performance({key: self.datasets["indiv_temp"][key] for key in keys},
+                             self.column_names[1:-1],
+                             PATH_RESOURCES + "/images/cross-validation",
+                             "indiv_temp")
+
+        self.assertTrue(True)
+
+    def test_prediction_conv(self):
+        # Makes a bar graph from the convolutional benchmarks
+        datasets = {"labels": self.datasets["labels"]["base"],
+                    "group": self.datasets["prediction conv"]["group"],
+                    "indiv": self.datasets["prediction conv"]["indiv"]}
+        cv.graph_predictions(datasets,
+                             self.prediction_names,
+                             PATH_RESOURCES + "/images/cross-validation",
+                             "prediction_conv")
+        self.assertTrue(True)
+
+    def test_prediction_temp(self):
+        # Makes a bar graph from the convolutional benchmarks
+        datasets = {"labels": self.datasets["labels"]["base"],
+                    "group": self.datasets["prediction temp"]["group"],
+                    "indiv": self.datasets["prediction temp"]["indiv"]}
+        cv.graph_predictions(datasets,
+                             self.prediction_names,
+                             PATH_RESOURCES + "/images/cross-validation",
+                             "prediction_temp")
         self.assertTrue(True)
 
 
