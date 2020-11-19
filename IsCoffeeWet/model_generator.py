@@ -194,7 +194,7 @@ def temp_conv_model(filter_size, kernel_size, dilations, input_size,
                               activation=activation)(x)
 
     # Shape => [batch, label_width, label_columns]
-    output = layers.Dense(units=output_size[1])(x)
+    output = layers.Dense(units=output_size[1], activation="linear")(x)
 
     model = tf.keras.Model(inputs=inputs, outputs=output, name="tcn_model")
 
