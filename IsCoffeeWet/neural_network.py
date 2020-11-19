@@ -1,6 +1,56 @@
 import pandas as pd
 
 
+def normalize(dataset):
+    """
+    Function that normalizes a dataset using the max absolute value for
+    each column. A 10% size increase of the max value is added to prevent
+    for unknown bigger values.
+
+    Parameters
+    ----------
+    dataset: pandas.DataFrame
+        Dataset with the data to normalize.
+
+    Returns
+    -------
+    tuple[pandas.DataFrame, pandas.Series]
+        Dataset with the normalized data and the max absolute value
+        for each column
+    """
+    # Calculates the absolute max value and increase it by 10%
+    # This give a room for new unknown values so the max value won't be 1
+    max_values = dataset.abs().max() * 1.10
+
+    # Reduce values to [0, 1] is all positives
+    # And [-1, 1] if there are negative values
+    dataset = dataset / max_values
+
+    return dataset, max_values
+
+
+def de_normalize(dataset, max):
+    """
+
+    Parameters
+    ----------
+    dataset: pandas.DataFrame
+        Dataset with the data to de-normalize.
+    max: pandas.Series or float
+        Value to upscale the dataset. If the dataset are multiple columns,
+        the max must be a Series with the same name for those columns to
+        apply the operation
+
+    Returns
+    -------
+    pandas.DataFrame
+        Dataset with the data de-normalize. Can no longer be used to feed
+        into the neural network.
+    """
+
+    return dataset * max
+
+
 def standardize(dataset):
     """
     Function that standardizes the values in all the columns present in the
@@ -49,10 +99,10 @@ def de_standardize(dataset, mean, std):
     ----------
     dataset: pandas.DataFrame
         Dataset with the data to de-standardize.
-    mean: pandas.DataFrame
+    mean: pandas.Series or float
         DataFrame with the mean of each column, obtained from the standardize
         function.
-    std: pandas.DataFrame
+    std: pandas.Series or float
         DataFrame with the std of each column, obtained from the standardize
         function.
 
@@ -62,8 +112,7 @@ def de_standardize(dataset, mean, std):
         Dataset with the data de-standardized. Can no longer be used to feed
         into the neural network.
     """
-    dataset = dataset * std + mean
-    return dataset
+    return dataset * std + mean
 
 
 def mape(dataset, config, model):
