@@ -24,8 +24,8 @@ g_pool_size: int
 g_input_size: tuple
 prediction_data: np.ndarray
 prediction_label: np.ndarray
-g_mean: pd.DataFrame
-g_std: pd.DataFrame
+g_mean: pd.Series
+g_std: pd.Series
 
 all_history: pd.DataFrame
 prediction_result: pd.DataFrame
@@ -40,7 +40,7 @@ def setUpModule():
     Initialize all the global values used by the latter tests.
     """
 
-    global g_window, all_history, g_input_size, g_mean, g_std, prediction_data
+    global g_window, all_history, g_input_size, g_mean, prediction_data, g_std
     global g_filter_size, g_kernel_size, g_pool_size, prediction_result, prediction_label
 
     # *** Dataset
@@ -69,7 +69,7 @@ def setUpModule():
                             "year sin",
                             "year cos"], axis=1)
 
-    # Normalize the dataset
+    # standardize the dataset
     dataset, g_mean, g_std = nn.standardize(dataset)
 
     # Partition the dataset
@@ -79,9 +79,6 @@ def setUpModule():
     # A week in hours
     input_width = 7 * 24
     label_columns = dataset.columns.tolist()
-
-    # Removes th sin/cos columns from the labels
-    label_columns = label_columns[:-4]
 
     # Window of 7 days for testing the NN. Batch size of 512
     g_window = wg.WindowGenerator(input_width=input_width,
@@ -93,10 +90,10 @@ def setUpModule():
                                   label_columns=label_columns,
                                   batch_size=512)
 
-    # Saves the last window from the normalize dataset
+    # Saves the last window from the standardize dataset
     # Used to evaluate results from group vs individual
-    prediction_data = dataset[-336:-168].to_numpy().reshape((1, 168, 19))
-    prediction_label = dataset[-168:].to_numpy().reshape((1, 168, 19))
+    prediction_data = dataset[-336:-168].to_numpy().reshape((1, 168, 15))
+    prediction_label = dataset[-168:].to_numpy().reshape((1, 168, 15))
 
     # Arguments of the default NN. Use kernel increment values
     g_filter_size = [96, 192, 208]  # Neurons in a conv layer
@@ -110,7 +107,7 @@ def setUpModule():
     # Dataframe use to store the history of each training, then save it
     try:
         # Overwrites past results
-        all_history = pd.read_csv(PATH + "/results/benchmark_labels_convolutional.csv",
+        all_history = pd.read_csv(PATH + "/results/benchmark_prediction_convolutional.csv",
                                   engine="c", index_col=0)
         all_history = all_history.reset_index()
         all_history.pop("index")
@@ -129,8 +126,8 @@ def tearDownModule():
     global all_history, prediction_result
 
     # Save to csv:
-    history_csv = PATH + "/results/benchmark_labels_convolutional.csv"
-    predict_csv = PATH + "/results/prediction/labels_convolutional.csv"
+    history_csv = PATH + "/results/benchmark_prediction_convolutional.csv"
+    predict_csv = PATH + "/results/prediction/prediction_convolutional.csv"
 
     with open(history_csv, mode='w') as file:
         all_history.to_csv(file)
@@ -315,7 +312,7 @@ class Test_TestLabels(unittest.TestCase):
         Function that compiles and train the default CNN to use as baseline.
         """
         global g_filter_size, g_kernel_size, g_pool_size
-        global g_window, g_input_size
+        global g_window, g_input_size, g_mean, g_std
 
         # Name used to identify its data in the history
         self.name = "Temp Out"
@@ -341,12 +338,17 @@ class Test_TestLabels(unittest.TestCase):
         # Train the model using the default window
         self.history = compile_and_fit(model, window)
 
-        # Gets the prediction and saves it into a DataFrame
-        self.predict = pd.DataFrame(model(prediction_data).numpy().reshape((168, 1)),
-                                    columns=window.label_columns)
-
         # Gets the column number from the label dictionary
         label_col_index = g_window.label_columns_indices[self.name]
+
+        # Gets the prediction and saves it into a DataFrame
+        predict = pd.DataFrame(model(prediction_data).numpy().reshape((168, 1)),
+                               columns=window.label_columns)
+
+        # De-standardize the prediction
+        self.predict = nn.de_standardize(predict,
+                                         g_mean[self.name],
+                                         g_std[self.name])
 
         # Graphs all the labels in the model
         window.plot(self.name,
@@ -360,7 +362,7 @@ class Test_TestLabels(unittest.TestCase):
         Function that compiles and train the default CNN to use as baseline.
         """
         global g_filter_size, g_kernel_size, g_pool_size
-        global g_window, g_input_size
+        global g_window, g_input_size, g_mean, g_std
 
         # Name used to identify its data in the history
         self.name = "Hi Temp"
@@ -386,12 +388,17 @@ class Test_TestLabels(unittest.TestCase):
         # Train the model using the default window
         self.history = compile_and_fit(model, window)
 
-        # Gets the prediction and saves it into a DataFrame
-        self.predict = pd.DataFrame(model(prediction_data).numpy().reshape((168, 1)),
-                                    columns=window.label_columns)
-
         # Gets the column number from the label dictionary
         label_col_index = g_window.label_columns_indices[self.name]
+
+        # Gets the prediction and saves it into a DataFrame
+        predict = pd.DataFrame(model(prediction_data).numpy().reshape((168, 1)),
+                               columns=window.label_columns)
+
+        # De-standardize the prediction
+        self.predict = nn.de_standardize(predict,
+                                         g_mean[self.name],
+                                         g_std[self.name])
 
         # Graphs all the labels in the model
         window.plot(self.name,
@@ -405,7 +412,7 @@ class Test_TestLabels(unittest.TestCase):
         Function that compiles and train the default CNN to use as baseline.
         """
         global g_filter_size, g_kernel_size, g_pool_size
-        global g_window, g_input_size
+        global g_window, g_input_size, g_mean, g_std
 
         # Name used to identify its data in the history
         self.name = "Low Temp"
@@ -431,12 +438,17 @@ class Test_TestLabels(unittest.TestCase):
         # Train the model using the default window
         self.history = compile_and_fit(model, window)
 
-        # Gets the prediction and saves it into a DataFrame
-        self.predict = pd.DataFrame(model(prediction_data).numpy().reshape((168, 1)),
-                                    columns=window.label_columns)
-
         # Gets the column number from the label dictionary
         label_col_index = g_window.label_columns_indices[self.name]
+
+        # Gets the prediction and saves it into a DataFrame
+        predict = pd.DataFrame(model(prediction_data).numpy().reshape((168, 1)),
+                               columns=window.label_columns)
+
+        # De-standardize the prediction
+        self.predict = nn.de_standardize(predict,
+                                         g_mean[self.name],
+                                         g_std[self.name])
 
         # Graphs all the labels in the model
         window.plot(self.name,
@@ -450,7 +462,7 @@ class Test_TestLabels(unittest.TestCase):
         Function that compiles and train the default CNN to use as baseline.
         """
         global g_filter_size, g_kernel_size, g_pool_size
-        global g_window, g_input_size
+        global g_window, g_input_size, g_mean, g_std
 
         # Name used to identify its data in the history
         self.name = "Out Hum"
@@ -476,12 +488,17 @@ class Test_TestLabels(unittest.TestCase):
         # Train the model using the default window
         self.history = compile_and_fit(model, window)
 
-        # Gets the prediction and saves it into a DataFrame
-        self.predict = pd.DataFrame(model(prediction_data).numpy().reshape((168, 1)),
-                                    columns=window.label_columns)
-
         # Gets the column number from the label dictionary
         label_col_index = g_window.label_columns_indices[self.name]
+
+        # Gets the prediction and saves it into a DataFrame
+        predict = pd.DataFrame(model(prediction_data).numpy().reshape((168, 1)),
+                               columns=window.label_columns)
+
+        # De-standardize the prediction
+        self.predict = nn.de_standardize(predict,
+                                         g_mean[self.name],
+                                         g_std[self.name])
 
         # Graphs all the labels in the model
         window.plot(self.name,
@@ -495,7 +512,7 @@ class Test_TestLabels(unittest.TestCase):
         Function that compiles and train the default CNN to use as baseline.
         """
         global g_filter_size, g_kernel_size, g_pool_size
-        global g_window, g_input_size
+        global g_window, g_input_size, g_mean, g_std
 
         # Name used to identify its data in the history
         self.name = "Wind Speed"
@@ -521,12 +538,17 @@ class Test_TestLabels(unittest.TestCase):
         # Train the model using the default window
         self.history = compile_and_fit(model, window)
 
-        # Gets the prediction and saves it into a DataFrame
-        self.predict = pd.DataFrame(model(prediction_data).numpy().reshape((168, 1)),
-                                    columns=window.label_columns)
-
         # Gets the column number from the label dictionary
         label_col_index = g_window.label_columns_indices[self.name]
+
+        # Gets the prediction and saves it into a DataFrame
+        predict = pd.DataFrame(model(prediction_data).numpy().reshape((168, 1)),
+                               columns=window.label_columns)
+
+        # De-standardize the prediction
+        self.predict = nn.de_standardize(predict,
+                                         g_mean[self.name],
+                                         g_std[self.name])
 
         # Graphs all the labels in the model
         window.plot(self.name,
@@ -566,12 +588,17 @@ class Test_TestLabels(unittest.TestCase):
         # Train the model using the default window
         self.history = compile_and_fit(model, window)
 
-        # Gets the prediction and saves it into a DataFrame
-        self.predict = pd.DataFrame(model(prediction_data).numpy().reshape((168, 1)),
-                                    columns=window.label_columns)
-
         # Gets the column number from the label dictionary
         label_col_index = g_window.label_columns_indices[self.name]
+
+        # Gets the prediction and saves it into a DataFrame
+        predict = pd.DataFrame(model(prediction_data).numpy().reshape((168, 1)),
+                               columns=window.label_columns)
+
+        # De-standardize the prediction
+        self.predict = nn.de_standardize(predict,
+                                         g_mean[self.name],
+                                         g_std[self.name])
 
         # Graphs all the labels in the model
         window.plot(self.name,
@@ -585,7 +612,7 @@ class Test_TestLabels(unittest.TestCase):
         Function that compiles and train the default CNN to use as baseline.
         """
         global g_filter_size, g_kernel_size, g_pool_size
-        global g_window, g_input_size
+        global g_window, g_input_size, g_mean, g_std
 
         # Name used to identify its data in the history
         self.name = "Bar  "
@@ -611,12 +638,17 @@ class Test_TestLabels(unittest.TestCase):
         # Train the model using the default window
         self.history = compile_and_fit(model, window)
 
-        # Gets the prediction and saves it into a DataFrame
-        self.predict = pd.DataFrame(model(prediction_data).numpy().reshape((168, 1)),
-                                    columns=window.label_columns)
-
         # Gets the column number from the label dictionary
         label_col_index = g_window.label_columns_indices[self.name]
+
+        # Gets the prediction and saves it into a DataFrame
+        predict = pd.DataFrame(model(prediction_data).numpy().reshape((168, 1)),
+                               columns=window.label_columns)
+
+        # De-standardize the prediction
+        self.predict = nn.de_standardize(predict,
+                                         g_mean[self.name],
+                                         g_std[self.name])
 
         # Graphs all the labels in the model
         window.plot(self.name,
@@ -630,7 +662,7 @@ class Test_TestLabels(unittest.TestCase):
         Function that compiles and train the default CNN to use as baseline.
         """
         global g_filter_size, g_kernel_size, g_pool_size
-        global g_window, g_input_size
+        global g_window, g_input_size, g_mean, g_std
 
         # Name used to identify its data in the history
         self.name = "Rain"
@@ -656,12 +688,17 @@ class Test_TestLabels(unittest.TestCase):
         # Train the model using the default window
         self.history = compile_and_fit(model, window)
 
-        # Gets the prediction and saves it into a DataFrame
-        self.predict = pd.DataFrame(model(prediction_data).numpy().reshape((168, 1)),
-                                    columns=window.label_columns)
-
         # Gets the column number from the label dictionary
         label_col_index = g_window.label_columns_indices[self.name]
+
+        # Gets the prediction and saves it into a DataFrame
+        predict = pd.DataFrame(model(prediction_data).numpy().reshape((168, 1)),
+                               columns=window.label_columns)
+
+        # De-standardize the prediction
+        self.predict = nn.de_standardize(predict,
+                                         g_mean[self.name],
+                                         g_std[self.name])
 
         # Graphs all the labels in the model
         window.plot(self.name,
@@ -675,7 +712,7 @@ class Test_TestLabels(unittest.TestCase):
         Function that compiles and train the default CNN to use as baseline.
         """
         global g_filter_size, g_kernel_size, g_pool_size
-        global g_window, g_input_size
+        global g_window, g_input_size, g_mean, g_std
 
         # Name used to identify its data in the history
         self.name = "Solar Rad."
@@ -701,12 +738,17 @@ class Test_TestLabels(unittest.TestCase):
         # Train the model using the default window
         self.history = compile_and_fit(model, window)
 
-        # Gets the prediction and saves it into a DataFrame
-        self.predict = pd.DataFrame(model(prediction_data).numpy().reshape((168, 1)),
-                                    columns=window.label_columns)
-
         # Gets the column number from the label dictionary
         label_col_index = g_window.label_columns_indices[self.name]
+
+        # Gets the prediction and saves it into a DataFrame
+        predict = pd.DataFrame(model(prediction_data).numpy().reshape((168, 1)),
+                               columns=window.label_columns)
+
+        # De-standardize the prediction
+        self.predict = nn.de_standardize(predict,
+                                         g_mean[self.name],
+                                         g_std[self.name])
 
         # Graphs all the labels in the model
         window.plot(self.name,
@@ -720,7 +762,7 @@ class Test_TestLabels(unittest.TestCase):
         Function that compiles and train the default CNN to use as baseline.
         """
         global g_filter_size, g_kernel_size, g_pool_size
-        global g_window, g_input_size
+        global g_window, g_input_size, g_mean, g_std
 
         # Name used to identify its data in the history
         self.name = "Hi Solar Rad. "
@@ -746,12 +788,17 @@ class Test_TestLabels(unittest.TestCase):
         # Train the model using the default window
         self.history = compile_and_fit(model, window)
 
-        # Gets the prediction and saves it into a DataFrame
-        self.predict = pd.DataFrame(model(prediction_data).numpy().reshape((168, 1)),
-                                    columns=window.label_columns)
-
         # Gets the column number from the label dictionary
         label_col_index = g_window.label_columns_indices[self.name]
+
+        # Gets the prediction and saves it into a DataFrame
+        predict = pd.DataFrame(model(prediction_data).numpy().reshape((168, 1)),
+                               columns=window.label_columns)
+
+        # De-standardize the prediction
+        self.predict = nn.de_standardize(predict,
+                                         g_mean[self.name],
+                                         g_std[self.name])
 
         # Graphs all the labels in the model
         window.plot(self.name,
@@ -765,7 +812,7 @@ class Test_TestLabels(unittest.TestCase):
         Function that compiles and train the default CNN to use as baseline.
         """
         global g_filter_size, g_kernel_size, g_pool_size
-        global g_window, g_input_size
+        global g_window, g_input_size, g_mean, g_std
 
         # Name used to identify its data in the history
         self.name = "In Temp"
@@ -791,12 +838,17 @@ class Test_TestLabels(unittest.TestCase):
         # Train the model using the default window
         self.history = compile_and_fit(model, window)
 
-        # Gets the prediction and saves it into a DataFrame
-        self.predict = pd.DataFrame(model(prediction_data).numpy().reshape((168, 1)),
-                                    columns=window.label_columns)
-
         # Gets the column number from the label dictionary
         label_col_index = g_window.label_columns_indices[self.name]
+
+        # Gets the prediction and saves it into a DataFrame
+        predict = pd.DataFrame(model(prediction_data).numpy().reshape((168, 1)),
+                               columns=window.label_columns)
+
+        # De-standardize the prediction
+        self.predict = nn.de_standardize(predict,
+                                         g_mean[self.name],
+                                         g_std[self.name])
 
         # Graphs all the labels in the model
         window.plot(self.name,
@@ -810,7 +862,7 @@ class Test_TestLabels(unittest.TestCase):
         Function that compiles and train the default CNN to use as baseline.
         """
         global g_filter_size, g_kernel_size, g_pool_size
-        global g_window, g_input_size
+        global g_window, g_input_size, g_mean, g_std
 
         # Name used to identify its data in the history
         self.name = "In Hum"
@@ -836,12 +888,17 @@ class Test_TestLabels(unittest.TestCase):
         # Train the model using the default window
         self.history = compile_and_fit(model, window)
 
-        # Gets the prediction and saves it into a DataFrame
-        self.predict = pd.DataFrame(model(prediction_data).numpy().reshape((168, 1)),
-                                    columns=window.label_columns)
-
         # Gets the column number from the label dictionary
         label_col_index = g_window.label_columns_indices[self.name]
+
+        # Gets the prediction and saves it into a DataFrame
+        predict = pd.DataFrame(model(prediction_data).numpy().reshape((168, 1)),
+                               columns=window.label_columns)
+
+        # De-standardize the prediction
+        self.predict = nn.de_standardize(predict,
+                                         g_mean[self.name],
+                                         g_std[self.name])
 
         # Graphs all the labels in the model
         window.plot(self.name,
@@ -855,7 +912,7 @@ class Test_TestLabels(unittest.TestCase):
         Function that compiles and train the default CNN to use as baseline.
         """
         global g_filter_size, g_kernel_size, g_pool_size
-        global g_window, g_input_size
+        global g_window, g_input_size, g_mean, g_std
 
         # Name used to identify its data in the history
         self.name = "Soils 1 Moist."
@@ -881,12 +938,17 @@ class Test_TestLabels(unittest.TestCase):
         # Train the model using the default window
         self.history = compile_and_fit(model, window)
 
-        # Gets the prediction and saves it into a DataFrame
-        self.predict = pd.DataFrame(model(prediction_data).numpy().reshape((168, 1)),
-                                    columns=window.label_columns)
-
         # Gets the column number from the label dictionary
         label_col_index = g_window.label_columns_indices[self.name]
+
+        # Gets the prediction and saves it into a DataFrame
+        predict = pd.DataFrame(model(prediction_data).numpy().reshape((168, 1)),
+                               columns=window.label_columns)
+
+        # De-standardize the prediction
+        self.predict = nn.de_standardize(predict,
+                                         g_mean[self.name],
+                                         g_std[self.name])
 
         # Graphs all the labels in the model
         window.plot(self.name,
@@ -900,7 +962,7 @@ class Test_TestLabels(unittest.TestCase):
         Function that compiles and train the default CNN to use as baseline.
         """
         global g_filter_size, g_kernel_size, g_pool_size
-        global g_window, g_input_size
+        global g_window, g_input_size, g_mean, g_std
 
         # Name used to identify its data in the history
         self.name = "Leaf Wet 1"
@@ -926,12 +988,17 @@ class Test_TestLabels(unittest.TestCase):
         # Train the model using the default window
         self.history = compile_and_fit(model, window)
 
-        # Gets the prediction and saves it into a DataFrame
-        self.predict = pd.DataFrame(model(prediction_data).numpy().reshape((168, 1)),
-                                    columns=window.label_columns)
-
         # Gets the column number from the label dictionary
         label_col_index = g_window.label_columns_indices[self.name]
+
+        # Gets the prediction and saves it into a DataFrame
+        predict = pd.DataFrame(model(prediction_data).numpy().reshape((168, 1)),
+                               columns=window.label_columns)
+
+        # De-standardize the prediction
+        self.predict = nn.de_standardize(predict,
+                                         g_mean[self.name],
+                                         g_std[self.name])
 
         # Graphs all the labels in the model
         window.plot(self.name,
@@ -945,7 +1012,7 @@ class Test_TestLabels(unittest.TestCase):
         Function that compiles and train the default CNN to use as baseline.
         """
         global g_filter_size, g_kernel_size, g_pool_size
-        global g_window, g_input_size
+        global g_window, g_input_size, g_mean, g_std
 
         # Name used to identify its data in the history
         self.name = "Leaf Wet Accum"
@@ -971,12 +1038,17 @@ class Test_TestLabels(unittest.TestCase):
         # Train the model using the default window
         self.history = compile_and_fit(model, window)
 
-        # Gets the prediction and saves it into a DataFrame
-        self.predict = pd.DataFrame(model(prediction_data).numpy().reshape((168, 1)),
-                                    columns=window.label_columns)
-
         # Gets the column number from the label dictionary
         label_col_index = g_window.label_columns_indices[self.name]
+
+        # Gets the prediction and saves it into a DataFrame
+        predict = pd.DataFrame(model(prediction_data).numpy().reshape((168, 1)),
+                               columns=window.label_columns)
+
+        # De-standardize the prediction
+        self.predict = nn.de_standardize(predict,
+                                         g_mean[self.name],
+                                         g_std[self.name])
 
         # Graphs all the labels in the model
         window.plot(self.name,
