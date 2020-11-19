@@ -17,7 +17,7 @@ MARKER_LIST = [".", "v", "^", "<", ">", "1", "2", "3", "s", "x",
 FIG_SIZE = (30, 10)
 
 
-def benchmark_graph_all(dataset, path_resources, name, max_epochs=100):
+def graph_epochs(dataset, path_resources, name, max_epochs=100):
     """
         Function that graphs the reported metrics from the history according
         to the epoch of the training in which they were taken.
@@ -72,15 +72,18 @@ def benchmark_graph_all(dataset, path_resources, name, max_epochs=100):
         plt.close()
 
 
-def benchmark_graph_summary(dataset, path_resources, name):
+def graph_performance(datasets, graph_columns, path_resources, name):
     """
         Function that graphs a summary of the most important values inside
         the history. These are min, max, mean and last reported value.
 
         Parameters
         ----------
-        dataset: pandas.DataFrame
-            Dataset of the history from the tests
+        datasets: dict[pandas.DataFrame]
+            Datasets of the history from the tests. Many datasets can be
+            added to the list, but all must have the same columns to graph
+        graph_columns: list[string]
+            names of the columns from the dataset to graph
         path_resources: string
             Path to the parent folder to save the graphs
         name: string
@@ -92,67 +95,107 @@ def benchmark_graph_summary(dataset, path_resources, name):
     except FileExistsError:
         print("\n{} already exists".format(path_resources))
 
-    # Retrieves the unique test names in the dataset
-    # Assign an id to a test name. Use for colors and markers
-    name_dict = {name: i for i, name in
-                 enumerate(dataset["Name"].drop_duplicates())}
-
-    # Obtains the list of columns to graph
-    # Removes the last columns ("Name")
-    graph_columns = dataset.columns.tolist()[:-1]
-
     # set width of bar
-    bar_width = 0.2
+    bar_width = 1 / (len(datasets) + 1)
 
     # Plots a graph for each metric
     for column in graph_columns:
         plt.figure(figsize=FIG_SIZE)
-        min_value = []
-        max_value = []
-        avg_value = []
-        last_value = []
 
-        # Obtains the values to plot from each test
-        for name in name_dict:
-            data = dataset.loc[dataset["Name"] == name, column]
-            min_value.append(data.min())
-            max_value.append(data.max())
-            avg_value.append(data.mean())
-            last_value.append(data.iloc[-1])
+        # Counter for the datasets to graph. They will be the bars in the graph
+        bars = len(datasets) - 1
 
-        # Set position of bar on X axis
-        min_pos = np.arange(len(min_value))
-        max_pos = [x + bar_width for x in min_pos]
-        avg_pos = [x + bar_width for x in max_pos]
-        last_pos = [x + bar_width for x in avg_pos]
+        # Graph the data of each dataset with the same-name column
+        for key, value in datasets.items():
+            # Numbers to plot in the graph
+            # Don't graph empty values
+            data = value[column].dropna(axis=0)
 
-        # Make the plot
-        plt.bar(min_pos, min_value,
-                color=COLOR_LIST[0], width=bar_width,
-                edgecolor="white", label="min")
-        plt.bar(max_pos, max_value,
-                color=COLOR_LIST[1], width=bar_width,
-                edgecolor="white", label="max")
-        plt.bar(avg_pos, avg_value,
-                color=COLOR_LIST[2], width=bar_width,
-                edgecolor="white", label="average")
-        plt.bar(last_pos, last_value,
-                color=COLOR_LIST[3], width=bar_width,
-                edgecolor="white", label="last")
+            # Generates the new positions that the bars will take in the graph
+            positions = np.arange(len(data)) + bar_width * bars
 
-        for i in range(len(min_value)):
-            plt.text(min_pos[i] - 0.09, 0, round(min_value[i], 3), fontsize=7, color="black")
-            plt.text(max_pos[i] - 0.09, 0, round(max_value[i], 3), fontsize=7, color="black")
-            plt.text(avg_pos[i] - 0.09, 0, round(avg_value[i], 3), fontsize=7, color="black")
-            plt.text(last_pos[i] - 0.09, 0, round(last_value[i], 3), fontsize=7, color="black")
+            # Make the plot
+            plt.bar(positions, data.to_list(),
+                    color=COLOR_LIST[bars], width=bar_width,
+                    edgecolor="white", label=key)
+
+            # Don't graph empty values
+            for i in range(len(data)):
+                # Graphs the values as text
+                plt.text(x=positions[i] - bar_width / 2,
+                         y=0,
+                         s=round(data[i], 3),
+                         fontsize=7,
+                         color="white")
+
+            # Adds 1 to the counter of datasets graphed
+            bars -= 1
+
+        else:
+            try:
+                names = value["Name"].dropna(axis=0).drop_duplicates().to_list()
+
+            except:
+                # There is no name column, use the positions
+                names = positions
 
         # Add xticks on the middle of the group bars
         plt.xlabel(column, fontweight="bold")
-        plt.xticks([r + bar_width for r in range(len(min_value))],
-                   name_dict.keys())
+        plt.xticks([r + bar_width for r in positions],
+                   names)
 
         plt.ylabel("Value")
         plt.legend()
         # Saves the image
         plt.savefig("{}/{}_bars.png".format(path_resources, column))
+        plt.close()
+
+
+def graph_predictions(datasets, graph_columns, path_resources, name):
+    """
+        Function that graphs the reported metrics from the history according
+        to the epoch of the training in which they were taken.
+
+        Parameters
+        ----------
+        datasets: dict[pandas.DataFrame]
+            Datasets of the predictions from the tests. Many datasets can be
+            added to the list, but all must have the same columns to graph
+        graph_columns: list[string]
+            names of the columns from the dataset to graph
+        path_resources: string
+            Path to the parent folder to save the graphs
+        name: string
+            name of the cross-validation graphed
+    """
+    path_resources = path_resources + "/" + name
+    try:
+        os.makedirs(path_resources)
+    except FileExistsError:
+        print("\n{} already exists".format(path_resources))
+
+    # Plots a graph for each metric
+    for column in graph_columns:
+        plt.figure(figsize=FIG_SIZE)
+
+        # Counter for the datasets to graph. They will be the colors to use
+        color = len(datasets) - 1
+
+        # Plots all the data for each test
+        for key, value in datasets.items():
+            # Numbers to plot in the graph
+            # Don't graph empty values
+            data = value[column].dropna(axis=0)
+
+            plt.plot(range(len(data)), data, label=key,
+                     color=COLOR_LIST[color],
+                     marker=MARKER_LIST[color])
+
+            color -= 1
+
+        plt.xlabel("Predictions")
+        plt.ylabel(column)
+        plt.legend()
+        # Saves the image
+        plt.savefig("{}/{}.png".format(path_resources, column))
         plt.close()
