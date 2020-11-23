@@ -26,7 +26,7 @@ class ConfigFile:
             are stored.
         """
         # Number of rows (data) in the dataset. Not found in the
-        # configuration file
+        # configuration file, calculated after pre-process
         self.num_data = 0
 
         # When initialize without arguments

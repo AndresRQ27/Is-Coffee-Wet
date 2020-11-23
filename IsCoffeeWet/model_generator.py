@@ -203,3 +203,5 @@ def temp_conv_model(filter_size, kernel_size, dilations, input_size,
         tf.keras.utils.plot_model(model, graph_path, show_shapes=True)
 
     return model
+
+# TODO: add deep convolutional lstm network

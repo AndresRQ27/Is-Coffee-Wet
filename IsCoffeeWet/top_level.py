@@ -101,6 +101,10 @@ if config_ds.graph:
 # TODO: implement compile and fitting
 # history = nn.compile_and_fit(conv_model, window, 5)
 
-# Shows graphs for each column
-# for name in window.label_columns:
-#     window.plot(name, model=model)
+# Graphs all the labels in the model
+# for label in g_window.label_columns:
+#    g_window.plot(label,
+#                  PATH + "/results/prediction/group_temporal/",
+#                  (prediction_data,
+#                   prediction_label),
+#                  model)

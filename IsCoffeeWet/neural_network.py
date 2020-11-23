@@ -3,8 +3,8 @@ import pandas as pd
 
 def normalize(dataset):
     """
-    Function that normalizes a dataset using the max absolute value for
-    each column. A 10% size increase of the max value is added to prevent
+    Function that normalizes a dataset using the max_values absolute value for
+    each column. A 10% size increase of the max_values value is added to prevent
     for unknown bigger values.
 
     Parameters
@@ -15,11 +15,11 @@ def normalize(dataset):
     Returns
     -------
     tuple[pandas.DataFrame, pandas.Series]
-        Dataset with the normalized data and the max absolute value
+        Dataset with the normalized data and the max_values absolute value
         for each column
     """
-    # Calculates the absolute max value and increase it by 10%
-    # This give a room for new unknown values so the max value won't be 1
+    # Calculates the absolute max_values value and increase it by 10%
+    # This give a room for new unknown values so the max_values value won't be 1
     max_values = dataset.abs().max() * 1.10
 
     # Reduce values to [0, 1] is all positives
@@ -29,14 +29,14 @@ def normalize(dataset):
     return dataset, max_values
 
 
-def de_normalize(dataset, max):
+def de_normalize(dataset, max_values):
     """
 
     Parameters
     ----------
     dataset: pandas.DataFrame
         Dataset with the data to de-normalize.
-    max: pandas.Series or float
+    max_values: pandas.Series or float
         Value to upscale the dataset. If the dataset are multiple columns,
         the max must be a Series with the same name for those columns to
         apply the operation
@@ -48,7 +48,7 @@ def de_normalize(dataset, max):
         into the neural network.
     """
 
-    return dataset * max
+    return dataset * max_values
 
 
 def standardize(dataset):
@@ -232,15 +232,3 @@ def save_model(model, path):
 
     model.save(path)
     print("Your model has been save to '{}'".format(path))
-
-
-"""
-# Use tensorboard
-log_dir = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-tensorboard_callback = tf.keras.callbacks.TensorBoard(
-                            log_dir=log_dir,
-                            histogram_freq=1,
-                            embeddings_freq=0,
-                            update_freq="epoch"
-                        )
-"""
