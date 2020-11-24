@@ -2,6 +2,7 @@ import tensorflow as tf
 import tensorflow.keras.layers as layers
 
 from IsCoffeeWet import temporal_convolutional as tcn
+from IsCoffeeWet import filternet_module as flm
 
 
 def check_ifint(value, size):
@@ -39,7 +40,7 @@ def check_ifint(value, size):
     return value
 
 
-def convolutional_model(filter_size, kernel_size, pool_size,
+def convolutional_model(filters, kernel_size, pool_size,
                         input_size, output_size, dropout=0.1,
                         graph_path=None):
     """
@@ -49,7 +50,7 @@ def convolutional_model(filter_size, kernel_size, pool_size,
     Parameters
     ----------
 
-    filter_size: int or list[int]
+    filters: int or list[int]
         Number of filters to use in the convolutional layers. Can be
         thought as a neuron in a dense layer.
     kernel_size: int or list[int]
@@ -81,14 +82,14 @@ def convolutional_model(filter_size, kernel_size, pool_size,
     """
 
     # Check if the inputs are numbers. Convert them to lists
-    filter_size = check_ifint(filter_size, 3)
+    filters = check_ifint(filters, 3)
     kernel_size = check_ifint(kernel_size, 3)
     pool_size = check_ifint(pool_size, 2)
 
     # Shape => [batch, input_width, features]
     inputs = layers.Input(shape=input_size)
 
-    x = layers.Conv1D(filters=filter_size[0],
+    x = layers.Conv1D(filters=filters[0],
                       kernel_size=kernel_size[0],
                       activation="relu")(inputs)
 
@@ -97,7 +98,7 @@ def convolutional_model(filter_size, kernel_size, pool_size,
 
     x = layers.MaxPool1D(pool_size=pool_size[0])(x)
 
-    x = layers.Conv1D(filters=filter_size[1],
+    x = layers.Conv1D(filters=filters[1],
                       kernel_size=kernel_size[1],
                       activation="relu")(x)
 
@@ -106,7 +107,7 @@ def convolutional_model(filter_size, kernel_size, pool_size,
 
     x = layers.MaxPool1D(pool_size=pool_size[1])(x)
 
-    x = layers.Conv1D(filters=filter_size[2],
+    x = layers.Conv1D(filters=filters[2],
                       kernel_size=kernel_size[2],
                       activation="relu")(x)
 
@@ -126,7 +127,7 @@ def convolutional_model(filter_size, kernel_size, pool_size,
     return model
 
 
-def temp_conv_model(filter_size, kernel_size, dilations, input_size,
+def temp_conv_model(filters, kernel_size, dilations, input_size,
                     output_size, activation="relu", dropout=0.2,
                     graph_path=None):
     """
@@ -136,7 +137,7 @@ def temp_conv_model(filter_size, kernel_size, dilations, input_size,
     Parameters
     ----------
 
-    filter_size: int or list[int]
+    filters: int or list[int]
         Number of filters to use in the convolutional layers. Can be
         thought as a neuron in a dense layer.
     kernel_size: int or list[int]
@@ -171,14 +172,14 @@ def temp_conv_model(filter_size, kernel_size, dilations, input_size,
         Created model of the network.
     """
     # Check if the inputs are numbers. Convert them to lists
-    filter_size = check_ifint(filter_size, dilations)
+    filters = check_ifint(filters, dilations)
     kernel_size = check_ifint(kernel_size, dilations)
 
     # Shape => [batch, input_width, features]
     inputs = layers.Input(shape=input_size)
 
     # Tune the number of filters in the first convolutional layer
-    x = tcn.ResidualBlock(filters=filter_size[0],
+    x = tcn.ResidualBlock(filters=filters[0],
                           kernel_size=kernel_size[0],
                           dropout=dropout,
                           activation=activation)(inputs)
@@ -187,7 +188,7 @@ def temp_conv_model(filter_size, kernel_size, dilations, input_size,
     for factor in range(1, dilations):
         # Creates a residual layer
         dilation = 2 ** factor
-        x = tcn.ResidualBlock(filters=filter_size[factor],
+        x = tcn.ResidualBlock(filters=filters[factor],
                               kernel_size=kernel_size[factor],
                               dilation=dilation,
                               dropout=dropout,
@@ -204,4 +205,78 @@ def temp_conv_model(filter_size, kernel_size, dilations, input_size,
 
     return model
 
-# TODO: add deep convolutional lstm network
+
+def deep_conv_lstm(filters, kernel_size, pool_size,
+                   input_size, output_size, dropout=0.1,
+                   graph_path=None):
+    """
+
+    Parameters
+    ----------
+    filters: int or list[int]
+        Number of output channels (number of filters for a cnn or the
+        dimensionality of the hidden state for an lstm)
+    kernel_size: int or list[int]
+        Kernel length (only for CNNs).
+    pool_size: int or list[int]
+        Size of the average pooling layers used by the filternet modules.
+        Reduce the length of the series by a factor of length/pool_size.
+    input_size: tuple[int]
+        Shape of the input for the network. It has the number of
+        data to receive and the number of features to use.
+    output_size: tuple[int]
+        Shape of the output for the network. It has the number of
+        data to generates and the number of features the predict.
+    dropout: float, optional
+        Float between 0 and 1. Fraction of the input units to drop. By
+        default, it's 0.2
+    graph_path: string, optional
+        String with the path to save the graph of the model created. By
+        default, its `None` so no graph will be generated.
+
+    Returns
+    -------
+
+    tensorflow.keras.Model
+        Created model of the network.
+    """
+    # Check if the inputs are numbers. Convert them to lists
+    filters = check_ifint(filters, 5)
+    kernel_size = check_ifint(kernel_size, 4)
+    pool_size = check_ifint(pool_size, 2)
+
+    # Shape => [batch, input_width, features]
+    inputs = layers.Input(shape=input_size)
+
+    conv1 = flm.FilternetModule(w_out=filters[0], flm_type="cnn",
+                                s=1, k=kernel_size[0],
+                                p_drop=dropout)(inputs)
+
+    conv2 = flm.FilternetModule(w_out=filters[1], flm_type="cnn",
+                                s=pool_size[0], k=kernel_size[1],
+                                p_drop=dropout)(conv1)
+
+    conv3_1 = flm.FilternetModule(w_out=filters[2], flm_type="cnn",
+                                  s=pool_size[1], k=kernel_size[2],
+                                  p_drop=dropout)(conv2)
+
+    conv3_2 = flm.FilternetModule(w_out=filters[3], flm_type="cnn",
+                                  s=pool_size[1], k=kernel_size[3],
+                                  p_drop=dropout)(conv2)
+
+    concat = layers.Concatenate(axis=1)([conv2, conv3_1, conv3_2])
+
+    lstm = flm.FilternetModule(w_out=filters[4], flm_type="lstm",
+                               p_drop=dropout)(concat)
+
+    # We're only interested in the channels from the output
+    outputs = flm.FilternetModule(w_out=output_size[1], flm_type="cnn",
+                                  s=1, k=1, p_drop=dropout, b_bn=False)(lstm)
+
+    model = tf.keras.Model(inputs=inputs, outputs=outputs, name="deep_conv_lstm_model")
+
+    if graph_path:
+        # ! Printing may require extra libraries
+        tf.keras.utils.plot_model(model, graph_path, show_shapes=True)
+
+    return model
