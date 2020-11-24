@@ -31,10 +31,8 @@ print("******************************************")
 print("*** Welcome to the IsCoffeeWet project ***")
 print("******************************************")
 
-# TODO: add read input for the config file
-
 # Dataset configuration extracted from the JSON
-config_ds = cf.ConfigFile(JSON_TEST, PATH_RESOURCES)
+config_ds = cf.ConfigFile(PATH_RESOURCES + sys.argv[1], PATH_RESOURCES)
 
 # Loads the dataset
 dataset = pd.read_csv(PATH_RESOURCES + config_ds.path, engine="c")

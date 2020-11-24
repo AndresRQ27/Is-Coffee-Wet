@@ -51,3 +51,13 @@ This following instructions does:
 -v $PWD/resources:/data/resources 
 --name coffee-production 
 is-coffee-wet:release bash`
+
+# Running the program
+
+Run the following command from `/data`:
+
+`python ./IsCoffeeWet/top_level.py $PATH_TO_CONFIG-FILE`
+
+The path to the config file is from the resources folder. For example, if
+the config file is in `/data/resources/config/config.json`, the path to the
+config file should be `config/config.json`.
