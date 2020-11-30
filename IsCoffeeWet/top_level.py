@@ -10,6 +10,7 @@ PATH_MAIN = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Path to the resources folder where all the persistent files are stored
 PATH_RESOURCES = PATH_MAIN + "/resources/"
 PATH_IMAGES = PATH_RESOURCES + "images/"
+PATH_NN = PATH_MAIN + "/neural-network"
 
 # Appends the module IsCoffeeWet to the library
 sys.path.append(PATH_MAIN)
@@ -23,9 +24,12 @@ from IsCoffeeWet import model_generator as mg
 from IsCoffeeWet import neural_network as nn
 from IsCoffeeWet import window_generator as wg
 
-# TEST
-# Path to the configuration file
-JSON_TEST = PATH_RESOURCES + "config/test.json"
+# Checks if the path to save the neural network exists
+try:
+    os.makedirs(PATH_NN)
+    print("Path to save the neural networks was created")
+except FileExistsError:
+    print("Path to save the neural networks was found")
 
 print("******************************************")
 print("*** Welcome to the IsCoffeeWet project ***")
