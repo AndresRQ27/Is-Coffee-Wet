@@ -1,3 +1,6 @@
+import glob
+import os
+
 import pandas as pd
 import tensorflow as tf
 
@@ -226,6 +229,16 @@ def load_model(path, submodel=None):
     ----------
     [1] https://github.com/tensorflow/addons/issues/1788
     """
+
+    # If path is a directory, look for the most recent file h5
+    if os.path.isdir(path):
+        # Look for the most recent file in the directory
+        list_of_files = glob.glob(path + "/*.h5")
+        # Assign the path to the most recent h5 if there is one
+        # If there isn't one, either the directory is empty or model is a ".pb"
+        path = max(list_of_files, key=os.path.getctime) \
+            if len(list_of_files) != 0 else path
+
     if submodel == "tcn":
         model = tf.keras.models.load_model(filepath=path,
                                            custom_objects={
