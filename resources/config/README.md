@@ -31,6 +31,8 @@ __Table of contents__
 (_string_) path of the dataset file to use.
 
   - Relative path to the resources folder.
+  - If it's a file, use that specific file to train/predict
+  - If it's a directory, look for the most recent `.csv` to use ut
 
 ### `frequency`
 

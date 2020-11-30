@@ -1,4 +1,6 @@
+import glob
 import json
+import os
 import warnings
 
 import numpy as np
@@ -39,11 +41,15 @@ class ConfigFile:
                 # Loads json file
                 config_file = json.load(file)
 
-                # TODO: use a function to receive a folder path
-                # and return the most recent file in it
-
-                # Path of the file dataset to use
-                self.path = config_file["dataset_path"]
+                # If dataset_path is a directory, look for the most recent file
+                if os.path.isdir(config_file["dataset_path"]):
+                    # * means all if need specific format then *.csv
+                    list_of_files = glob.glob(config_file["dataset_path"] + "/*.csv")
+                    # Path of lastest DB from the provided folder
+                    self.path = max(list_of_files, key=os.path.getctime)
+                else:
+                    # Path of the file dataset to use
+                    self.path = config_file["dataset_path"]
 
                 # Frequency of the dataset
                 self.freq = config_file["frequency"]
