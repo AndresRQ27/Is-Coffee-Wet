@@ -210,6 +210,8 @@ def deep_conv_lstm(filters, kernel_size, pool_size,
                    input_size, output_size, dropout=0.1,
                    graph_path=None):
     """
+    Function that generates a convolutional-recurrent (lstm) model with the
+    shape declared by the inputs.
 
     Parameters
     ----------
