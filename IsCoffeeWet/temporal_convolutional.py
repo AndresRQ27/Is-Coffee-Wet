@@ -56,7 +56,14 @@ class ResidualBlock(tf.keras.Model):
         """
         super(ResidualBlock, self).__init__()
 
-        # Type of the output channels
+        # ***Save the values used to re-construct it when loading***
+        self.filters = filters
+        self.kernel_size = kernel_size
+        self.stride = stride
+        self.dilation = dilation
+        self.padding = padding
+        self.dropout = dropout
+        self.activation = activation
         self.use_residual = use_residual
 
         # Creates the first stack of layer: conv1D-weight_norm-activation-dropout
@@ -101,3 +108,29 @@ class ResidualBlock(tf.keras.Model):
             x = self.add([x, y])
 
         return x
+
+    def get_config(self):
+        """
+        Method that gets the values used to create the model. Used for
+        loading and saving the model.
+
+        Returns
+        -------
+
+        dictionary:
+            Dictionary with the configuration of the model
+        """
+        config = {"filters": self.filters,
+                  "kernel_size": self.kernel_size,
+                  "stride": self.stride,
+                  "dilation": self.dilation,
+                  "padding": self.padding,
+                  "dropout": self.dropout,
+                  "activation": self.activation,
+                  "use_residual": self.use_residual}
+
+        return config
+
+    @classmethod
+    def from_config(cls, config):
+        return cls(**config)

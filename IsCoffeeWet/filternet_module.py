@@ -50,7 +50,12 @@ class FilternetModule(tf.keras.Model):
         """
         super(FilternetModule, self).__init__()
 
-        # Use or not batch normalization
+        # ***Save the values used to re-construct it when loading***
+        self.w_out = w_out
+        self.flm_type = flm_type
+        self.s = s
+        self.k = k
+        self.p_drop = p_drop
         self.b_bn = b_bn
 
         # Creates the dropout layer
@@ -86,3 +91,27 @@ class FilternetModule(tf.keras.Model):
             x = self.batch_norm(x, training=training)
 
         return x
+
+    def get_config(self):
+        """
+        Method that gets the values used to create the model. Used for
+        loading and saving the model.
+
+        Returns
+        -------
+
+        dictionary:
+            Dictionary with the configuration of the model
+        """
+        config = {"w_out": self.w_out,
+                  "flm_type": self.flm_type,
+                  "s": self.s,
+                  "k": self.k,
+                  "p_drop": self.p_drop,
+                  "b_bn": self.b_bn}
+
+        return config
+
+    @classmethod
+    def from_config(cls, config):
+        return cls(**config)

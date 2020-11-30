@@ -1,4 +1,8 @@
 import pandas as pd
+import tensorflow as tf
+
+from IsCoffeeWet import temporal_convolutional as tcn
+from IsCoffeeWet import filternet_module as flm
 
 
 def normalize(dataset):
@@ -145,7 +149,7 @@ def mape(dataset, config, model):
                               columns=config.labels,
                               index=last_label.index)
 
-    # TODO: fix infinites
+    # TODO: modify to MAE and other metrics
     # Calculates the MAPE.
     prediction = 100 * (last_label - prediction).abs() / last_label
 
@@ -192,7 +196,7 @@ def split_dataset(dataset, config_file):
     return datetime_index, train_ds, val_ds, test_ds
 
 
-def load_model(path):
+def load_model(path, submodel=None):
     """
     Function that loads a neural network model from a file, given a path to
     it.
@@ -201,15 +205,39 @@ def load_model(path):
     ----------
     path: string
         Path where look for the the neural network model in the filesystem.
+    submodel: string, optional
+        Acronym of the sub-model used in the architecture of the saved
+        model. Valid options are `'tcn'` and `'conv_lstm'`
 
     Returns
     -------
     tensorflow.keras.Model
         Model of the neural network.
+
+    Notes
+    -----
+
+    To save the weight normalization layer used in the TCN, from tensorflow
+    addons, `h5` is needed, as Protobuffer can't handle it yet [1]. This
+    means, features like portability between different platforms (ie.
+    Tensorflow Lite, Tensorflow Serving, etc.) cannot be used.
+
+    References
+    ----------
+    [1] https://github.com/tensorflow/addons/issues/1788
     """
-    # TODO: implement function
-    # TODO: test
-    return
+    if submodel == "tcn":
+        model = tf.keras.models.load_model(filepath=path,
+                                           custom_objects={
+                                               "ResidualBlock": tcn.ResidualBlock})
+    elif submodel == "conv_lstm":
+        model = tf.keras.models.load_model(filepath=path,
+                                           custom_objects={
+                                               "FilternetModule": flm.FilternetModule})
+    else:
+        model = tf.keras.models.load_model(filepath=path)
+
+    return model
 
 
 def save_model(model, path):
@@ -228,7 +256,5 @@ def save_model(model, path):
         Path in the filesystem to save the model.
 
     """
-    # TODO: tests
-
-    model.save(path)
+    tf.keras.models.save_model(model=model, filepath=path, save_format="h5")
     print("Your model has been save to '{}'".format(path))
