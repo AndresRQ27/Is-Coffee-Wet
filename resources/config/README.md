@@ -15,6 +15,7 @@ __Table of contents__
     - [`special_functions`](#special_functions)
     - [`special_format`](#special_format)
   - [neural_network](#neural_network)
+    - [`model_name`](#model_name)
     - [`training_set`](#training_set)
     - [`validation_set`](#validation_set)
     - [test_set](#test_set)
@@ -121,6 +122,10 @@ Wet 1": "int"`).
 
 ## neural_network
 
+### `model_name`
+
+(_string_) Name to given the model when saving its state. Also used to look
+for a previously trained model in the [`path`](#path).
 
 ### `training_set`
 

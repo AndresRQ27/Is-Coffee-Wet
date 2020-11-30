@@ -28,6 +28,7 @@
   },
 
   "neural_network": {
+    "model_name": "Station#7",
     "training_set": 0.7,
     "validation_set": 0.2,
     "path": "neural_network/convolutional.h5",

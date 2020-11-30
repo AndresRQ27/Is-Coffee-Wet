@@ -121,6 +121,9 @@ class ConfigFile:
                 # *** Neural Network parameters ***
                 # *********************************
 
+                # Name to give the model
+                self.model_name = config_file["neural_network"]["model_name"]
+
                 self.training = config_file["neural_network"]["training_set"]
                 self.validation = config_file["neural_network"]["validation_set"]
 
