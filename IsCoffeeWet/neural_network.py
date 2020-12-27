@@ -1,11 +1,11 @@
 import glob
 import os
 
-import pandas as pd
+import numpy as np
 import tensorflow as tf
 
-from IsCoffeeWet import temporal_convolutional as tcn
 from IsCoffeeWet import filternet_module as flm
+from IsCoffeeWet import temporal_convolutional as tcn
 
 
 def normalize(dataset):
@@ -122,41 +122,39 @@ def de_standardize(dataset, mean, std):
     return dataset * std + mean
 
 
-def mape(dataset, config, model):
+def mae(y_true, y_pred):
     """
-    Calculates the Mean-Absolute-Percentage-Error (MAPE) for an un-standardize
-    dataset. It is done only for the last window of the dataset, with the
-    window size given by `config.forecast`.
+    Calculates the Mean-Absolute-Error (MAE) for an un-standardize
+    dataset.
 
     Parameters
     ----------
-    dataset: pandas.DataFrame
-        Weather dataset without standardization/normalization
-    config: config_file.ConfigFile
-        Config file of the program to read the forecast
-    model: tensorflow.keras.Model
-        Trained NN to generate the predictions
+    y_true: pandas.DataFrame
+        Ground truth values
+    y_pred: pandas.DataFrame
+        Predicted values by the model
 
     Returns
     -------
     pandas.DataFrame
-        MAPE for each value in the last window of the dataset. Can contain
+        MAE for each value in the last window of the dataset. Can contain
         NaNs
     """
-    last_data = dataset.iloc[-config.forecast:]
-    last_label = dataset[config.labels].iloc[-config.forecast:]
-    prediction = model(last_data.to_numpy(), training=False)
+    return np.abs(y_true - y_pred)
 
-    # Transform predictions to a DataFrame
-    prediction = pd.DataFrame(prediction.numpy(),
-                              columns=config.labels,
-                              index=last_label.index)
 
-    # TODO: modify to MAE and other metrics
-    # Calculates the MAPE.
-    prediction = 100 * (last_label - prediction).abs() / last_label
+def analyze_loss(y_true, y_pred, index, grouping_func, frequency="1D"):
+    # Calculates the MAE of the values
+    loss = mae(y_true, y_pred)
 
-    return prediction
+    # Sets the datetime index. It assumes these are the last values
+    loss.set_index(index[-len(y_true):], inplace=True)
+
+    # Resamples the loss in the desired frequency
+    result = loss.resample(frequency, label="right",
+                           closed="right", origin="start"
+                           ).aggregate(func=grouping_func)
+    return result
 
 
 def split_dataset(dataset, config_file):
@@ -269,5 +267,12 @@ def save_model(model, path):
         Path in the filesystem to save the model.
 
     """
+    # Creates path to save the neural network for the tests
+    try:
+        os.makedirs(os.path.dirname(path))
+        print("Path to save the neural networks was created")
+    except FileExistsError:
+        print("Path to save the neural networks was found")
+
     tf.keras.models.save_model(model=model, filepath=path, save_format="h5")
     print("Your model has been save to '{}'".format(path))

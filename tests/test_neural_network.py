@@ -155,6 +155,22 @@ class Test_TestNeuralNetwork(unittest.TestCase):
             print(conv_lstm_model.summary())
             self.assertTrue(conv_lstm_model(x) is not None)
 
+    def test_mae(self):
+        # Resets the index to be numeric, as the predictions DataFrame
+        dataset = self.dataset[self.predictions.columns].iloc[-len(self.predictions):]
+        dataset.reset_index(inplace=True, drop=True)
+        result = nn.mae(dataset, self.predictions)
+        # TODO: validate test result
+        self.assertTrue(True)
+
+    def test_analyze_loss(self):
+        dataset = self.dataset[self.predictions.columns].iloc[-len(self.predictions):]
+        dataset.reset_index(inplace=True)
+        datetime_index = dataset.pop("Datetime")
+        result = nn.analyze_loss(dataset, self.predictions, datetime_index, np.mean)
+        # TODO: validate test result
+        self.assertTrue(True)
+
 
 if __name__ == '__main__':
     unittest.main()
