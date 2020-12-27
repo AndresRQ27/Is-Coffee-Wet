@@ -109,7 +109,7 @@ def setUpModule():
     # Dataframe use to store the history of each training, then save it
     try:
         # Overwrites past results.
-        all_history = pd.read_csv(PATH + "/results/benchmark_prediction_temporal.csv",
+        all_history = pd.read_csv(PATH + "/performance/benchmark_prediction_temporal.csv",
                                   engine="c", index_col=0)
     except FileNotFoundError:
         # Creates new results
@@ -126,8 +126,8 @@ def tearDownModule():
     global all_history, prediction_result
 
     # Save to csv:
-    history_csv = PATH + "/results/benchmark_prediction_temporal.csv"
-    predict_csv = PATH + "/results/prediction/prediction_temporal.csv"
+    history_csv = PATH + "/performance/benchmark_prediction_temporal.csv"
+    predict_csv = PATH + "/prediction/prediction_temporal.csv"
 
     with open(history_csv, mode='w') as file:
         all_history.to_csv(file)
@@ -264,6 +264,8 @@ class Test_TestBase(unittest.TestCase):
                           (prediction_data,
                            prediction_label),
                           model)
+
+        nn.save_model(model=model, path=PATH + "/neural-network/tcn_cpu.h5")
 
 
 class Test_TestLabels(unittest.TestCase):

@@ -99,7 +99,7 @@ def setUpModule():
     # Dataframe use to store the history of each training, then save it
     try:
         # Overwrites past results
-        all_history = pd.read_csv(PATH + "/results/benchmark_temporal.csv",
+        all_history = pd.read_csv(PATH + "/performance/benchmark_temporal.csv",
                                   engine="c", index_col=0)
         all_history = all_history.reset_index()
         all_history.pop("index")
@@ -118,7 +118,7 @@ def tearDownModule():
     global all_history
 
     # Save to csv:
-    history_csv = PATH + "/results/benchmark_temporal.csv"
+    history_csv = PATH + "/performance/benchmark_temporal.csv"
     with open(history_csv, mode='w') as file:
         all_history.to_csv(file)
 

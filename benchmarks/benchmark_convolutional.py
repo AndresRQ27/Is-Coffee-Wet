@@ -98,7 +98,7 @@ def setUpModule():
     # Dataframe use to store the history of each training, then save it
     try:
         # Overwrites past results. Resets the index for no deletion of incorrect data
-        all_history = pd.read_csv(PATH + "/results/benchmark_convolutional.csv",
+        all_history = pd.read_csv(PATH + "/performance/benchmark_convolutional.csv",
                                   engine="c", index_col=0)
         all_history = all_history.reset_index()
         all_history.pop("index")
@@ -117,7 +117,7 @@ def tearDownModule():
     global all_history
 
     # Save to csv:
-    history_csv = PATH + "/results/benchmark_convolutional.csv"
+    history_csv = PATH + "/performance/benchmark_convolutional.csv"
     with open(history_csv, mode='w') as file:
         all_history.to_csv(file)
 
@@ -507,7 +507,7 @@ class Test_TestWindow(unittest.TestCase):
         kernel_size = [48, 24, 12]  # Reduce the kernel size in each layer
         pool_size = 4  # Pool size divides by 4 to reduce dimensionality
         input_size = (input_width, len(window_14x7.column_indices))  # New input shape
-        output_size = (input_width, len(g_label_columns))  # New output shape
+        output_size = (label_width, len(g_label_columns))  # New output shape
 
         # Generates a new model with custom I/O, kernel and pool size
         model = mg.convolutional_model(g_filter_size,

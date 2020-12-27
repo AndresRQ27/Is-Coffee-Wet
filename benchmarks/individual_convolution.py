@@ -107,7 +107,7 @@ def setUpModule():
     # Dataframe use to store the history of each training, then save it
     try:
         # Overwrites past results
-        all_history = pd.read_csv(PATH + "/results/benchmark_prediction_convolutional.csv",
+        all_history = pd.read_csv(PATH + "/performance/benchmark_prediction_convolutional.csv",
                                   engine="c", index_col=0)
         all_history = all_history.reset_index()
         all_history.pop("index")
@@ -126,8 +126,8 @@ def tearDownModule():
     global all_history, prediction_result
 
     # Save to csv:
-    history_csv = PATH + "/results/benchmark_prediction_convolutional.csv"
-    predict_csv = PATH + "/results/prediction/prediction_convolutional.csv"
+    history_csv = PATH + "/performance/benchmark_prediction_convolutional.csv"
+    predict_csv = PATH + "/prediction/prediction_convolutional.csv"
 
     with open(history_csv, mode='w') as file:
         all_history.to_csv(file)
@@ -136,7 +136,7 @@ def tearDownModule():
         prediction_result.to_csv(file)
 
 
-def compile_and_fit(model, window, patience=10, learning_rate=0.0001,
+def compile_and_fit(model, window, patience=4, learning_rate=0.0001,
                     max_epochs=100):
     """
     Function that compiles and train the model. It's a generic function as
@@ -263,6 +263,8 @@ class Test_TestBase(unittest.TestCase):
                           (prediction_data,
                            prediction_label),
                           model)
+
+        nn.save_model(model=model, path=PATH + "/neural-network/conv_cpu.h5")
 
 
 class Test_TestLabels(unittest.TestCase):

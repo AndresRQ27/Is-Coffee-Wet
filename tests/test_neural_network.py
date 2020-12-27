@@ -6,11 +6,11 @@ import pandas as pd
 import tensorflow as tf
 
 from IsCoffeeWet import config_file as cf
+from IsCoffeeWet import filternet_module as flm
 from IsCoffeeWet import neural_network as nn
 from IsCoffeeWet import temporal_convolutional as tcn
-from IsCoffeeWet import filternet_module as flm
 
-PATH = os.getcwd() + "/resources"
+PATH = os.getcwd() + "/resources/test"
 
 
 class Test_TestNeuralNetwork(unittest.TestCase):
@@ -20,6 +20,9 @@ class Test_TestNeuralNetwork(unittest.TestCase):
 
         dataset = pd.read_csv(PATH + "/database/test_parsed.csv",
                               engine="c", index_col="Datetime", parse_dates=True)
+        cls.predictions = pd.read_csv(PATH + "/database/predictions.csv",
+                                      engine="c", index_col=0)
+
         # Infers the frequency
         cls.dataset = dataset.asfreq(dataset.index.inferred_freq)
 
@@ -32,21 +35,12 @@ class Test_TestNeuralNetwork(unittest.TestCase):
             "Temp Out", "Leaf Wet 1", "Leaf Wet Accum"]
         cls.config_file.path = PATH + "/neural-network"
 
-        # Creates path to save the neural network for the tests
-        try:
-            os.makedirs(cls.config_file.path)
-            print("Path to save the neural networks was created")
-        except FileExistsError:
-            print("Path to save the neural networks was found")
-
         # Dummies model. The amount of units is given by the test labels
         x = tf.ones((3, 3, 3))  # Dummy input
-        cls.basic_model = tf.keras.Sequential(
-            [tf.keras.layers.Dense(units=3)])
+        cls.basic_model = tf.keras.Sequential([tf.keras.layers.Dense(units=3)])
         cls.tcn_model = tf.keras.Sequential([tcn.ResidualBlock(filters=16,
                                                                kernel_size=3)])
-        cls.conv_lstm_model = tf.keras.Sequential(
-            [flm.FilternetModule(w_out=16)])
+        cls.conv_lstm_model = tf.keras.Sequential([flm.FilternetModule(w_out=16)])
 
         # Initialize the input of the layers
         cls.basic_model(x)
@@ -56,7 +50,7 @@ class Test_TestNeuralNetwork(unittest.TestCase):
     def test_standardize(self):
         standardize_ds, _, _ = nn.standardize(self.dataset)
 
-        # Only max of those columns as the sin/cos won't change
+        # Only max of these columns as the sin/cos won't change
         max_original = self.dataset[[
             "Temp Out", "Leaf Wet 1", "Leaf Wet Accum"]].max()
         max_standardize = standardize_ds[[
