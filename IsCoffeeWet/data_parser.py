@@ -178,12 +178,11 @@ def sample_dataset(dataset, config_file):
         # Each resampling creates a column, so it is appended to get a
         # final result. It must be done this way to use a different
         # function in each column
-        # noinspection SpellCheckingInspection
-        auxiliar_df = dataset.resample(config_file.freq, label="right",
-                                       closed="right", origin="start"
-                                       ).agg({name: functions})
+        auxiliary_df = dataset.resample(config_file.freq, label="right",
+                                        closed="right", origin="start"
+                                        ).agg({name: functions})
 
-        new_dataset = pd.concat([new_dataset, auxiliar_df], axis=1)
+        new_dataset = pd.concat([new_dataset, auxiliary_df], axis=1)
 
     # If the value is NaN in "Leaf Wet 1"
     # set "Leaf Wet Accum" to NaN as well
