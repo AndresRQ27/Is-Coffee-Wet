@@ -42,12 +42,12 @@ This following instructions does:
 
 - Creates a container from the production image
 - Opens a terminal using bash
-- Maps a volume name _neural-network_ to `/data/neural-network`
+- Maps a volume name _checkpoints_ to `/data/checkpoints`
 - Binds the resources folder where the host console is running to `/data/resources`
 - Name the container _coffee-production_
 
 `docker run -it 
--v neural-network:/data/neural-network 
+-v checkpoints:/data/checkpoints 
 -v $PWD/resources:/data/resources 
 --name coffee-production 
 is-coffee-wet:release bash`
@@ -56,7 +56,7 @@ is-coffee-wet:release bash`
 
 Run the following command from `/data`:
 
-`python ./IsCoffeeWet/top_level.py $PATH_TO_CONFIG-FILE`
+`python ./IsCoffeeWet/main.py $PATH_TO_CONFIG-FILE`
 
 The path to the config file is from the resources folder. For example, if
 the config file is in `/data/resources/config/config.json`, the path to the

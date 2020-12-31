@@ -265,7 +265,7 @@ class Test_TestBase(unittest.TestCase):
                            prediction_label),
                           model)
 
-        nn.save_model(model=model, path=PATH + "/neural-network/tcn_cpu.h5")
+        nn.save_model(model=model, path=PATH + "/checkpoints/tcn_cpu.h5")
 
 
 class Test_TestLabels(unittest.TestCase):

@@ -79,7 +79,7 @@
       "model_name": "Station#7",
       "training_set": 0.7,
       "validation_set": 0.2,
-      "path": "neural_network/convolutional.h5",
+      "path": "convolutional.h5",
       "labels": []
     }
 }
