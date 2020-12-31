@@ -227,17 +227,10 @@ fabric.properties
 .idea/*
 
 # Don't upload graphs or tuner
-resources/benchmark/tuner_convolutional/
-resources/benchmark/tuner_temporal/
-/resources/benchmark/tuner_conv_lstm/
+tuner_*/
 
 # Ignore graphed images
-resources/test/images/
-resources/benchmark/images/
+images/
 
 # Ignore doc folder
 doc/
-
-# Graphs of the predictions
-/resources/benchmark/images/predictions/group_convolutional/
-/resources/benchmark/images/predictions/group_temporal/
