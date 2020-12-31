@@ -10,7 +10,7 @@ from IsCoffeeWet import filternet_module as flm
 from IsCoffeeWet import neural_network as nn
 from IsCoffeeWet import temporal_convolutional as tcn
 
-PATH = os.getcwd() + "/resources/test"
+PATH = os.getcwd() + "/resources/tests"
 
 
 class Test_TestNeuralNetwork(unittest.TestCase):

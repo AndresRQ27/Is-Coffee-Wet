@@ -5,7 +5,7 @@ import pandas as pd
 from IsCoffeeWet import config_file as cf
 from IsCoffeeWet import data_parser
 
-PATH = os.getcwd() + "/resources/test/database"
+PATH = os.getcwd() + "/resources/tests/database"
 
 
 class Test_TestDataParser(unittest.TestCase):

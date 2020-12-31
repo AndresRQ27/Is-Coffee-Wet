@@ -5,7 +5,7 @@ import pandas as pd
 from IsCoffeeWet import config_file as cf
 from IsCoffeeWet import data_graph
 
-PATH = os.getcwd() + "/resources/test"
+PATH = os.getcwd() + "/resources/tests"
 
 
 class Test_TestDataGraph(unittest.TestCase):
