@@ -224,7 +224,7 @@ fabric.properties
 .idea/caches/build_file_checksums.ser
 
 # All the other files
-.idea/*
+.idea/
 
 # Don't upload graphs or tuner
 tuner_*/
@@ -234,3 +234,6 @@ images/
 
 # Ignore doc folder
 doc/
+
+# Ignore devconainer used for Docker in VSCode
+.devcontainer/
