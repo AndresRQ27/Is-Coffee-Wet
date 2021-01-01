@@ -5,10 +5,10 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 
-from IsCoffeeWet import config_file as cf
-from IsCoffeeWet import filternet_module as flm
-from IsCoffeeWet import neural_network as nn
-from IsCoffeeWet import temporal_convolutional as tcn
+from IsCoffeeWet.preprocess import config_file as cf
+from IsCoffeeWet.neural_network import filternet_module as flm
+from IsCoffeeWet.neural_network import utils
+from IsCoffeeWet.neural_network import temporal_convolutional as tcn
 
 PATH = os.getcwd() + "/resources/tests"
 
@@ -37,10 +37,12 @@ class Test_TestNeuralNetwork(unittest.TestCase):
 
         # Dummies model. The amount of units is given by the test labels
         x = tf.ones((3, 3, 3))  # Dummy input
-        cls.basic_model = tf.keras.Sequential([tf.keras.layers.Dense(units=3)])
+        cls.basic_model = tf.keras.Sequential(
+            [tf.keras.layers.Dense(units=3)])
         cls.tcn_model = tf.keras.Sequential([tcn.ResidualBlock(filters=16,
                                                                kernel_size=3)])
-        cls.conv_lstm_model = tf.keras.Sequential([flm.FilternetModule(w_out=16)])
+        cls.conv_lstm_model = tf.keras.Sequential(
+            [flm.FilternetModule(w_out=16)])
 
         # Initialize the input of the layers
         cls.basic_model(x)
@@ -48,7 +50,7 @@ class Test_TestNeuralNetwork(unittest.TestCase):
         cls.conv_lstm_model(x)
 
     def test_standardize(self):
-        standardize_ds, _, _ = nn.standardize(self.dataset)
+        standardize_ds, _, _ = utils.standardize(self.dataset)
 
         # Only max of these columns as the sin/cos won't change
         max_original = self.dataset[[
@@ -68,8 +70,8 @@ class Test_TestNeuralNetwork(unittest.TestCase):
 
     def test_de_standardize(self):
         # We first need to standardize a dataset
-        standardize_ds, mean, std = nn.standardize(self.dataset)
-        restored_ds = nn.de_standardize(standardize_ds, mean, std)
+        standardize_ds, mean, std = utils.standardize(self.dataset)
+        restored_ds = utils.de_standardize(standardize_ds, mean, std)
 
         # Calculates the smallest value non-zero representable and multiplies by 10
         least_value = np.finfo("float64").resolution * 10
@@ -79,7 +81,7 @@ class Test_TestNeuralNetwork(unittest.TestCase):
             (self.dataset - restored_ds < least_value).all().all())
 
     def test_normalize(self):
-        normalized_ds, _ = nn.normalize(self.dataset)
+        normalized_ds, _ = utils.normalize(self.dataset)
 
         # Only max of those columns as the sin/cos won't change
         max_normalize = normalized_ds[[
@@ -90,8 +92,8 @@ class Test_TestNeuralNetwork(unittest.TestCase):
 
     def test_de_normalize(self):
         # We first need to normalize a dataset
-        normalize_ds, max_value = nn.normalize(self.dataset)
-        restored_ds = nn.de_normalize(normalize_ds, max_value)
+        normalize_ds, max_value = utils.normalize(self.dataset)
+        restored_ds = utils.de_normalize(normalize_ds, max_value)
 
         # Calculates the smallest value non-zero representable and multiplies by 10
         least_value = np.finfo("float64").resolution * 10
@@ -101,7 +103,7 @@ class Test_TestNeuralNetwork(unittest.TestCase):
             (self.dataset - restored_ds < least_value).all().all())
 
     def test_split_dataset(self):
-        datetime_index, train_ds, val_ds, test_ds = nn.split_dataset(
+        datetime_index, train_ds, val_ds, test_ds = utils.split_dataset(
             self.dataset, self.config_file)
 
         # Original size must remain
@@ -111,22 +113,22 @@ class Test_TestNeuralNetwork(unittest.TestCase):
     def test_save_model(self):
         # Check for the created file with the basic model
         with self.subTest(msg="Check basic_model"):
-            nn.save_model(model=self.basic_model,
-                          path=self.config_file.path + "/basic_model.h5")
+            utils.save_model(model=self.basic_model,
+                             path=self.config_file.path + "/basic_model.h5")
             self.assertTrue(os.path.isfile(
                 self.config_file.path + "/basic_model.h5"))
 
         # Check for the created file with the tcn model
         with self.subTest(msg="Check tcn_model"):
-            nn.save_model(model=self.tcn_model,
-                          path=self.config_file.path + "/tcn_model.h5")
+            utils.save_model(model=self.tcn_model,
+                             path=self.config_file.path + "/tcn_model.h5")
             self.assertTrue(os.path.isfile(
                 self.config_file.path + "/tcn_model.h5"))
 
         # Check for the created file with the conv lstm model
         with self.subTest(msg="Check conv_lstm_model"):
-            nn.save_model(model=self.conv_lstm_model,
-                          path=self.config_file.path + "/conv_lstm_model.h5")
+            utils.save_model(model=self.conv_lstm_model,
+                             path=self.config_file.path + "/conv_lstm_model.h5")
             self.assertTrue(os.path.isfile(
                 self.config_file.path + "/conv_lstm_model.h5"))
 
@@ -136,38 +138,41 @@ class Test_TestNeuralNetwork(unittest.TestCase):
 
         # Check for the loaded model of the basic model
         with self.subTest(msg="Check basic_model"):
-            basic_model = nn.load_model(
+            basic_model = utils.load_model(
                 path=self.config_file.path + "/basic_model.h5")
             print(basic_model.summary())
             self.assertTrue(basic_model(x) is not None)
 
         # Check for the loaded model of the tcn model
         with self.subTest(msg="Check tcn_model"):
-            tcn_model = nn.load_model(path=self.config_file.path + "/tcn_model.h5",
-                                      submodel="tcn")
+            tcn_model = utils.load_model(path=self.config_file.path + "/tcn_model.h5",
+                                         submodel="tcn")
             print(tcn_model.summary())
             self.assertTrue(tcn_model(x) is not None)
 
         # Check for the loaded model of the conv lstm model
         with self.subTest(msg="Check conv_lstm_model"):
-            conv_lstm_model = nn.load_model(path=self.config_file.path + "/conv_lstm_model.h5",
-                                            submodel="conv_lstm")
+            conv_lstm_model = utils.load_model(path=self.config_file.path + "/conv_lstm_model.h5",
+                                               submodel="conv_lstm")
             print(conv_lstm_model.summary())
             self.assertTrue(conv_lstm_model(x) is not None)
 
     def test_mae(self):
         # Resets the index to be numeric, as the predictions DataFrame
-        dataset = self.dataset[self.predictions.columns].iloc[-len(self.predictions):]
+        dataset = self.dataset[self.predictions.columns].iloc[-len(
+            self.predictions):]
         dataset.reset_index(inplace=True, drop=True)
-        result = nn.mae(dataset, self.predictions)
+        result = utils.mae(dataset, self.predictions)
         # TODO: validate test result
         self.assertTrue(True)
 
     def test_analyze_loss(self):
-        dataset = self.dataset[self.predictions.columns].iloc[-len(self.predictions):]
+        dataset = self.dataset[self.predictions.columns].iloc[-len(
+            self.predictions):]
         dataset.reset_index(inplace=True)
         datetime_index = dataset.pop("Datetime")
-        result = nn.analyze_loss(dataset, self.predictions, datetime_index, np.mean)
+        result = utils.analyze_loss(
+            dataset, self.predictions, datetime_index, np.mean)
         # TODO: validate test result
         self.assertTrue(True)
 

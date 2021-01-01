@@ -4,8 +4,8 @@ import os
 import numpy as np
 import tensorflow as tf
 
-from IsCoffeeWet import filternet_module as flm
-from IsCoffeeWet import temporal_convolutional as tcn
+from IsCoffeeWet.neural_network import filternet_module as flm
+from IsCoffeeWet.neural_network import temporal_convolutional as tcn
 
 
 def normalize(dataset):

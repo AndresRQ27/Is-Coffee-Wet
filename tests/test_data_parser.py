@@ -2,8 +2,8 @@ import os
 import unittest
 import pandas as pd
 
-from IsCoffeeWet import config_file as cf
-from IsCoffeeWet import data_parser
+from IsCoffeeWet.preprocess import config_file as cf
+from IsCoffeeWet.preprocess import data_parser
 
 PATH = os.getcwd() + "/resources/tests/database"
 
@@ -19,12 +19,14 @@ class Test_TestDataParser(unittest.TestCase):
         cls.config_file.columns = ["Date", "Time"]
         cls.config_file.datetime_format = "%d/%m/%Y %I:%M %p"
 
-        cls.datetime_ds = data_parser.merge_datetime(raw_dataset, cls.config_file)
+        cls.datetime_ds = data_parser.merge_datetime(
+            raw_dataset, cls.config_file)
 
         cls.config_file.null = ["---"]
         cls.config_file.columns.extend(["Temp Out", "Leaf Wet 1"])
         cls.config_file.formats = {"Leaf Wet 1": "int"}
-        cls.converted_ds = data_parser.convert_numeric(cls.datetime_ds, cls.config_file)
+        cls.converted_ds = data_parser.convert_numeric(
+            cls.datetime_ds, cls.config_file)
 
     def test_merge_datetime(self):
         result = pd.date_range("2010-04-07 00:00:00",
@@ -55,7 +57,8 @@ class Test_TestDataParser(unittest.TestCase):
         self.config_file.freq = "15min"
         self.config_file.functions = {"Leaf Wet 1": "last"}
 
-        sampled_ds = data_parser.sample_dataset(self.converted_ds, self.config_file)
+        sampled_ds = data_parser.sample_dataset(
+            self.converted_ds, self.config_file)
 
         # Checks the new frequency of the dataset
         with self.subTest(msg="freq test"):
@@ -67,7 +70,8 @@ class Test_TestDataParser(unittest.TestCase):
     def test_cyclical_encoder(self):
         self.config_file.encode = {"day": 86400}
 
-        encoded_ds = data_parser.cyclical_encoder(self.datetime_ds, self.config_file)
+        encoded_ds = data_parser.cyclical_encoder(
+            self.datetime_ds, self.config_file)
 
         # Sin/Cos columns added to the new dataset
         with self.subTest(msg="check sin/cos test"):

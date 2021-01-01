@@ -17,12 +17,12 @@ sys.path.append(PATH_MAIN)
 
 import pandas as pd
 
-from IsCoffeeWet import config_file as cf
-from IsCoffeeWet import data_graph as dg
-from IsCoffeeWet import data_parser as dp
-from IsCoffeeWet import model_generator as mg
-from IsCoffeeWet import neural_network as nn
-from IsCoffeeWet import window_generator as wg
+from IsCoffeeWet.preprocess import config_file as cf
+from IsCoffeeWet.preprocess import data_graph as dg
+from IsCoffeeWet.preprocess import data_parser as dp
+from IsCoffeeWet.neural_network import model_generator as mg
+from IsCoffeeWet.neural_network import utils
+from IsCoffeeWet.neural_network import window_generator as wg
 
 # Checks if the path to save the neural network exists
 try:
@@ -70,11 +70,11 @@ if config_ds.graph:
 config_ds.num_data = dataset.shape[0]
 
 # Normalize the dataset
-dataset, mean, std = nn.standardize(dataset)
+dataset, mean, std = utils.standardize(dataset)
 print(dataset.describe().transpose())
 
 # Datetime index still useful for graphs
-datetime_index, train_ds, val_ds, test_ds = nn.split_dataset(dataset, config_ds)
+datetime_index, train_ds, val_ds, test_ds = utils.split_dataset(dataset, config_ds)
 
 # Generates a window for the training of the neural network
 window = wg.WindowGenerator(input_width=config_ds.forecast,
@@ -101,7 +101,7 @@ if config_ds.graph:
 # model.summary()
 
 # TODO: implement compile and fitting
-# history = nn.compile_and_fit(conv_model, window, 5)
+# history = utils.compile_and_fit(conv_model, window, 5)
 
 # Graphs all the labels in the model
 # for label in g_window.label_columns:

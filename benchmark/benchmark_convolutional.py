@@ -5,10 +5,10 @@ import unittest
 import pandas as pd
 import tensorflow as tf
 
-from IsCoffeeWet import config_file as cf
-from IsCoffeeWet import model_generator as mg
-from IsCoffeeWet import neural_network as nn
-from IsCoffeeWet import window_generator as wg
+from IsCoffeeWet.preprocess import config_file as cf
+from IsCoffeeWet.neural_network import model_generator as mg
+from IsCoffeeWet.neural_network import utils
+from IsCoffeeWet.neural_network import window_generator as wg
 
 PATH = os.getcwd() + "/resources/benchmark"
 
@@ -63,10 +63,10 @@ def setUpModule():
 
     # *** Dataset preparation
     # Normalize the dataset
-    g_dataset, _, _ = nn.standardize(g_dataset)
+    g_dataset, _, _ = utils.standardize(g_dataset)
 
     # Partition the dataset
-    _, g_train, g_val, _ = nn.split_dataset(g_dataset, g_config)
+    _, g_train, g_val, _ = utils.split_dataset(g_dataset, g_config)
 
     # *** Window
     # A week in hours
@@ -91,8 +91,10 @@ def setUpModule():
     g_filter_size = [96, 192, 208]  # Neurons in a conv layer
     g_kernel_size = 24  # The kernel will see a day of data
     g_pool_size = 2  # Pooling of the data to reduce the dimensions
-    g_input_size = (input_width, g_dataset.shape[1])  # Input size of the model
-    g_output_size = (label_width, len(g_label_columns))  # Output size of the model
+    # Input size of the model
+    g_input_size = (input_width, g_dataset.shape[1])
+    g_output_size = (label_width, len(g_label_columns)
+                     )  # Output size of the model
 
     # *** Dataframe
     # Dataframe use to store the history of each training, then save it
@@ -369,14 +371,16 @@ class Test_TestDay(unittest.TestCase):
 
         # *** Dataset preparation
         # Normalize the dataset
-        dataset_day, _, _ = nn.standardize(dataset_day)
+        dataset_day, _, _ = utils.standardize(dataset_day)
 
         # Copy config file
         config_day = copy.deepcopy(g_config)
-        config_day.num_data = dataset_day.shape[0]  # Number of data available
+        # Number of data available
+        config_day.num_data = dataset_day.shape[0]
 
         # Partition the dataset
-        _, train_day, val_day, test_day = nn.split_dataset(dataset_day, config_day)
+        _, train_day, val_day, test_day = utils.split_dataset(
+            dataset_day, config_day)
 
         # *** Window
         input_width = 7  # No longer hours, so only 7 days
@@ -392,8 +396,10 @@ class Test_TestDay(unittest.TestCase):
 
         kernel_size = 2  # Days the filter will see
         pool_size = [2, 1]  # Pool size to reduce dimensions
-        input_size = (input_width, g_dataset.shape[1])  # Model's input shape
-        output_size = (input_width, len(g_label_columns))  # Model's output shape
+        # Model's input shape
+        input_size = (input_width, g_dataset.shape[1])
+        # Model's output shape
+        output_size = (input_width, len(g_label_columns))
 
         # Generates a model with custom kernel size as I/O are different
         model = mg.convolutional_model(g_filter_size,
@@ -468,8 +474,10 @@ class Test_TestWindow(unittest.TestCase):
         # Arguments for the model. Different input shape requires different NN configuration
         kernel_size = [48, 24, 12]  # Reduce the kernel size in each layer
         pool_size = 4  # Pool size divides by 4 to reduce dimensionality
-        input_size = (input_width, len(window_14.column_indices))  # New input shape
-        output_size = (input_width, len(g_label_columns))  # New output shape
+        input_size = (input_width, len(
+            window_14.column_indices))  # New input shape
+        output_size = (input_width, len(
+            g_label_columns))  # New output shape
 
         # Generates a new model with custom I/O, kernel and pool size
         model = mg.convolutional_model(g_filter_size,
@@ -506,8 +514,10 @@ class Test_TestWindow(unittest.TestCase):
         # Arguments for the model. Different input shape requires different NN configuration
         kernel_size = [48, 24, 12]  # Reduce the kernel size in each layer
         pool_size = 4  # Pool size divides by 4 to reduce dimensionality
-        input_size = (input_width, len(window_14x7.column_indices))  # New input shape
-        output_size = (label_width, len(g_label_columns))  # New output shape
+        input_size = (input_width, len(
+            window_14x7.column_indices))  # New input shape
+        output_size = (label_width, len(
+            g_label_columns))  # New output shape
 
         # Generates a new model with custom I/O, kernel and pool size
         model = mg.convolutional_model(g_filter_size,
@@ -632,10 +642,12 @@ class Test_TestModels(unittest.TestCase):
 
         dense = tf.keras.layers.Dense(units=g_output_size[0] * g_output_size[1],
                                       activation="linear")(x)
-        outputs = tf.keras.layers.Reshape([g_output_size[0], g_output_size[1]])(dense)
+        outputs = tf.keras.layers.Reshape(
+            [g_output_size[0], g_output_size[1]])(dense)
 
         # Generates a model by using a functional method
-        model = tf.keras.Model(inputs=inputs, outputs=outputs, name="conv_model")
+        model = tf.keras.Model(
+            inputs=inputs, outputs=outputs, name="conv_model")
 
         # Train the model using the default window
         self.history = compile_and_fit(model, g_window, max_epochs=250)

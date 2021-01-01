@@ -6,11 +6,11 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 
-from IsCoffeeWet import activation
-from IsCoffeeWet import config_file as cf
-from IsCoffeeWet import model_generator as mg
-from IsCoffeeWet import neural_network as nn
-from IsCoffeeWet import window_generator as wg
+from IsCoffeeWet.neural_network import activation
+from IsCoffeeWet.preprocess import config_file as cf
+from IsCoffeeWet.neural_network import model_generator as mg
+from IsCoffeeWet.neural_network import utils
+from IsCoffeeWet.neural_network import window_generator as wg
 
 PATH = os.getcwd() + "/resources/benchmark"
 
@@ -64,10 +64,10 @@ def setUpModule():
 
     # *** Dataset preparation
     # standardize the dataset
-    dataset, g_mean, g_std = nn.standardize(dataset)
+    dataset, g_mean, g_std = utils.standardize(dataset)
 
     # Partition the dataset
-    _, train_ds, val_ds, _ = nn.split_dataset(dataset, config)
+    _, train_ds, val_ds, _ = utils.split_dataset(dataset, config)
 
     # *** Window
     # A week in hours
@@ -255,7 +255,7 @@ class Test_TestBase(unittest.TestCase):
                                columns=g_window.label_columns)
 
         # De-standardize the prediction
-        self.predict = nn.de_standardize(predict, g_mean, g_std)
+        self.predict = utils.de_standardize(predict, g_mean, g_std)
 
         # Graphs all the labels in the model
         for label in g_window.label_columns:
@@ -265,7 +265,8 @@ class Test_TestBase(unittest.TestCase):
                            prediction_label),
                           model)
 
-        nn.save_model(model=model, path=PATH + "/checkpoints/tcn_cpu.h5")
+        utils.save_model(model=model, path=PATH +
+                         "/checkpoints/tcn_cpu.h5")
 
 
 class Test_TestLabels(unittest.TestCase):
@@ -350,9 +351,9 @@ class Test_TestLabels(unittest.TestCase):
                                columns=window.label_columns)
 
         # De-standardize the prediction
-        self.predict = nn.de_standardize(predict,
-                                         g_mean[self.name],
-                                         g_std[self.name])
+        self.predict = utils.de_standardize(predict,
+                                            g_mean[self.name],
+                                            g_std[self.name])
 
         # Graphs all the labels in the model
         window.plot(self.name,
@@ -401,9 +402,9 @@ class Test_TestLabels(unittest.TestCase):
                                columns=window.label_columns)
 
         # De-standardize the prediction
-        self.predict = nn.de_standardize(predict,
-                                         g_mean[self.name],
-                                         g_std[self.name])
+        self.predict = utils.de_standardize(predict,
+                                            g_mean[self.name],
+                                            g_std[self.name])
 
         # Graphs all the labels in the model
         window.plot(self.name,
@@ -452,9 +453,9 @@ class Test_TestLabels(unittest.TestCase):
                                columns=window.label_columns)
 
         # De-standardize the prediction
-        self.predict = nn.de_standardize(predict,
-                                         g_mean[self.name],
-                                         g_std[self.name])
+        self.predict = utils.de_standardize(predict,
+                                            g_mean[self.name],
+                                            g_std[self.name])
 
         # Graphs all the labels in the model
         window.plot(self.name,
@@ -503,9 +504,9 @@ class Test_TestLabels(unittest.TestCase):
                                columns=window.label_columns)
 
         # De-standardize the prediction
-        self.predict = nn.de_standardize(predict,
-                                         g_mean[self.name],
-                                         g_std[self.name])
+        self.predict = utils.de_standardize(predict,
+                                            g_mean[self.name],
+                                            g_std[self.name])
 
         # Graphs all the labels in the model
         window.plot(self.name,
@@ -554,9 +555,9 @@ class Test_TestLabels(unittest.TestCase):
                                columns=window.label_columns)
 
         # De-standardize the prediction
-        self.predict = nn.de_standardize(predict,
-                                         g_mean[self.name],
-                                         g_std[self.name])
+        self.predict = utils.de_standardize(predict,
+                                            g_mean[self.name],
+                                            g_std[self.name])
 
         # Graphs all the labels in the model
         window.plot(self.name,
@@ -605,9 +606,9 @@ class Test_TestLabels(unittest.TestCase):
                                columns=window.label_columns)
 
         # De-standardize the prediction
-        self.predict = nn.de_standardize(predict,
-                                         g_mean[self.name],
-                                         g_std[self.name])
+        self.predict = utils.de_standardize(predict,
+                                            g_mean[self.name],
+                                            g_std[self.name])
 
         # Graphs all the labels in the model
         window.plot(self.name,
@@ -656,9 +657,9 @@ class Test_TestLabels(unittest.TestCase):
                                columns=window.label_columns)
 
         # De-standardize the prediction
-        self.predict = nn.de_standardize(predict,
-                                         g_mean[self.name],
-                                         g_std[self.name])
+        self.predict = utils.de_standardize(predict,
+                                            g_mean[self.name],
+                                            g_std[self.name])
 
         # Graphs all the labels in the model
         window.plot(self.name,
@@ -707,9 +708,9 @@ class Test_TestLabels(unittest.TestCase):
                                columns=window.label_columns)
 
         # De-standardize the prediction
-        self.predict = nn.de_standardize(predict,
-                                         g_mean[self.name],
-                                         g_std[self.name])
+        self.predict = utils.de_standardize(predict,
+                                            g_mean[self.name],
+                                            g_std[self.name])
 
         # Graphs all the labels in the model
         window.plot(self.name,
@@ -758,9 +759,9 @@ class Test_TestLabels(unittest.TestCase):
                                columns=window.label_columns)
 
         # De-standardize the prediction
-        self.predict = nn.de_standardize(predict,
-                                         g_mean[self.name],
-                                         g_std[self.name])
+        self.predict = utils.de_standardize(predict,
+                                            g_mean[self.name],
+                                            g_std[self.name])
 
         # Graphs all the labels in the model
         window.plot(self.name,
@@ -809,9 +810,9 @@ class Test_TestLabels(unittest.TestCase):
                                columns=window.label_columns)
 
         # De-standardize the prediction
-        self.predict = nn.de_standardize(predict,
-                                         g_mean[self.name],
-                                         g_std[self.name])
+        self.predict = utils.de_standardize(predict,
+                                            g_mean[self.name],
+                                            g_std[self.name])
 
         # Graphs all the labels in the model
         window.plot(self.name,
@@ -860,9 +861,9 @@ class Test_TestLabels(unittest.TestCase):
                                columns=window.label_columns)
 
         # De-standardize the prediction
-        self.predict = nn.de_standardize(predict,
-                                         g_mean[self.name],
-                                         g_std[self.name])
+        self.predict = utils.de_standardize(predict,
+                                            g_mean[self.name],
+                                            g_std[self.name])
 
         # Graphs all the labels in the model
         window.plot(self.name,
@@ -911,9 +912,9 @@ class Test_TestLabels(unittest.TestCase):
                                columns=window.label_columns)
 
         # De-standardize the prediction
-        self.predict = nn.de_standardize(predict,
-                                         g_mean[self.name],
-                                         g_std[self.name])
+        self.predict = utils.de_standardize(predict,
+                                            g_mean[self.name],
+                                            g_std[self.name])
 
         # Graphs all the labels in the model
         window.plot(self.name,
@@ -962,9 +963,9 @@ class Test_TestLabels(unittest.TestCase):
                                columns=window.label_columns)
 
         # De-standardize the prediction
-        self.predict = nn.de_standardize(predict,
-                                         g_mean[self.name],
-                                         g_std[self.name])
+        self.predict = utils.de_standardize(predict,
+                                            g_mean[self.name],
+                                            g_std[self.name])
 
         # Graphs all the labels in the model
         window.plot(self.name,
@@ -1013,9 +1014,9 @@ class Test_TestLabels(unittest.TestCase):
                                columns=window.label_columns)
 
         # De-standardize the prediction
-        self.predict = nn.de_standardize(predict,
-                                         g_mean[self.name],
-                                         g_std[self.name])
+        self.predict = utils.de_standardize(predict,
+                                            g_mean[self.name],
+                                            g_std[self.name])
 
         # Graphs all the labels in the model
         window.plot(self.name,
@@ -1064,9 +1065,9 @@ class Test_TestLabels(unittest.TestCase):
                                columns=window.label_columns)
 
         # De-standardize the prediction
-        self.predict = nn.de_standardize(predict,
-                                         g_mean[self.name],
-                                         g_std[self.name])
+        self.predict = utils.de_standardize(predict,
+                                            g_mean[self.name],
+                                            g_std[self.name])
 
         # Graphs all the labels in the model
         window.plot(self.name,

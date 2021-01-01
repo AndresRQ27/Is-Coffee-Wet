@@ -1,8 +1,8 @@
 import tensorflow as tf
 import tensorflow.keras.layers as layers
 
-from IsCoffeeWet import temporal_convolutional as tcn
-from IsCoffeeWet import filternet_module as flm
+from IsCoffeeWet.neural_network import temporal_convolutional as tcn
+from IsCoffeeWet.neural_network import filternet_module as flm
 
 
 def check_ifint(value, size):

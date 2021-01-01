@@ -5,10 +5,10 @@ import unittest
 import pandas as pd
 import tensorflow as tf
 
-from IsCoffeeWet import config_file as cf
-from IsCoffeeWet import model_generator as mg
-from IsCoffeeWet import neural_network as nn
-from IsCoffeeWet import window_generator as wg
+from IsCoffeeWet.preprocess import config_file as cf
+from IsCoffeeWet.neural_network import model_generator as mg
+from IsCoffeeWet.neural_network import utils
+from IsCoffeeWet.neural_network import window_generator as wg
 
 PATH = os.getcwd() + "/resources/benchmark"
 
@@ -63,10 +63,10 @@ def setUpModule():
 
     # *** Dataset preparation
     # Normalize the dataset
-    g_dataset, _, _ = nn.standardize(g_dataset)
+    g_dataset, _, _ = utils.standardize(g_dataset)
 
     # Partition the dataset
-    _, g_train, g_val, _ = nn.split_dataset(g_dataset, g_config)
+    _, g_train, g_val, _ = utils.split_dataset(g_dataset, g_config)
 
     # *** Window
     # A week in hours
@@ -380,8 +380,10 @@ class Test_TestWindow(unittest.TestCase):
         # Arguments for the model. Different input shape requires different NN configuration
         # Pool size divides by 4 to reduce dimensionality
         pool_size = [4, 2]
-        input_size = (input_width, len(window_14x7.column_indices))  # New input shape
-        output_size = (label_width, len(g_label_columns))  # New output shape
+        input_size = (input_width, len(
+            window_14x7.column_indices))  # New input shape
+        output_size = (label_width, len(
+            g_label_columns))  # New output shape
 
         # Generates a new model with custom I/O, kernel and pool size
         model = mg.deep_conv_lstm(g_filter_size,

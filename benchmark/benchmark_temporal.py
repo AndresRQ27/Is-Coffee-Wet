@@ -5,11 +5,11 @@ import unittest
 import pandas as pd
 import tensorflow as tf
 
-from IsCoffeeWet import activation
-from IsCoffeeWet import config_file as cf
-from IsCoffeeWet import model_generator as mg
-from IsCoffeeWet import neural_network as nn
-from IsCoffeeWet import window_generator as wg
+from IsCoffeeWet.neural_network import activation
+from IsCoffeeWet.preprocess import config_file as cf
+from IsCoffeeWet.neural_network import model_generator as mg
+from IsCoffeeWet.neural_network import utils
+from IsCoffeeWet.neural_network import window_generator as wg
 
 PATH = os.getcwd() + "/resources/benchmark"
 
@@ -65,10 +65,10 @@ def setUpModule():
 
     # *** Dataset preparation
     # Normalize the dataset
-    g_dataset, _, _ = nn.standardize(g_dataset)
+    g_dataset, _, _ = utils.standardize(g_dataset)
 
     # Partition the dataset
-    _, g_train, g_val, _ = nn.split_dataset(g_dataset, g_config)
+    _, g_train, g_val, _ = utils.split_dataset(g_dataset, g_config)
 
     # *** Window
     # A week in hours
@@ -370,14 +370,16 @@ class Test_TestDay(unittest.TestCase):
 
         # *** Dataset preparation
         # Normalize the dataset
-        dataset_day, _, _ = nn.standardize(dataset_day)
+        dataset_day, _, _ = utils.standardize(dataset_day)
 
         # Copy config file
         config_day = copy.deepcopy(g_config)
-        config_day.num_data = dataset_day.shape[0]  # Number of data available
+        # Number of data available
+        config_day.num_data = dataset_day.shape[0]
 
         # Partition the dataset
-        _, train_day, val_day, test_day = nn.split_dataset(dataset_day, config_day)
+        _, train_day, val_day, test_day = utils.split_dataset(
+            dataset_day, config_day)
 
         # *** Window
         input_width = 14  # No longer hours, so only 7 days
@@ -390,8 +392,10 @@ class Test_TestDay(unittest.TestCase):
                                         val_ds=val_day,
                                         label_columns=g_label_columns)
 
-        input_size = (input_width, g_dataset.shape[1])  # Model's input shape
-        output_size = (input_width, len(g_label_columns))  # Model's output shape
+        # Model's input shape
+        input_size = (input_width, g_dataset.shape[1])
+        # Model's output shape
+        output_size = (input_width, len(g_label_columns))
 
         # Generates a model with custom kernel size as I/O are different
         model = mg.temp_conv_model(g_filter_size,
@@ -622,8 +626,10 @@ class Test_TestWindow(unittest.TestCase):
                                        label_columns=g_label_columns)
 
         # Arguments for the model. Different input shape requires different NN configuration
-        input_size = (input_width, len(window_14.column_indices))  # New input shape
-        output_size = (input_width, len(g_label_columns))  # New output shape
+        input_size = (input_width, len(
+            window_14.column_indices))  # New input shape
+        output_size = (input_width, len(
+            g_label_columns))  # New output shape
 
         # Generates a new model with custom I/O, kernel and pool size
         model = mg.temp_conv_model(g_filter_size,
@@ -658,8 +664,10 @@ class Test_TestWindow(unittest.TestCase):
                                        label_columns=g_label_columns)
 
         # Arguments for the model. Different input shape requires different NN configuration
-        input_size = (input_width, len(window_21.column_indices))  # New input shape
-        output_size = (input_width, len(g_label_columns))  # New output shape
+        input_size = (input_width, len(
+            window_21.column_indices))  # New input shape
+        output_size = (input_width, len(
+            g_label_columns))  # New output shape
 
         # Generates a new model with custom I/O, kernel and pool size
         model = mg.temp_conv_model(g_filter_size,
@@ -694,8 +702,10 @@ class Test_TestWindow(unittest.TestCase):
                                        label_columns=g_label_columns)
 
         # Arguments for the model. Different input shape requires different NN configuration
-        input_size = (input_width, len(window_30.column_indices))  # New input shape
-        output_size = (input_width, len(g_label_columns))  # New output shape
+        input_size = (input_width, len(
+            window_30.column_indices))  # New input shape
+        output_size = (input_width, len(
+            g_label_columns))  # New output shape
 
         # Generates a new model with custom I/O, kernel and pool size
         model = mg.temp_conv_model(g_filter_size,
