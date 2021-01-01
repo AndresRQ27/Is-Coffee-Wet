@@ -24,7 +24,7 @@ An installation guide is available
 
 - Run the container:
 
-`docker run -it --name coffee-debug -v $(pwd):/data is-coffee-wet:cpu bash`
+`docker run -it --name coffee-debug -v $(pwd):/workspaces is-coffee-wet:cpu bash`
 
 #### With GPU
 
@@ -34,7 +34,7 @@ An installation guide is available
 
 - Run the container:
 
-`docker run -it --name coffee-gpu-debug -v $(pwd):/data -gpus all is-coffee-wet:gpu bash`
+`docker run -it --name coffee-gpu-debug -v $(pwd):/workspaces -gpus all is-coffee-wet:gpu bash`
 
 ### For production
 
@@ -42,22 +42,22 @@ This following instructions does:
 
 - Creates a container from the production image
 - Opens a terminal using bash
-- Maps a volume name _checkpoints_ to `/data/checkpoints`
-- Binds the resources folder where the host console is running to `/data/resources`
+- Maps a volume name _checkpoints_ to `/workspaces/checkpoints`
+- Binds the resources folder where the host console is running to `/workspaces/resources`
 - Name the container _coffee-production_
 
 `docker run -it 
--v checkpoints:/data/checkpoints 
--v $PWD/resources:/data/resources 
+-v checkpoints:/workspaces/checkpoints 
+-v $PWD/resources:/workspaces/resources 
 --name coffee-production 
 is-coffee-wet:release bash`
 
 # Running the program
 
-Run the following command from `/data`:
+Run the following command from `/workspaces`:
 
 `python ./IsCoffeeWet/main.py $PATH_TO_CONFIG-FILE`
 
 The path to the config file is from the resources folder. For example, if
-the config file is in `/data/resources/config/config.json`, the path to the
+the config file is in `/workspaces/resources/config/config.json`, the path to the
 config file should be `config/config.json`.

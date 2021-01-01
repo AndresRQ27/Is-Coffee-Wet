@@ -6,7 +6,8 @@ LABEL Name=is-coffee-wet-gpu \
       Version=0.0.1
 
 RUN apt-get update && apt-get install -y \
-      graphviz=2.40.1-2
+      graphviz=2.40.1-2 \
+      git=1:2.17.1-1ubuntu0.7
 
 RUN pip install \
       matplotlib==3.3.2 \
@@ -14,4 +15,6 @@ RUN pip install \
       pydot==1.4.1 \
       tensorflow-addons==0.11.2
 
-CMD ["/bin/sh"]
+WORKDIR /workspaces
+
+CMD ["bash"]
