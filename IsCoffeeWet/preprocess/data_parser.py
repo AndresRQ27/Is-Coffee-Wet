@@ -87,13 +87,12 @@ def convert_numeric(dataset, config_file):
     """
 
     # Sets all "nullValues" to NaN
-    for null in config_file.null:
+    for null in config_file.null_list:
         dataset = dataset.replace(null, np.NaN)
 
     # Changes the data to float64
     for name in config_file.columns:
-
-        # Check if it's an special format
+        # Check if it's an special format (int, bool, others)
         if name in config_file.formats:
             # Ignores interpolation of bool types
             if config_file.formats[name] == "bool":
