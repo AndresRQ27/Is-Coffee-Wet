@@ -5,8 +5,7 @@ __Table of contents__
     - [`dataset_path`](#dataset_path)
     - [`frequency`](#frequency)
     - [`forecast_window`](#forecast_window)
-    - [`graph_data`](#graph_data)
-  - [pre-process](#pre-process)
+  - [preprocess](#preprocess)
     - [`datetime`](#datetime)
     - [`datetime_format`](#datetime_format)
     - [`null_list`](#null_list)
@@ -16,10 +15,7 @@ __Table of contents__
     - [`special_format`](#special_format)
   - [neural_network](#neural_network)
     - [`model_name`](#model_name)
-    - [`training_set`](#training_set)
-    - [`validation_set`](#validation_set)
-    - [test_set](#test_set)
-    - [`path`](#path)
+    - [`nn_path`](#nn_path)
     - [`labels`](#labels)
 
 # JSON Format
@@ -51,16 +47,8 @@ timestamp to use when predicting the values.
 
 (_int_) Amount of time to forecast. Its unit are days.
 
-### `graph_data`
 
-(_boolean_). Indicates if it should show the graph of the data used.
-
-- Recommended in the first run to view the behavior of the data and find
-  strange values.
-- Otherwise, recommended off (`False`)
-
-
-## pre-process
+## preprocess
 
 
 ### `datetime`
@@ -129,34 +117,7 @@ Wet 1": "int"`).
 (_string_) Name to given the model when saving its state. Also used to look
 for a previously trained model in the [`path`](#path).
 
-### `training_set`
-
-(_float_) Percentage in decimals of the data to use in the neural network
-training. This set will be used for traning.
-
-### `validation_set`
-
-(_float_) Percentage in decimals of the data to use in the neural network
-training. This set will be used to check for accuracy and other metrics
-__while__ traning. It's generally small or it can be $0$ if desired.
-
-- The validation set is taken from the training set, so if the validation
-    is $0.2$, the real training set will be $0.7-0.2=0.5$ of the dataset.
-
-### test_set
-
-Set that will be use to check for accuracy and other metrics __after__
-traning. Used to compute the final performance of the neural network.
-
-- It is not explicitly stated in the JSON, as it's calculated in the
-  program like $\text{test set} = 1-\text{training set}$. But it's good to
-  know.
-
-Example: we want a 0.7 train and 0.3 test, that uses 0.2 for validation.
-That means that train will go from 0 to 0.5, validation will go from 0.5 to
-0.7 and test from 0.7 to 1.
-
-### `path`
+### `nn_path`
 
 (_string_) Path to load/save the neural network model.
 

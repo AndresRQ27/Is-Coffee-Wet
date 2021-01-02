@@ -59,5 +59,5 @@ Run the following command from `/workspaces`:
 `python ./IsCoffeeWet/main.py $PATH_TO_CONFIG-FILE`
 
 The path to the config file is from the resources folder. For example, if
-the config file is in `/workspaces/resources/config/config.json`, the path to the
-config file should be `config/config.json`.
+the config file is in `/workspaces/resources/configs/config.json`, the path to the
+config file should be `configs/config.json`.

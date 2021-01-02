@@ -1,9 +1,9 @@
 {
-  "dataset_path": "database/test.csv",
+  "dataset_path": "tests/database/test.csv",
   "frequency": "1H",
   "forecast_window": 7,
-  "graph_data": true,
-  "pre-process": {
+  
+  "preprocess": {
     "datetime": [
       "Date",
       "Time"
@@ -12,26 +12,21 @@
     "null_list": [
       "---"
     ],
-    "delete_columns": [
-
-    ],
     "encode_time": {
       "day": 86400,
       "year": 31556952
     },
-    "special_functions": {
-
-    },
     "special_format": {
       "Leaf Wet 1": "int"
+    },
+    "special_functions":{
+      "Leaf Wet 1": "max"
     }
   },
 
   "neural_network": {
     "model_name": "Station#7",
-    "training_set": 0.7,
-    "validation_set": 0.2,
-    "path": "convolutional.h5",
+    "nn_path": "checkpoints",
     "labels": []
   }
 }
