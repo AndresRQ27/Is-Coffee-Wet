@@ -101,7 +101,7 @@ def create_cyclical_encoder(dataset_index, config_file):
     # Generates a unique timestamp in second of each datetime
     timestamp_s = dataset_index.map(datetime.datetime.timestamp)
 
-    new_dataset = pd.DataFrame()
+    new_dataset = pd.DataFrame(index=dataset_index)
 
     # Divide into sin/cos columns
     for name, time in config_file.encode.items():
