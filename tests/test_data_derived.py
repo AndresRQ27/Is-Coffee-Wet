@@ -2,7 +2,7 @@ import os
 import unittest
 import pandas as pd
 
-from IsCoffeeWet.utils.config_file import ConfigFile
+from IsCoffeeWet.tools.config_file import ConfigFile
 from IsCoffeeWet.preprocess import data_derived as dd
 
 PATH = os.getcwd() + "/resources"
