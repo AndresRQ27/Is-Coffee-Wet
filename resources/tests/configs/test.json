@@ -1,5 +1,5 @@
 {
-  "dataset_path": "tests/database/test.csv",
+  "dataset_path": "resources/tests/database/test.csv",
   "frequency": "1H",
   "forecast_window": 7,
   
@@ -26,7 +26,6 @@
 
   "neural_network": {
     "model_name": "Station#7",
-    "nn_path": "checkpoints",
-    "labels": []
+    "nn_path": "checkpoints"
   }
 }
