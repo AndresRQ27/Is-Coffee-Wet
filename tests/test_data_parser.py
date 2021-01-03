@@ -2,29 +2,25 @@ import os
 import unittest
 import pandas as pd
 
-from IsCoffeeWet.preprocess import config_file as cf
+from IsCoffeeWet.utils.config_file import ConfigFile
 from IsCoffeeWet.preprocess import data_parser
 
-PATH = os.getcwd() + "/resources/tests/database"
+PATH = os.getcwd() + "/resources"
 
 
 class Test_TestDataParser(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        raw_dataset = pd.read_csv(PATH + "/test.csv")
+        path_dataset = PATH + "/tests/database/test.csv"
+        raw_dataset = pd.read_csv(path_dataset)
+
+        cls.config_file = ConfigFile("tests/configs/test.json",
+                                     PATH)
 
         # Uses a list of columns with the date as the config file
-        cls.config_file = cf.ConfigFile()
-        cls.config_file.datetime = ["Date", "Time"]
-        cls.config_file.columns = ["Date", "Time"]
-        cls.config_file.datetime_format = "%d/%m/%Y %I:%M %p"
-
         cls.datetime_ds = data_parser.merge_datetime(
             raw_dataset, cls.config_file)
 
-        cls.config_file.null = ["---"]
-        cls.config_file.columns.extend(["Temp Out", "Leaf Wet 1"])
-        cls.config_file.formats = {"Leaf Wet 1": "int"}
         cls.converted_ds = data_parser.convert_numeric(
             cls.datetime_ds, cls.config_file)
 
@@ -39,7 +35,6 @@ class Test_TestDataParser(unittest.TestCase):
 
     def test_convert_numeric(self):
         # Test if there is a NaN value
-        # noinspection SpellCheckingInspection
         with self.subTest(msg="NaN test"):
             # notna() returns False in value is NaN
             # Use all() to detect if there is a single False value (NaN)
@@ -52,36 +47,13 @@ class Test_TestDataParser(unittest.TestCase):
             # Check if all columns are float64
             self.assertTrue((self.converted_ds.dtypes == "float64").all())
 
-    # noinspection DuplicatedCode
-    def test_sample_dataset(self):
-        self.config_file.freq = "15min"
-        self.config_file.functions = {"Leaf Wet 1": "last"}
+    def test_sample_series(self):
+        sampled_series = data_parser.sample_series(
+            self.converted_ds["Temp Out"], self.config_file)
 
-        sampled_ds = data_parser.sample_dataset(
-            self.converted_ds, self.config_file)
-
-        # Checks the new frequency of the dataset
+        # Checks the new frequency of the series
         with self.subTest(msg="freq test"):
-            self.assertEqual(sampled_ds.index.freq, "15T")
-
-        with self.subTest(msg="check 'Leaf Wet Accum'"):
-            self.assertTrue("Leaf Wet Accum" in sampled_ds.columns)
-
-    def test_cyclical_encoder(self):
-        self.config_file.encode = {"day": 86400}
-
-        encoded_ds = data_parser.cyclical_encoder(
-            self.datetime_ds, self.config_file)
-
-        # Sin/Cos columns added to the new dataset
-        with self.subTest(msg="check sin/cos test"):
-            self.assertTrue(("day sin" in encoded_ds.columns)
-                            and "day cos" in encoded_ds.columns)
-
-        # Check if there values are between -1 and 1
-        with self.subTest(msg="check between 0 and 1"):
-            self.assertTrue((min(encoded_ds["day sin"]) >= -1)
-                            and max((encoded_ds["day sin"]) <= 1))
+            self.assertEqual(sampled_series.index.freq, "1H")
 
 
 if __name__ == '__main__':
