@@ -2,7 +2,7 @@ import os
 import unittest
 import pandas as pd
 
-from IsCoffeeWet.preprocess import config_file as cf
+from IsCoffeeWet.tools.config_file import ConfigFile
 from IsCoffeeWet.preprocess import data_graph
 
 PATH = os.getcwd() + "/resources/tests"

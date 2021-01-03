@@ -8,7 +8,7 @@ import tensorflow._api.v2.signal as signal
 FIG_SIZE = (30, 10)
 
 
-def graph_data(dataset, config_file, path_resources):
+def graph_data(dataset, config_file, path):
     """
     Function that graph the data in a column vs the time when it was
     taken. Help visualizing big gaps where the data was interpolated
@@ -20,26 +20,26 @@ def graph_data(dataset, config_file, path_resources):
         Dataset with the columns to graph
     config_file: config_file.ConfigFile
         Configuration file with the name of all the columns to graph
-    path_resources: string
+    path: string
         Path to the parent folder to save the graphs
     """
     # Creates the folder to save the graphs
-    path_resources = path_resources + "pre-process"
+    path = os.path.join(path, "resources", "graphs", "data_values")
     try:
-        os.makedirs(path_resources)
+        os.makedirs(path)
     except FileExistsError:
-        print("\n{} already exists".format(path_resources))
+        print("\n{} already exists".format(path))
 
     for name in config_file.columns:
         # Creates a new figure
         plt.figure(figsize=FIG_SIZE)
         dataset[name].plot().set_ylabel(name)
         # Saves the image
-        plt.savefig("{}/{}.png".format(path_resources, name))
+        plt.savefig("{}/{}.png".format(path, name))
         plt.close()
 
 
-def freq_domain(dataset, config_file, path_resources):
+def freq_domain(dataset, config_file, path):
     """
     Function that graph the data in the frequency domain by using Fourier Transform.
     Useful when analyzing the information to see which frequencies are the 
@@ -53,7 +53,7 @@ def freq_domain(dataset, config_file, path_resources):
     config_file: config_file.ConfigFile
         Configuration file with the name of all the columns to apply the
         Real-valued Fast Fourier Transformation.
-    path_resources: string
+    path: string
         Path to the parent folder to save the graphs
 
     See Also
@@ -61,11 +61,11 @@ def freq_domain(dataset, config_file, path_resources):
     tensorflow._api.v2.signal.rfft: Real-valued Fast Fourier Transformation.
     """
     # Creates the folder to save the graphs
-    path_resources = path_resources + "freq_domain"
+    path = os.path.join(path, "resources", "graphs", "fourier")
     try:
-        os.makedirs(path_resources)
+        os.makedirs(path)
     except FileExistsError:
-        print("\n{} already exists".format(path_resources))
+        print("\n{} already exists".format(path))
 
     for name in config_file.columns:
         # Creates a new figure
@@ -91,5 +91,5 @@ def freq_domain(dataset, config_file, path_resources):
         _ = plt.ylabel(name)
 
         # Saves the image
-        plt.savefig("{}/{}.png".format(path_resources, name))
+        plt.savefig("{}/{}.png".format(path, name))
         plt.close()
