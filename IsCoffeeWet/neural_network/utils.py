@@ -83,7 +83,7 @@ def split_dataset(dataset, config_file):
     return datetime_index, train_ds, val_ds, test_ds
 
 
-def load_model(path, submodel=None):
+def load_model(path, name="", submodel=None):
     """
     Function that loads a neural network model from a file, given a path to
     it.
@@ -92,6 +92,11 @@ def load_model(path, submodel=None):
     ----------
     path: string
         Path where look for the the neural network model in the filesystem.
+        If a path with a filename is given, then the name is ignored
+    name: string, optional
+        Name of the neural network. It can be given directly in the path
+        for loading a specific model. Otherwise, it will look for the most
+        recent model with the name given.
     submodel: string, optional
         Acronym of the sub-model used in the architecture of the saved
         model. Valid options are `'tcn'` and `'conv_lstm'`
@@ -117,22 +122,25 @@ def load_model(path, submodel=None):
     # If path is a directory, look for the most recent file h5
     if os.path.isdir(path):
         # Look for the most recent file in the directory
-        list_of_files = glob.glob(path + "/*.h5")
+        list_of_files = glob.glob(path + "/{}*.h5".format(name))
         # Assign the path to the most recent h5 if there is one
         # If there isn't one, either the directory is empty or model is a ".pb"
         path = max(list_of_files, key=os.path.getctime) \
-            if len(list_of_files) != 0 else path
+            if len(list_of_files) != 0 else None
 
-    if submodel == "tcn":
-        model = tf.keras.models.load_model(filepath=path,
-                                           custom_objects={
-                                               "ResidualBlock": tcn.ResidualBlock})
-    elif submodel == "conv_lstm":
-        model = tf.keras.models.load_model(filepath=path,
-                                           custom_objects={
-                                               "FilternetModule": flm.FilternetModule})
+    if path is not None:
+        if submodel == "tcn":
+            model = tf.keras.models.load_model(filepath=path,
+                                            custom_objects={
+                                                "ResidualBlock": tcn.ResidualBlock})
+        elif submodel == "conv_lstm":
+            model = tf.keras.models.load_model(filepath=path,
+                                            custom_objects={
+                                                "FilternetModule": flm.FilternetModule})
+        else:
+            model = tf.keras.models.load_model(filepath=path)
     else:
-        model = tf.keras.models.load_model(filepath=path)
+        model = None
 
     return model
 
