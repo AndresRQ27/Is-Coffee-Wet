@@ -39,6 +39,7 @@ def create_leaf_wet_accum(dataset, config_file):
     config_file.columns.append("Leaf Wet Accum")
     config_file.functions["Leaf Wet Accum"] = "sum"
     config_file.formats["Leaf Wet Accum"] = "int"
+    config_file.labels.append("Leaf Wet Accum")
 
     # Sample the Leaf Wet Accum
     series = sample_series(series=series, config_file=config_file)
@@ -109,5 +110,9 @@ def create_cyclical_encoder(dataset_index, config_file):
                     " sin"] = np.sin(timestamp_s * (2 * np.pi / time))
         new_dataset[name +
                     " cos"] = np.cos(timestamp_s * (2 * np.pi / time))
+
+        # Add columns to the config file
+        config_file.columns.append(name + " sin")
+        config_file.columns.append(name + " cos")
 
     return new_dataset
