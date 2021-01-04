@@ -4,6 +4,7 @@ import pandas as pd
 from IsCoffeeWet.preprocess import data_derived as dd
 from IsCoffeeWet.preprocess import data_parser as dp
 from IsCoffeeWet.preprocess import data_graph as dg
+from IsCoffeeWet.preprocess import normalize as norm
 
 
 def preprocess(config_file):
@@ -59,7 +60,13 @@ def preprocess(config_file):
     new_dataset = dp.convert_numeric(dataset=new_dataset,
                                      config_file=config_file)
 
-    return new_dataset
+    # Prints the description of the dataset without normalization
+    print(new_dataset.describe().transpose())
+
+    # *** Normalize the dataset
+    new_dataset, ds_mean, ds_std = norm.standardize(dataset=new_dataset)
+
+    return new_dataset, ds_mean, ds_std
 
 
 def graphs(dataset, config_file, path):
