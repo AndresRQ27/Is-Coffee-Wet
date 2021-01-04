@@ -152,7 +152,7 @@ class WindowGenerator:
 
         return inputs, labels
 
-    def plot(self, plot_col, path_images, data=None, model=None, max_subplots=3):
+    def plot(self, plot_col, path, data=None, model=None, max_subplots=3):
         """
         Function that plots an example taken from the train dataset to show
         the accuracy of the predictions vs the real values.
@@ -161,7 +161,7 @@ class WindowGenerator:
         ----------
         plot_col: string
             Column name of the data to plot.
-        path_images: string
+        path: string
             Path to the parent folder to save the graphs
         data: tuple[numpy.ndarray, numpy.ndarray], optional
             Specific data to use to plot the graphs. Can be left empty to
@@ -173,11 +173,11 @@ class WindowGenerator:
             Maximum amount of subplots to show.
         """
         # Creates the folder to save the graphs
-        path_images = path_images + "window"
+        path = os.path.join(path, "graphs", "window")
         try:
-            os.makedirs(path_images)
+            os.makedirs(path)
         except FileExistsError:
-            print("\n{} already exists".format(path_images))
+            print("\n{} already exists".format(path))
 
         # Takes the inputs and labels from the example or the data
         inputs, labels = data if data is not None else self.example
@@ -228,7 +228,7 @@ class WindowGenerator:
 
         plt.xlabel('Time [h]')
         # Saves the image
-        plt.savefig("{}/{}.png".format(path_images, plot_col))
+        plt.savefig("{}/{}.png".format(path, plot_col))
         plt.close()
 
     def make_dataset(self, data):
