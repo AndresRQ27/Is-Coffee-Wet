@@ -5,16 +5,16 @@ import pandas as pd
 from IsCoffeeWet.tools.config_file import ConfigFile
 from IsCoffeeWet.preprocess import data_parser
 
-PATH = os.getcwd() + "/resources"
+PATH = os.getcwd()
 
 
 class Test_TestDataParser(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        path_dataset = PATH + "/tests/database/test.csv"
+        path_dataset = PATH + "/resources/tests/database/test.csv"
         raw_dataset = pd.read_csv(path_dataset)
 
-        cls.config_file = ConfigFile("tests/configs/test.json",
+        cls.config_file = ConfigFile("resources/tests/configs/test.json",
                                      PATH)
 
         # Uses a list of columns with the date as the config file
