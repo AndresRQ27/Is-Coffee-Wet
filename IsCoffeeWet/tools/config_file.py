@@ -100,6 +100,16 @@ class ConfigFile:
         submodel: string
             Read from submodel. Name of the type of model to build.
             There are 3 types: cnn, tcn and conv_lstm.
+        max_epochs: int
+            Read from max_epochs. Maximum number of epochs to train
+            the neural network.
+        lr: float
+            Read from learning_rate. Learning rate of the optimizer
+            for the neural network.
+        patience: int
+            Read from patience. Number of epochs that can pass without
+            improving the accuracy of the neural network before it
+            early stops
         """
         self.num_data = 0
         self.ds_path = ""
@@ -127,6 +137,9 @@ class ConfigFile:
         self.labels = []
         self.nn_path = "checkpoints"
         self.submodel = ""
+        self.max_epochs = 1
+        self.lr = 0.01
+        self.patience = 5
 
     def _overwrite_values(self, config_json, parent_path):
         """
@@ -262,9 +275,14 @@ class ConfigFile:
 
         if "nn_path" in config_json:
             # Checks if the path to save the neural network exists
-            self.nn_path = config_json["nn_path"]
+            self.nn_path = os.path.join(parent_path, config_json["nn_path"])
             try:
-                os.makedirs(os.path.join(parent_path, self.nn_path))
+                os.makedirs(self.nn_path)
                 print("Path to save the neural networks was created")
             except FileExistsError:
                 print("Path to save the neural networks was found")
+
+        # Values for the neural network compile and train
+        self.max_epochs = config_json["max_epochs"]
+        self.lr = config_json["learning_rate"]
+        self.patience = config_json["patience"]
