@@ -97,6 +97,9 @@ class ConfigFile:
             Read from nn_path. Relative path of the folder where to
             load/save the neural network from the bound volume in the
             container. Starts from the parent path.
+        submodel: string
+            Read from submodel. Name of the type of model to build.
+            There are 3 types: cnn, tcn and conv_lstm.
         """
         self.num_data = 0
         self.ds_path = ""
@@ -123,6 +126,7 @@ class ConfigFile:
         self.model_name = "generic"
         self.labels = []
         self.nn_path = "checkpoints"
+        self.submodel = ""
 
     def _overwrite_values(self, config_json, parent_path):
         """
@@ -253,6 +257,8 @@ class ConfigFile:
         # If no labels are provided, use the columns as labels
         self.labels = (self.labels if self.labels else
                        copy.deepcopy(self.columns))
+
+        self.submodel = config_json["submodel"]
 
         if "nn_path" in config_json:
             # Checks if the path to save the neural network exists

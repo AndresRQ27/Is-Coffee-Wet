@@ -25,7 +25,8 @@
   },
 
   "neural_network": {
-    "model_name": "Station#7",
-    "nn_path": "checkpoints"
+    "model_name": "tcn_model",
+    "nn_path": "resources/tests/checkpoints",
+    "submodel": "tcn"
   }
 }
