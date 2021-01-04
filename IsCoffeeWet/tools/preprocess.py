@@ -66,6 +66,9 @@ def preprocess(config_file):
     # *** Normalize the dataset
     new_dataset, ds_mean, ds_std = norm.standardize(dataset=new_dataset)
 
+    # Updates the number of data available in the dataset
+    config_file.num_data = len(new_dataset)
+
     return new_dataset, ds_mean, ds_std
 
 
