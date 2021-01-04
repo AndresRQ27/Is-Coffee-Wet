@@ -2,45 +2,11 @@ import glob
 import os
 
 import numpy as np
+import pandas as pd
 import tensorflow as tf
 
 from IsCoffeeWet.neural_network.models import filternet_module as flm
 from IsCoffeeWet.neural_network.models import temporal_convolutional as tcn
-
-
-def mae(y_true, y_pred):
-    """
-    Calculates the Mean-Absolute-Error (MAE) for an un-standardize
-    dataset.
-
-    Parameters
-    ----------
-    y_true: pandas.DataFrame
-        Ground truth values
-    y_pred: pandas.DataFrame
-        Predicted values by the model
-
-    Returns
-    -------
-    pandas.DataFrame
-        MAE for each value in the last window of the dataset. Can contain
-        NaNs
-    """
-    return np.abs(y_true - y_pred)
-
-
-def analyze_loss(y_true, y_pred, index, grouping_func, frequency="1D"):
-    # Calculates the MAE of the values
-    loss = mae(y_true, y_pred)
-
-    # Sets the datetime index. It assumes these are the last values
-    loss.set_index(index[-len(y_true):], inplace=True)
-
-    # Resamples the loss in the desired frequency
-    result = loss.resample(frequency, label="right",
-                           closed="right", origin="start"
-                           ).aggregate(func=grouping_func)
-    return result
 
 
 def split_dataset(dataset, config_file):
@@ -67,18 +33,24 @@ def split_dataset(dataset, config_file):
     dataset = dataset.reset_index()
 
     # Pops the datetime from the dataset. Not use in the NN explicitly
-    datetime_index = dataset.pop("Datetime")
+    datetime_index = dataset.pop("index")
 
-    # Accumulates the ratio to use in slices.
-    # Validation set is taken from the training set.
-    train_ratio = config_file.training - config_file.validation  # e.g. from 0 to 0.5
-    validation_ratio = config_file.training  # e.g. from 0.5 to 0.7
+    # Gets the last year of data according to the frequency of the dataset
+    # Transforms the frequency from string to Timedelta
+    delta_freq = pd.Timedelta(config_file.freq)
 
-    # Divides the dataset
-    train_ds = dataset[0:int(config_file.num_data * train_ratio)]
-    val_ds = dataset[int(config_file.num_data * train_ratio):
-                     int(config_file.num_data * validation_ratio)]
-    test_ds = dataset[int(config_file.num_data * validation_ratio):]
+    # Amount of steps from the dataset in a day
+    delta_freq = delta_freq.days + delta_freq.seconds / 86400
+
+    # Number of data that will be in the training set
+    train_ratio = len(dataset) - int(np.floor(365 / delta_freq))
+
+    # Removes the last 365 days of data from the training set
+    train_ds = dataset[:train_ratio]
+    # Leave 7 days of validation set from the val_test group
+    val_ds = dataset[train_ratio:train_ratio+config_file.forecast]
+    # Saves the remaining data as the test set
+    test_ds = dataset[train_ratio+config_file.forecast:]
 
     return datetime_index, train_ds, val_ds, test_ds
 
@@ -131,12 +103,12 @@ def load_model(path, name="", submodel=None):
     if path is not None:
         if submodel == "tcn":
             model = tf.keras.models.load_model(filepath=path,
-                                            custom_objects={
-                                                "ResidualBlock": tcn.ResidualBlock})
+                                               custom_objects={
+                                                   "ResidualBlock": tcn.ResidualBlock})
         elif submodel == "conv_lstm":
             model = tf.keras.models.load_model(filepath=path,
-                                            custom_objects={
-                                                "FilternetModule": flm.FilternetModule})
+                                               custom_objects={
+                                                   "FilternetModule": flm.FilternetModule})
         else:
             model = tf.keras.models.load_model(filepath=path)
     else:
@@ -145,7 +117,7 @@ def load_model(path, name="", submodel=None):
     return model
 
 
-def save_model(model, path):
+def save_model(model, path, name="saved_model"):
     """
     Function that saves a keras model to a given path in the filesystem.
     The extension of the file is a `.tf` that keras uses to save all the
@@ -161,12 +133,92 @@ def save_model(model, path):
         Path in the filesystem to save the model.
 
     """
-    # Creates path to save the neural network for the tests
-    try:
-        os.makedirs(os.path.dirname(path))
-        print("Path to save the neural networks was created")
-    except FileExistsError:
-        print("Path to save the neural networks was found")
-
-    tf.keras.models.save_model(model=model, filepath=path, save_format="h5")
+    path = os.path.join(path, name+".h5")
+    tf.keras.models.save_model(
+        model=model, filepath=path, save_format="h5")
     print("Your model has been save to '{}'".format(path))
+
+
+def compile_and_fit(model, window, patience=4, learning_rate=0.0001,
+                    max_epochs=100):
+    """
+    Function that compiles and train the model. It's a generic function as
+    multiple modules are compiled and trained.
+
+    Parameters
+    ----------
+    model: tensorflow.keras.Model
+        Neural network model that will be compiled and trained
+    window: window_generator.WindowGenerator
+        Window that contains the train set and validation set used in
+        the fitting.
+    patience: int, optional
+        Minimum number of epochs that must pass without significant change
+        before it stops early.
+    learning_rate: float, optional
+        Number passed to the optimizer. Used when updating the weights
+        of the network.
+    max_epochs: int, optional
+        Max number of epochs to train the neural network
+
+    Returns
+    -------
+
+    tf.keras.callbacks.History
+        Objects that contains the history of the model training.
+    """
+    # Sets an early stopping callback to prevent over-fitting
+    early_stopping = tf.keras.callbacks.EarlyStopping(monitor='val_loss',
+                                                      min_delta=0,
+                                                      patience=patience,
+                                                      mode="min")
+
+    # Compiles the model with the loss function, optimizer to use and metric to watch
+    model.compile(loss=tf.losses.MeanSquaredError(),
+                  optimizer=tf.optimizers.Adam(learning_rate),
+                  metrics=[tf.metrics.MeanAbsoluteError(),
+                           tf.metrics.MeanAbsolutePercentageError()])
+
+    # Trains the model
+    history = model.fit(window.train,
+                        validation_data=window.val,
+                        epochs=max_epochs,
+                        callbacks=[early_stopping])
+
+    # Returns a history of the metrics
+    return history
+
+
+def mae(y_true, y_pred):
+    """
+    Calculates the Mean-Absolute-Error (MAE) for an un-standardize
+    dataset.
+
+    Parameters
+    ----------
+    y_true: pandas.DataFrame
+        Ground truth values
+    y_pred: pandas.DataFrame
+        Predicted values by the model
+
+    Returns
+    -------
+    pandas.DataFrame
+        MAE for each value in the last window of the dataset. Can contain
+        NaNs
+    """
+    return np.abs(y_true - y_pred)
+
+
+def analyze_loss(y_true, y_pred, index, grouping_func, frequency="1D"):
+    # Calculates the MAE of the values
+    loss = mae(y_true, y_pred)
+
+    # Sets the datetime index. It assumes these are the last values
+    loss.set_index(index[-len(y_true):], inplace=True)
+
+    # Resamples the loss in the desired frequency
+    result = loss.resample(frequency, label="right",
+                           closed="right", origin="start"
+                           ).aggregate(func=grouping_func)
+    return result
