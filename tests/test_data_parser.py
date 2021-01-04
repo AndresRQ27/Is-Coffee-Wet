@@ -11,8 +11,7 @@ PATH = os.getcwd()
 class Test_TestDataParser(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        path_dataset = PATH + "/resources/tests/database/test.csv"
-        raw_dataset = pd.read_csv(path_dataset)
+        raw_dataset = pd.read_csv(PATH + "/resources/tests/database/test.csv")
 
         cls.config_file = ConfigFile("resources/tests/configs/test.json",
                                      PATH)

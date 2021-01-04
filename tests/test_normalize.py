@@ -11,14 +11,12 @@ from IsCoffeeWet.preprocess import normalize as norm
 PATH = os.getcwd()
 
 
-class Test_TestNeuralNetwork(unittest.TestCase):
+class Test_TestNormalize(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         # Sets the index using Datetime column
-        path_dataset = PATH + "/resources/tests/database/test_parsed.csv"
-        dataset = pd.read_csv(path_dataset,
-                              engine="c", index_col="Datetime",
-                              parse_dates=True)
+        dataset = pd.read_csv(PATH + "/resources/tests/database/test_parsed.csv",
+                              engine="c", index_col=0, parse_dates=True)
         # Infers the frequency
         cls.dataset = dataset.asfreq(dataset.index.inferred_freq)
         cls.config_file = ConfigFile("resources/tests/configs/test.json",
