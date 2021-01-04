@@ -54,6 +54,10 @@ class ConfigFile:
             Number of data contained in th dataset. This property 
             isn't in the config file, but added later on when the
             dataset is loaded (manually)
+        train_ratio: int
+            Number of data to use in the training set. This property 
+            isn't in the config file, but added later on when the
+            dataset is split (manually)
         ds_path: string
             Read from dataset_path. Relative path of the dataset from
             the bound volume in the container. Starts from the parent
@@ -110,8 +114,11 @@ class ConfigFile:
             Read from patience. Number of epochs that can pass without
             improving the accuracy of the neural network before it
             early stops
+        batch_size: int
+            Read from batchsize. Number of data in a batch of training.
         """
         self.num_data = 0
+        self.train_ratio = 0
         self.ds_path = ""
         self.freq = "1H"
         self.forecast = 7
@@ -140,6 +147,7 @@ class ConfigFile:
         self.max_epochs = 1
         self.lr = 0.01
         self.patience = 5
+        self.batch_size = 64
 
     def _overwrite_values(self, config_json, parent_path):
         """
@@ -271,7 +279,8 @@ class ConfigFile:
         self.labels = (self.labels if self.labels else
                        copy.deepcopy(self.columns))
 
-        self.submodel = config_json["submodel"]
+        if "submodel" in config_json:
+            self.submodel = config_json["submodel"]
 
         if "nn_path" in config_json:
             # Checks if the path to save the neural network exists
@@ -283,6 +292,11 @@ class ConfigFile:
                 print("Path to save the neural networks was found")
 
         # Values for the neural network compile and train
-        self.max_epochs = config_json["max_epochs"]
-        self.lr = config_json["learning_rate"]
-        self.patience = config_json["patience"]
+        if "max_epochs" in config_json:
+            self.max_epochs = config_json["max_epochs"]
+        if "learning_rate" in config_json:
+            self.lr = config_json["learning_rate"]
+        if "patience" in config_json:
+            self.patience = config_json["patience"]
+        if "batch_size" in config_json:
+            self.batch_size = config_json["batch_size"]
