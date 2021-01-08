@@ -12,9 +12,15 @@ RUN pip install \
 
 WORKDIR /workspaces
 
-VOLUME ["/workspaces/checkpoints"]
+VOLUME [ "/workspaces/checkpoints" ]
 
 CMD ["bash"]
 
+# Copy the project
+COPY ./IsCoffeeWet /workspaces/IsCoffeeWet
+
 # Add project to the PYTHONPATH
 ENV PYTHONPATH=${PYTHONPATH}:/workspaces/is-coffee-wet
+
+# Copy some test default files
+COPY ./resources/tests /workspaces/resources/tests
