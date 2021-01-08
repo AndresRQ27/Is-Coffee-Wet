@@ -1,7 +1,8 @@
 {
-  "dataset_path": "database/estXCompleta.csv",
+  "dataset_path": "resources/tests/database/estXCompleta.csv",
   "frequency": "1H",
   "forecast_window": 7,
+  "output_path":"resources/tests/results",
 
   "preprocess": {
     "datetime": [
@@ -76,8 +77,13 @@
   },
 
     "neural_network": {
-      "model_name": "Station#7",
-      "path": "checkpoints",
-      "labels": []
+      "model_name": "Station_7",
+      "nn_path": "resources/tests/checkpoints",
+      "submodel": "tcn",
+
+      "max_epochs": 100,
+      "learning_rate": 0.0001,
+      "patience": 4,
+      "batch_size": 128
     }
 }
