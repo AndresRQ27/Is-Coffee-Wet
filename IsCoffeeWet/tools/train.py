@@ -41,8 +41,6 @@ def train(dataset, model, config_file, debug):
         debug_prediction = predict(dataset=train_ds,
                                    model=model,
                                    config_file=config_file)
-        debug_prediction = pd.DataFrame(debug_prediction,
-                                        columns=config_file.labels)
 
     return pd.DataFrame(train_history.history), debug_prediction
 
@@ -86,9 +84,6 @@ def update(mini_dataset, model, config_file, debug):
             model=model,
             config_file=config_file)
 
-        debug_prediction = pd.DataFrame(debug_prediction,
-                                        columns=config_file.labels)
-
     return pd.DataFrame(update_history.history), debug_prediction
 
 
@@ -113,7 +108,8 @@ def updateAll(dataset, model, config_file, debug):
     history = pd.DataFrame()
 
     # Initialize dataframe to save the debug predictions
-    debug_prediction = pd.DataFrame() if debug else None
+    debug_prediction = pd.DataFrame(
+        columns=config_file.labels) if debug else None
 
     for i in range(0, batches-4):
         print("Batch {}/{}".format(i, batches))
@@ -125,9 +121,9 @@ def updateAll(dataset, model, config_file, debug):
             debug=debug
         )
 
-        history.append(batch_history)
+        history = history.append(batch_history)
 
         if debug:
-            debug_prediction.append(batch_pred)
+            debug_prediction = debug_prediction.append(batch_pred)
 
     return history, debug_prediction
