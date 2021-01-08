@@ -94,5 +94,9 @@ def graphs(dataset, model, config_file, output_path):
     dg.freq_domain(dataset=dataset,
                    config_file=config_file,
                    output_path=output_path)
-    dg. graph_model(model=model,
-                    output_path=output_path)
+    dg.graph_model(model=model,
+                   output_path=output_path)
+    dg.graph_labels(dataset=dataset,
+                    config_file=config_file,
+                    output_path=output_path,
+                    model=model)

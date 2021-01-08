@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
 import tensorflow._api.v2.signal as signal
+from IsCoffeeWet.neural_network.window_generator import WindowGenerator
 
 # Size of the graphs to make
 FIG_SIZE = (30, 10)
@@ -99,6 +100,7 @@ def freq_domain(dataset, config_file, output_path):
         plt.savefig("{}/{}.png".format(output_path, name))
         plt.close()
 
+
 def graph_model(model, output_path):
     """
     # TODO: documentation
@@ -113,3 +115,41 @@ def graph_model(model, output_path):
         print("\n{} already exists".format(output_path))
 
     tf.keras.utils.plot_model(model, output_path, show_shapes=True)
+
+
+def graph_labels(dataset, config_file, output_path, model):
+    """
+    docstring
+    """
+    print(">>> Creating labels graphs of the last predictions...")
+
+    # Creates the folder to save the graphs
+    output_path = os.path.join(output_path, "graphs", "labels")
+    try:
+        os.makedirs(output_path)
+    except FileExistsError:
+        print("\n{} already exists".format(output_path))
+
+    # Creates an empty Window, used for graphing
+    graph_window = WindowGenerator(input_width=config_file.forecast,
+                                   label_width=config_file.forecast,
+                                   shift=config_file.forecast,
+                                   label_columns=config_file.labels)
+
+    # Make a graph for each label
+    for label in graph_window.label_columns:
+        # Prediction data is the info of the last week
+        prediction_data = dataset[
+            -config_file.forecast*2:-config_file.forecast,
+            label]
+
+        # Prediction label is the info of this week
+        prediction_label = dataset[
+            -config_file.forecast:,
+            label]
+
+        graph_window.plot(label,
+                          output_path,
+                          (prediction_data,
+                           prediction_label),
+                          model)
