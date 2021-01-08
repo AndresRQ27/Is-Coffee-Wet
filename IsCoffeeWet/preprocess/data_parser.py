@@ -57,7 +57,7 @@ def merge_datetime(dataset, config_file):
                                          format=config_file.datetime_format)
 
     # Sets the datetime as the index of the DataFrame
-    dataset = dataset.set_index("Datetime")
+    dataset.set_index("Datetime", inplace=True)
 
     return dataset
 
