@@ -2,6 +2,7 @@
   "dataset_path": "resources/tests/database/test.csv",
   "frequency": "1H",
   "forecast_window": 7,
+  "output_path":"resources/tests/results",
   
   "preprocess": {
     "datetime": [
@@ -25,7 +26,7 @@
   },
 
   "neural_network": {
-    "model_name": "tcn_model",
+    "model_name": "best_generic_tcn",
     "nn_path": "resources/tests/checkpoints",
     "submodel": "tcn",
     

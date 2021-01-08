@@ -8,7 +8,7 @@ import tensorflow._api.v2.signal as signal
 FIG_SIZE = (30, 10)
 
 
-def graph_data(dataset, config_file, path):
+def graph_data(dataset, config_file, output_path):
     """
     Function that graph the data in a column vs the time when it was
     taken. Help visualizing big gaps where the data was interpolated
@@ -20,28 +20,28 @@ def graph_data(dataset, config_file, path):
         Dataset with the columns to graph
     config_file: config_file.ConfigFile
         Configuration file with the name of all the columns to graph
-    path: string
-        Path to the parent folder to save the graphs
+    output_path: string
+        Path to the folder to save the graphs
     """
     print(">>> Creating graphs from dataset values...")
 
     # Creates the folder to save the graphs
-    path = os.path.join(path, "resources", "graphs", "data_values")
+    output_path = os.path.join(output_path, "graphs", "data_values")
     try:
-        os.makedirs(path)
+        os.makedirs(output_path)
     except FileExistsError:
-        print("\n{} already exists".format(path))
+        print("\n{} already exists".format(output_path))
 
     for name in config_file.columns:
         # Creates a new figure
         plt.figure(figsize=FIG_SIZE)
         dataset[name].plot().set_ylabel(name)
         # Saves the image
-        plt.savefig("{}/{}.png".format(path, name))
+        plt.savefig("{}/{}.png".format(output_path, name))
         plt.close()
 
 
-def freq_domain(dataset, config_file, path):
+def freq_domain(dataset, config_file, output_path):
     """
     Function that graph the data in the frequency domain by using Fourier Transform.
     Useful when analyzing the information to see which frequencies are the 
@@ -55,8 +55,8 @@ def freq_domain(dataset, config_file, path):
     config_file: config_file.ConfigFile
         Configuration file with the name of all the columns to apply the
         Real-valued Fast Fourier Transformation.
-    path: string
-        Path to the parent folder to save the graphs
+    output_path: string
+        Path to the folder to save the graphs
 
     See Also
     --------
@@ -65,10 +65,11 @@ def freq_domain(dataset, config_file, path):
     # Creates the folder to save the graphs
     print(">>> Creating Fourier graphs...")
 
+    output_path = os.path.join(output_path, "graphs", "fourier")
     try:
-        os.makedirs(path)
+        os.makedirs(output_path)
     except FileExistsError:
-        print("\n{} already exists".format(path))
+        print("\n{} already exists".format(output_path))
 
     for name in config_file.columns:
         # Creates a new figure
@@ -94,5 +95,5 @@ def freq_domain(dataset, config_file, path):
         _ = plt.ylabel(name)
 
         # Saves the image
-        plt.savefig("{}/{}.png".format(path, name))
+        plt.savefig("{}/{}.png".format(output_path, name))
         plt.close()

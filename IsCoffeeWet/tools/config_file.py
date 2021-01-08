@@ -70,6 +70,8 @@ class ConfigFile:
             prediction.
         columns: list(string)
             Columns in the dataset. Loaded if a dataset_path is provided.
+        output_path: string
+            Path to save the predictions and other metrics like benchmarks.
         datetime: list(string)
             Read from datetime. Columns from the dataset to merge into a
             single datetime column, which will be the index.
@@ -118,13 +120,14 @@ class ConfigFile:
             Read from batchsize. Number of data in a batch of training.
         """
         print(">>> Initializing config_file values...")
-        
+
         self.num_data = 0
         self.train_ratio = 0
         self.ds_path = ""
         self.freq = "1H"
         self.forecast = 7
         self.columns = []
+        self.output_path = ""
 
         # *****************************
         # *** Preprocess parameters ***
@@ -159,7 +162,7 @@ class ConfigFile:
         """
         print(">>> Overwriting general config_file values with "
               "ones available in the file...")
-              
+
         if "dataset_path" in config_json:
             path = os.path.join(parent_path,
                                 config_json["dataset_path"])
@@ -208,6 +211,17 @@ class ConfigFile:
                 # Always round down. Forecast will always be in hours IN THE CODE!!!!
                 self.forecast = int(np.floor(forecast / threshold))
 
+        # Result path to save the predictions and other metrics
+        if "output_path" in config_json:
+            # Checks if the path to save the results exists
+            self.output_path = os.path.join(parent_path,
+                                            config_json["output_path"])
+            try:
+                os.makedirs(self.output_path)
+                print("Path to save the results was created")
+            except FileExistsError:
+                print("Path to save the results was found")
+
         # Loads the parameters relative to the preprocessing
         if "preprocess" in config_json:
             self._preprocess(config_json=config_json["preprocess"],
@@ -226,7 +240,7 @@ class ConfigFile:
         """
         print(">>> Overwriting preprocess config_file values with "
               "ones available in the file...")
-              
+
         if "datetime" in config_json:
             # List of the columns to merge into datetime
             # (e.g. date + time)
@@ -295,7 +309,8 @@ class ConfigFile:
 
         if "nn_path" in config_json:
             # Checks if the path to save the neural network exists
-            self.nn_path = os.path.join(parent_path, config_json["nn_path"])
+            self.nn_path = os.path.join(
+                parent_path, config_json["nn_path"])
             try:
                 os.makedirs(self.nn_path)
                 print("Path to save the neural networks was created")
