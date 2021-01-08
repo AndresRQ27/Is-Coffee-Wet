@@ -146,8 +146,8 @@ def save_model(model, path, name="saved_model"):
     print("Your model has been save to '{}'".format(path))
 
 
-def compile_and_fit(model, window, patience=4, learning_rate=0.0001,
-                    max_epochs=100):
+def compile_and_fit(model, window, nn_path, model_name, patience=4,
+                    learning_rate=0.0001, max_epochs=100):
     """
     Function that compiles and train the model. It's a generic function as
     multiple modules are compiled and trained.
@@ -180,7 +180,16 @@ def compile_and_fit(model, window, patience=4, learning_rate=0.0001,
     early_stopping = tf.keras.callbacks.EarlyStopping(monitor='val_loss',
                                                       min_delta=0,
                                                       patience=patience,
-                                                      mode="min")
+                                                      mode="auto",
+                                                      restore_best_weights=True)
+
+    checkpoint_path = os.path.join(nn_path, "best_{}.h5".format(model_name))
+    checkpoint = tf.keras.callbacks.ModelCheckpoint(checkpoint_path,
+                                                    monitor='val_loss',
+                                                    verbose=1,
+                                                    save_best_only=True,
+                                                    mode='auto',
+                                                    period=1)
 
     # Compiles the model with the loss function, optimizer to use and metric to watch
     model.compile(loss=tf.losses.MeanSquaredError(),
@@ -192,7 +201,8 @@ def compile_and_fit(model, window, patience=4, learning_rate=0.0001,
     history = model.fit(window.train,
                         validation_data=window.val,
                         epochs=max_epochs,
-                        callbacks=[early_stopping])
+                        callbacks=[early_stopping,
+                                   checkpoint])
 
     # Returns a history of the metrics
     return history
