@@ -64,6 +64,8 @@ def preprocess(config_file):
 
     # Prints the description of the dataset without normalization
     print(new_dataset.describe().transpose())
+    print(new_dataset.info(verbose=True))
+
 
     # *** Normalize the dataset
     new_dataset, ds_mean, ds_std = norm.standardize(dataset=new_dataset)
