@@ -77,18 +77,20 @@ def graph_labels(dataset, config_file, output_path, model):
                                    train_ds=dataset.head(),
                                    label_columns=config_file.labels)
 
-    # Make a graph for each label
+    # Prediction data is the info of the last week
+    prediction_data = dataset[
+        -config_file.forecast*2:-config_file.forecast
+        ].to_numpy().reshape((1, 168, 19))
+
+    # Prediction label is the info of this week
+    prediction_label = dataset[
+        -config_file.forecast:
+        ].to_numpy().reshape((1, 168, 19))
+    
     for label in graph_window.label_columns:
-        # Prediction data is the info of the last week
-        prediction_data = dataset[
-            -config_file.forecast*2:-config_file.forecast][label]
-
-        # Prediction label is the info of this week
-        prediction_label = dataset[
-            -config_file.forecast:][label]
-
-        graph_window.plot(label,
-                          output_path,
-                          (prediction_data,
-                           prediction_label),
-                          model)
+        # Make a graph for each label
+        graph_window.plot(plot_col=label,
+                          path=output_path,
+                          data=(prediction_data,
+                                prediction_label),
+                          model=model)

@@ -177,7 +177,8 @@ class WindowGenerator:
         try:
             os.makedirs(path)
         except FileExistsError:
-            print("\n{} already exists".format(path))
+            # Avoid loop prints for all the labels
+            pass
 
         # Takes the inputs and labels from the example or the data
         inputs, labels = data if data is not None else self.example
