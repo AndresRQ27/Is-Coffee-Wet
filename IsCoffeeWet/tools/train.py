@@ -111,7 +111,7 @@ def updateAll(dataset, model, config_file, debug):
     debug_prediction = pd.DataFrame(
         columns=config_file.labels) if debug else None
 
-    for i in range(0, batches-4):
+    for i in range(0, batches-3):
         print("Batch {}/{}".format(i, batches))
         batch_history, batch_pred = update(
             mini_dataset=val_ds[
