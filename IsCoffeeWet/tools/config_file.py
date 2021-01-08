@@ -54,10 +54,12 @@ class ConfigFile:
             Number of data contained in th dataset. This property 
             isn't in the config file, but added later on when the
             dataset is loaded (manually)
-        train_ratio: int
-            Number of data to use in the training set. This property 
-            isn't in the config file, but added later on when the
-            dataset is split (manually)
+        mean: pandas.Series
+            Pandas series than contain the mean for each column in the
+            dataset. Used for de-standardize (manually)
+        std: pandas.Series
+            Pandas series than contain the standard deviation for each 
+            column in the dataset. Used for de-standardize (manually)
         ds_path: string
             Read from dataset_path. Relative path of the dataset from
             the bound volume in the container. Starts from the parent
@@ -122,7 +124,9 @@ class ConfigFile:
         print(">>> Initializing config_file values...")
 
         self.num_data = 0
-        self.train_ratio = 0
+        self.mean = pd.Series()
+        self.std = pd.Series()
+
         self.ds_path = ""
         self.freq = "1H"
         self.forecast = 7
