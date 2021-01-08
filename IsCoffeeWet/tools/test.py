@@ -72,6 +72,11 @@ def benchmark(predictions, labels, config_file):
     """
     print(">>> Processing metrics of the last prediction period...")
 
+    # De-standardized dataset section to use as labels
+    labels = de_standardize(dataset=labels,
+                            mean=config_file.mean,
+                            std=config_file.std)
+
     # Resets index to add datetime as a normal column
     labels = labels.reset_index()
 
