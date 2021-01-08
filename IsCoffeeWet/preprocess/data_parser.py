@@ -113,11 +113,16 @@ def convert_numeric(dataset, config_file):
 
     # Apply format to the special cases
     for name, value in config_file.formats.items():
-        if value == "int":
-            dataset[name] = dataset[name].round()
-        # ! Add elif to evaluate other conditions
+        # Check if the column is in the dataset
+        if name in dataset.columns.to_list():
+            if value == "int":
+                dataset[name] = dataset[name].round()
+            # ! Add elif to evaluate other conditions
+            else:
+                continue
         else:
-            continue
+            print("Column name ({}) not in dataset. ".format(name) +
+                  "Available columns are: {}".format(dataset.columns.to_list()))
 
     return dataset
 
