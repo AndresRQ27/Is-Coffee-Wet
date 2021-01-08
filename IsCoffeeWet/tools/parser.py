@@ -52,6 +52,12 @@ def parse_args():
         action="store_true"
     )
     parser.add_argument(
+        "--update-all",
+        dest="updateAll_flag",
+        help="",
+        action="store_true"
+    )
+    parser.add_argument(
         "--alterante-path",
         dest="alt_path",
         help="",
