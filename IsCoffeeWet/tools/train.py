@@ -115,13 +115,14 @@ def updateAll(dataset, model, config_file, debug):
     # Initialize dataframe to save the debug predictions
     debug_prediction = pd.DataFrame() if debug else None
 
-    for i in range(4, batches):
+    for i in range(0, batches-4):
         print("Batch {}/{}".format(i, batches))
         history, batch_pred = history.append(update(mini_dataset=val_ds[
-            (i-4)*config_file.forecast:i*config_file.forecast],
+            i*config_file.forecast:(i+4)*config_file.forecast],
             model=model,
-            config_file=config_file),
+            config_file=config_file,
             debug=debug)
+        )
 
         debug_prediction.append(batch_pred)
 
