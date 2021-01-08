@@ -117,6 +117,8 @@ class ConfigFile:
         batch_size: int
             Read from batchsize. Number of data in a batch of training.
         """
+        print(">>> Initializing config_file values...")
+        
         self.num_data = 0
         self.train_ratio = 0
         self.ds_path = ""
@@ -155,6 +157,9 @@ class ConfigFile:
         ConfigFile with the ones specified in the config.json.
         Overwrites the general values.
         """
+        print(">>> Overwriting general config_file values with "
+              "ones available in the file...")
+              
         if "dataset_path" in config_json:
             path = os.path.join(parent_path,
                                 config_json["dataset_path"])
@@ -219,6 +224,9 @@ class ConfigFile:
         ConfigFile with the ones specified in the config.json.
         Overwrites the values from the preprocess.
         """
+        print(">>> Overwriting preprocess config_file values with "
+              "ones available in the file...")
+              
         if "datetime" in config_json:
             # List of the columns to merge into datetime
             # (e.g. date + time)
@@ -268,6 +276,9 @@ class ConfigFile:
         ConfigFile with the ones specified in the config.json.
         Overwrites the values from the neural network.
         """
+        print(">>> Overwriting neural_network config_file values with "
+              "ones available in the file...")
+              
         if "model_name" in config_json:
             # Name to give the model
             self.model_name = config_json["model_name"]

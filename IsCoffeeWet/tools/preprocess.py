@@ -20,7 +20,7 @@ def preprocess(config_file):
     pandas.DataFrame
         [description]
     """
-    dataset = pd.read_csv(config_file.ds_path)
+    print(">>> Preprocessing dataset...")
 
     # *** Merge datetime
     if config_file.datetime:

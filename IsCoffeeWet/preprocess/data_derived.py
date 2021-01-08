@@ -10,6 +10,8 @@ def create_leaf_wet_accum(dataset, config_file):
     """
     docstring
     """
+    print(">>> Generating leaf wetness accumulated...")
+
     # Difference between last and current datetime
     # This is because the frequency isn't uniform across the dataset
     time_diff = dataset.index[1:] - dataset.index[:-1]
@@ -99,6 +101,8 @@ def create_cyclical_encoder(dataset_index, config_file):
     A frequency analysis of the data using the function "freq_domain" is
     strongly recommended.
     """
+    print(">>> Generating cyclical encoder...")
+    
     # Generates a unique timestamp in second of each datetime
     timestamp_s = dataset_index.map(datetime.datetime.timestamp)
 

@@ -15,6 +15,7 @@ def normalize(dataset):
         Dataset with the normalized data and the max_values absolute value
         for each column
     """
+    print(">>> Normalizing dataset...")
     # Calculates the absolute max_values value and increase it by 10%
     # This give a room for new unknown values so the max_values value won't be 1
     max_values = dataset.abs().max() * 1.10
@@ -44,6 +45,7 @@ def de_normalize(dataset, max_values):
         Dataset with the data de-normalize. Can no longer be used to feed
         into the neural network.
     """
+    print(">>> De-normalizing dataset...")
 
     return dataset * max_values
 
@@ -76,6 +78,7 @@ def standardize(dataset):
     - :math:`\overline{x}` is the sample mean.
     - :math:`s` is the sample standard deviation.
     """
+    print(">>> Standardizing dataset...")
 
     # Computes the mean and standard deviation
     ds_mean = dataset.mean()
@@ -109,4 +112,6 @@ def de_standardize(dataset, mean, std):
         Dataset with the data de-standardized. Can no longer be used to feed
         into the neural network.
     """
+    print(">>> De-standardizing dataset...")
+
     return dataset * std + mean

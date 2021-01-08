@@ -21,6 +21,7 @@ def merge_datetime(dataset, config_file):
         index. Previous columns with date and time
         removed.
     """
+    print(">>> Merging dates...")
 
     # Initialize the Series with the first column in the list
     name = config_file.datetime[0]
@@ -83,6 +84,7 @@ def convert_numeric(dataset, config_file):
         Dataset with columns type changed and missing
         values interpolated.
     """
+    print(">>> Interpolating and assigning value types...")
 
     # Sets all "nullValues" to NaN
     for null in config_file.null_list:
@@ -147,6 +149,8 @@ def sample_series(series, config_file):
 
     A column of a DataFrame is consider a series by the pandas library.
     """
+    print(">>> Sampling the dataset...")
+
     # Choose between a special or mean (average) function
     if series.name in config_file.functions:
         functions = config_file.functions[series.name]

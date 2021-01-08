@@ -23,6 +23,8 @@ def graph_data(dataset, config_file, path):
     path: string
         Path to the parent folder to save the graphs
     """
+    print(">>> Creating graphs from dataset values...")
+
     # Creates the folder to save the graphs
     path = os.path.join(path, "resources", "graphs", "data_values")
     try:
@@ -61,7 +63,8 @@ def freq_domain(dataset, config_file, path):
     tensorflow._api.v2.signal.rfft: Real-valued Fast Fourier Transformation.
     """
     # Creates the folder to save the graphs
-    path = os.path.join(path, "resources", "graphs", "fourier")
+    print(">>> Creating Fourier graphs...")
+
     try:
         os.makedirs(path)
     except FileExistsError:

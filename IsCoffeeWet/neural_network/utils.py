@@ -28,6 +28,7 @@ def split_dataset(dataset, config_file):
         Returns the datetime index in a `pandas.Series`; the training set,
         validation set and test set in a `pandas.DataFrame`.
     """
+    print(">>> Spliting dataset into train, val and test...")
 
     # Resets index to add datetime as a normal column
     dataset = dataset.reset_index()
@@ -92,6 +93,7 @@ def load_model(path, name="", submodel=None):
     ----------
     [1] https://github.com/tensorflow/addons/issues/1788
     """
+    print(">>> Loading model...")
 
     # If path is a directory, look for the most recent file h5
     if os.path.isdir(path):
@@ -135,6 +137,8 @@ def save_model(model, path, name="saved_model"):
         Path in the filesystem to save the model.
 
     """
+    print(">>> Saving model...")
+
     path = os.path.join(path, name+".h5")
     tf.keras.models.save_model(
         model=model, filepath=path, save_format="h5")
@@ -169,6 +173,8 @@ def compile_and_fit(model, window, patience=4, learning_rate=0.0001,
     tf.keras.callbacks.History
         Objects that contains the history of the model training.
     """
+    print(">>> Compiling and training model...")
+
     # Sets an early stopping callback to prevent over-fitting
     early_stopping = tf.keras.callbacks.EarlyStopping(monitor='val_loss',
                                                       min_delta=0,

@@ -29,7 +29,9 @@ def build_model(input_size, output_size, submodel="tcn"):
     -------
     tensorflow.keras.Model
         Created model of the network.
-    """    
+    """
+    print(">>> Building model...")
+
     if submodel.lower() == "tcn":
         model = temp_conv_model(filters=ma.TCN["filter_size"],
                                 kernel_size=ma.TCN["kernel_size"],
