@@ -117,13 +117,17 @@ def updateAll(dataset, model, config_file, debug):
 
     for i in range(0, batches-4):
         print("Batch {}/{}".format(i, batches))
-        history, batch_pred = history.append(update(mini_dataset=val_ds[
-            i*config_file.forecast:(i+4)*config_file.forecast],
+        batch_history, batch_pred = update(
+            mini_dataset=val_ds[
+                i*config_file.forecast:(i+4)*config_file.forecast],
             model=model,
             config_file=config_file,
-            debug=debug)
+            debug=debug
         )
 
-        debug_prediction.append(batch_pred)
+        history.append(batch_history)
+
+        if debug:
+            debug_prediction.append(batch_pred)
 
     return history, debug_prediction
