@@ -120,7 +120,8 @@ def updateAll(dataset, model, config_file, debug):
         history, batch_pred = history.append(update(mini_dataset=val_ds[
             (i-4)*config_file.forecast:i*config_file.forecast],
             model=model,
-            config_file=config_file))
+            config_file=config_file),
+            debug=debug)
 
         debug_prediction.append(batch_pred)
 
