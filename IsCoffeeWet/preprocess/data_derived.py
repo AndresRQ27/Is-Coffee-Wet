@@ -8,7 +8,7 @@ from IsCoffeeWet.preprocess.data_parser import sample_series
 
 def create_leaf_wet_accum(dataset, config_file):
     """
-    docstring
+    # TODO: documentation
     """
     print(">>> Generating leaf wetness accumulated...")
 

@@ -181,7 +181,8 @@ def compile_and_fit(model, window, nn_path, model_name, patience=4,
                                                       mode="auto",
                                                       restore_best_weights=True)
 
-    checkpoint_path = os.path.join(nn_path, "best_{}.h5".format(model_name))
+    checkpoint_path = os.path.join(
+        nn_path, "best_{}.h5".format(model_name))
     checkpoint = tf.keras.callbacks.ModelCheckpoint(checkpoint_path,
                                                     monitor='val_loss',
                                                     verbose=1,
@@ -227,7 +228,8 @@ def mae(y_true, y_pred):
     return np.abs(y_true - y_pred)
 
 
-def analyze_loss(y_true, y_pred, index, grouping_func, frequency="1D"):
+def analyze_metrics(y_true, y_pred, index, grouping_func="mean",
+                    frequency="1D"):
     """AI is creating summary for analyze_loss
 
     Parameters
