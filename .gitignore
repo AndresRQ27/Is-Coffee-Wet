@@ -237,3 +237,6 @@ doc/
 
 # Ignore devconainer used for Docker in VSCode
 .devcontainer/
+
+# Ignore results folder
+**/results
