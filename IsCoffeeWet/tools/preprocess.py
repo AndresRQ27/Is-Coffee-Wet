@@ -21,7 +21,7 @@ def preprocess(config_file):
         [description]
     """
     print(">>> Preprocessing dataset...")
-    
+
     dataset = pd.read_csv(config_file.ds_path, engine="c")
 
     # *** Merge datetime
@@ -66,7 +66,6 @@ def preprocess(config_file):
     print(new_dataset.describe().transpose())
     print(new_dataset.info(verbose=True))
 
-
     # *** Normalize the dataset
     new_dataset, ds_mean, ds_std = norm.standardize(dataset=new_dataset)
 
@@ -76,7 +75,7 @@ def preprocess(config_file):
     return new_dataset, ds_mean, ds_std
 
 
-def graphs(dataset, config_file, output_path):
+def graphs(dataset, model, config_file, output_path):
     """AI is creating summary for graphs
 
     Parameters
@@ -95,3 +94,5 @@ def graphs(dataset, config_file, output_path):
     dg.freq_domain(dataset=dataset,
                    config_file=config_file,
                    output_path=output_path)
+    dg. graph_model(model=model,
+                    output_path=output_path)

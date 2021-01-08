@@ -2,6 +2,7 @@ import os
 
 import matplotlib.pyplot as plt
 import numpy as np
+import tensorflow as tf
 import tensorflow._api.v2.signal as signal
 
 # Size of the graphs to make
@@ -62,9 +63,9 @@ def freq_domain(dataset, config_file, output_path):
     --------
     tensorflow._api.v2.signal.rfft: Real-valued Fast Fourier Transformation.
     """
-    # Creates the folder to save the graphs
     print(">>> Creating Fourier graphs...")
 
+    # Creates the folder to save the graphs
     output_path = os.path.join(output_path, "graphs", "fourier")
     try:
         os.makedirs(output_path)
@@ -97,3 +98,18 @@ def freq_domain(dataset, config_file, output_path):
         # Saves the image
         plt.savefig("{}/{}.png".format(output_path, name))
         plt.close()
+
+def graph_model(model, output_path):
+    """
+    # TODO: documentation
+    """
+    print(">>> Creating model architecture graph...")
+
+    # Creates the folder to save the graphs
+    output_path = os.path.join(output_path, "graphs", "model")
+    try:
+        os.makedirs(output_path)
+    except FileExistsError:
+        print("\n{} already exists".format(output_path))
+
+    tf.keras.utils.plot_model(model, output_path, show_shapes=True)
