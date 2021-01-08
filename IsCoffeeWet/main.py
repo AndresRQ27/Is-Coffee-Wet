@@ -62,24 +62,23 @@ def main():
     if args.train_flag:
         # Train model
         (train_history,
-         debug_predictions1) = train(dataset=copy.deepcopy(dataset),
-                                     model=model,
-                                     config_file=config_file,
-                                     debug=args.debug_flag)
+         debug_pred1) = train(dataset=copy.deepcopy(dataset),
+                              model=model,
+                              config_file=config_file,
+                              debug=args.debug_flag)
 
         # Update with data of the last year
         (update_history,
-         debug_predictions2) = updateAll(dataset=copy.deepcopy(dataset),
-                                         model=model,
-                                         config_file=config_file,
-                                         debug=args.debug_flag)
+         debug_pred2) = updateAll(dataset=copy.deepcopy(dataset),
+                                  model=model,
+                                  config_file=config_file,
+                                  debug=args.debug_flag)
 
         history = train_history.append(update_history)
 
         # Merge the debug predictions
         if args.debug_flag:
-            debug_predictions = debug_predictions1.append(
-                debug_predictions2)
+            debug_predictions = debug_pred1.append(debug_pred2)
 
     elif args.updateAll_flag:
         # Update with data of the last year
