@@ -16,4 +16,5 @@ VOLUME ["/workspaces/checkpoints"]
 
 CMD ["bash"]
 
-COPY . ./
+# Add project to the PYTHONPATH
+ENV PYTHONPATH=${PYTHONPATH}:/workspaces/is-coffee-wet

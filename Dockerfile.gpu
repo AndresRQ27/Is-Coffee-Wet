@@ -17,4 +17,7 @@ RUN pip install \
 
 WORKDIR /workspaces
 
+# Add project to the PYTHONPATH
+ENV PYTHONPATH=${PYTHONPATH}:/workspaces/is-coffee-wet
+
 CMD ["bash"]
