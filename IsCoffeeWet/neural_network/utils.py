@@ -181,8 +181,7 @@ def compile_and_fit(model, window, nn_path, model_name, patience=4,
                                                       mode="auto",
                                                       restore_best_weights=True)
 
-    checkpoint_path = os.path.join(
-        nn_path, "best_{}.h5".format(model_name))
+    checkpoint_path = os.path.join(nn_path, "{}.h5".format(model_name))
     checkpoint = tf.keras.callbacks.ModelCheckpoint(checkpoint_path,
                                                     monitor='val_loss',
                                                     verbose=1,
