@@ -43,18 +43,15 @@ def graph_data(dataset, config_file, output_path):
         plt.close()
 
 
-def graph_model(model, output_path):
+def graph_model(model, model_name, output_path):
     """
     # TODO: documentation
     """
     print(">>> Creating model architecture graph...")
 
     # Creates the folder to save the graphs
-    output_path = os.path.join(output_path, "graphs", "model")
-    try:
-        os.makedirs(output_path)
-    except FileExistsError:
-        print("\n{} already exists".format(output_path))
+    output_path = os.path.join(output_path, "graphs", 
+                               "{}.png".format(model_name))
 
     tf.keras.utils.plot_model(model, output_path, show_shapes=True)
 

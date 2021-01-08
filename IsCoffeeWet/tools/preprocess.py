@@ -92,6 +92,7 @@ def graphs(dataset, model, config_file, output_path):
                   config_file=config_file,
                   output_path=output_path)
     dg.graph_model(model=model,
+                   name=config_file.model_name,
                    output_path=output_path)
     dg.graph_labels(dataset=dataset,
                     config_file=config_file,
