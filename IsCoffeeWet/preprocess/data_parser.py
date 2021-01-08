@@ -92,19 +92,24 @@ def convert_numeric(dataset, config_file):
 
     # Changes the data to float64
     for name in config_file.columns:
-        # Check if it's an special format (int, bool, others)
-        if name in config_file.formats:
-            # Ignores interpolation of bool types
-            if config_file.formats[name] == "bool":
-                continue
-            # ! With elif, you can add other types
+        # Check if the column is in the dataset
+        if name in dataset.columns.to_list():
+            # Check if it's an special format (int, bool, others)
+            if name in config_file.formats:
+                # Ignores interpolation of bool types
+                if config_file.formats[name] == "bool":
+                    continue
+                # ! With elif, you can add other types
 
-        # Casting of the column type
-        dataset = dataset.astype({name: "float64"})
+            # Casting of the column type
+            dataset = dataset.astype({name: "float64"})
 
-        # Interpolation of NaNs
-        dataset[name] = dataset[name].interpolate(method="time",
-                                                  limit_direction="forward")
+            # Interpolation of NaNs
+            dataset[name] = dataset[name].interpolate(method="time",
+                                                      limit_direction="forward")
+        else:
+            print("Column name ({}) not in dataset. ".format(name) +
+                  "Available columns are: {}".format(dataset.columns.to_list()))
 
     # Apply format to the special cases
     for name, value in config_file.formats.items():
