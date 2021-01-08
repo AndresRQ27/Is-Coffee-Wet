@@ -1,112 +1,158 @@
+import copy
 import os
-import sys
 
-# *** Configures the paths to use in the program ***
+from IsCoffeeWet.tools.config_file import ConfigFile
+from IsCoffeeWet.tools.parser import parse_args
+from IsCoffeeWet.tools.preprocess import preprocess, graphs
+from IsCoffeeWet.tools.train import train, update, updateAll
+from IsCoffeeWet.tools.test import benchmark, predict, save_predictions
+from IsCoffeeWet.neural_network.utils import load_model, save_model
+from IsCoffeeWet.neural_network.model_generator import build_model
 
-# Main path where all the files are saved (modules, resources, neural networks)
-# By default, it should be `/data` but could be any other path
-PATH_MAIN = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-# Path to the resources folder where all the persistent files are stored
-PATH_RESOURCES = PATH_MAIN + "/resources/"
-PATH_IMAGES = PATH_RESOURCES + "images/"
-PATH_NN = PATH_MAIN + "/neural-network"
+def main():
+    """
+    Main function to spawn the train and test process.
+    """
+    print("#"*42)
+    print("#"*3+" Welcome to the IsCoffeeWet project "+"#"*3)
+    print("#"*42)
 
-# Appends the module IsCoffeeWet to the library
-sys.path.append(PATH_MAIN)
+    args = parse_args()
 
-import pandas as pd
+    # Main path where all the files are saved (modules, resources,
+    # neural networks)
+    if args.alt_path:
+        # Use a custom path
+        parent_path = args.alt_path
+    else:
+        # Use the parent path of this project
+        parent_path = os.path.dirname(
+            os.path.dirname(os.path.abspath(__file__)))
 
-from IsCoffeeWet.preprocess import config_file as cf
-from IsCoffeeWet.preprocess import data_graph as dg
-from IsCoffeeWet.preprocess import data_parser as dp
-from IsCoffeeWet.neural_network import model_generator as mg
-from IsCoffeeWet.neural_network import utils
-from IsCoffeeWet.neural_network import window_generator as wg
+    config_file = ConfigFile(path_config=args.config_file,
+                             parent_path=parent_path)
 
-# Checks if the path to save the neural network exists
-try:
-    os.makedirs(PATH_NN)
-    print("Path to save the neural networks was created")
-except FileExistsError:
-    print("Path to save the neural networks was found")
+    # *** Preprocess the dataset
+    assert config_file.ds_path != "", "[Error]: Empty dataset. Execution finished"
+    (dataset,
+     config_file.mean,
+     config_file.std) = preprocess(config_file=config_file)  # It's standardize
 
-print("******************************************")
-print("*** Welcome to the IsCoffeeWet project ***")
-print("******************************************")
+    # *** Loads the model
+    model = load_model(submodel=config_file.submodel,
+                       name=config_file.model_name,
+                       path=config_file.nn_path)
 
-# Dataset configuration extracted from the JSON
-config_ds = cf.ConfigFile(PATH_RESOURCES + sys.argv[1], PATH_RESOURCES)
+    # If model is None, create a model
+    if model is None:
+        model = build_model(input_size=(config_file.forecast,
+                                        len(config_file.columns)),
+                            output_size=(config_file.forecast,
+                                         len(config_file.labels)),
+                            submodel=config_file.submodel)
 
-# Loads the dataset
-dataset = pd.read_csv(PATH_RESOURCES + config_ds.path, engine="c")
+    # Check if the model is empty. If model is None, throw error
+    assert model is not None, "[Error]: Couldn't create model. Check the submodel type"
 
-# *********************************
-# ******** Dataset Parsing ********
-# *********************************
+    # Print a summary of the model to use
+    model.summary()
 
-# convert_numeric twice to fill empty values after sampling
-dataset = (dataset.pipe(dp.merge_datetime, config_file=config_ds)
-           .pipe(dp.convert_numeric, config_file=config_ds)
-           .pipe(dp.sample_dataset, config_file=config_ds)
-           .pipe(dp.convert_numeric, config_file=config_ds)
-           .pipe(dp.cyclical_encoder, config_file=config_ds)
-           )
+    if args.train_flag:
+        # *** Train model
+        (train_history,
+         debug_predictions1) = train(dataset=copy.deepcopy(dataset),
+                                     model=model,
+                                     config_file=config_file,
+                                     debug=args.debug_flag)
 
-# Information of the dataset
-print(dataset.info(verbose=True))
-print(dataset.describe().transpose())
+        # *** Update with data of the last year
+        (update_history,
+         debug_predictions2) = updateAll(dataset=copy.deepcopy(dataset),
+                                         model=model,
+                                         config_file=config_file,
+                                         debug=args.debug_flag)
 
-# ! Program will stop until the graphs are checked
-if config_ds.graph:
-    dg.graph_data(dataset, config_ds, PATH_IMAGES)
-    dg.freq_domain(dataset, config_ds, PATH_IMAGES)
+        history = train_history.append(update_history)
 
-# **********************************
-# *** Neural Network preparation ***
-# **********************************
+        # *** Merge the debug predictions
+        if args.debug_flag:
+            debug_predictions = debug_predictions1.append(
+                debug_predictions2)
 
-# Number of rows in the dataset. Added in config_file only during execution
-config_ds.num_data = dataset.shape[0]
+    elif args.updateAll_flag:
+        # *** Update with data of the last year
+        (history,
+         debug_predictions) = updateAll(dataset=copy.deepcopy(dataset),
+                                        model=model,
+                                        config_file=config_file,
+                                        debug=args.debug_flag)
 
-# Normalize the dataset
-dataset, mean, std = utils.standardize(dataset)
-print(dataset.describe().transpose())
+    elif args.update_flag:
+        # *** Update with the last data
+        (history,
+         debug_predictions) = update(mini_dataset=dataset[-config_file.forecast*2:],
+                                     model=model,
+                                     config_file=config_file,
+                                     debug=args.debug_flag)
 
-# Datetime index still useful for graphs
-datetime_index, train_ds, val_ds, test_ds = utils.split_dataset(dataset, config_ds)
+    # *** Save model
+    save_model(model=model,
+               path=config_file.nn_path,
+               name=config_file.model_name)
 
-# Generates a window for the training of the neural network
-window = wg.WindowGenerator(input_width=config_ds.forecast,
-                            label_width=config_ds.forecast,
-                            shift=config_ds.forecast,
-                            train_ds=train_ds,
-                            val_ds=val_ds,
-                            test_ds=test_ds,
-                            label_columns=config_ds.labels)
+    if args.predict_flag:
+        # *** Generate a prediction for the next period
+        prediction = predict(dataset=dataset,
+                             model=model,
+                             config_file=config_file)
 
-# Plots a random window from the test dataset to show the label
-if config_ds.graph:
-    for name in config_ds.columns:
-        window.plot(name, PATH_IMAGES)
+        # *** Save the prediction
+        save_predictions(prediction=prediction,
+                         last_date=dataset.index[-1:][0],
+                         config_file=config_file)
 
-# **********************************
-# **** Neural Network training *****
-# **********************************
+    if args.benchmark_flag:
+        # Predict using the values of the last week
+        benchmark_pred = predict(dataset=dataset[
+            -config_file.forecast*2:-config_file.forecast],
+            model=model,
+            config_file=config_file)
 
-# Constructs the  model
-# model = mg.
+        # Calculates the error of this week predictions
+        # Labels are de-standardize inside the function
+        benchmark(predictions=benchmark_pred,
+                  labels=dataset[-config_file.forecast:])
+
+    # Create graphs when all data is available
+    if args.graph_flag:
+        graphs(dataset=dataset,
+               model=model,
+               config_file=config_file,
+               output_path=config_file.output_path)
+
+    # Save debug variables not normally shown to the user
+    if args.debug_flag:
+        # If a training/update has been made to the model
+        if args.train_flag or args.updateAll_flag or args.update_flag:
+            metrics_path = os.path.join(config_file.output_path,
+                                        "model_metrics.csv")
+            history.to_csv(metrics_path)
+
+            predict_path = os.path.join(config_file.output_path,
+                                        "debug_predictions.csv")
+            debug_predictions.to_csv(predict_path)
+
+
+if __name__ == "__main__":
+    # By default, it should be `/workpaces` but could be any other path
+    main()
+
+"""
 
 # Show the model summary (layers, i/o data, etc.)
-# model.summary()
-
-# TODO: implement compile and fitting
-# history = utils.compile_and_fit(conv_model, window, 5)
+# 
 
 # Graphs all the labels in the model
-# for label in g_window.label_columns:
-#    g_window.plot(label,
-#                  PATH + "/results/prediction/group_temporal/",
-#                  (prediction_data,
-#                   prediction_label),
-#                  model)
+
+"""
