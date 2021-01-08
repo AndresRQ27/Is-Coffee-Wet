@@ -50,10 +50,11 @@ def split_dataset(dataset, config_file):
 
     # Removes the last 365 days of data from the training set
     train_ds = dataset[:train_ratio]
-    # Leave 7 days of validation set from the val_test group
-    val_ds = dataset[train_ratio:train_ratio+config_file.forecast]
+    # Leave 14 days of validation set from the val_test group
+    # First 7 are the predictions, second 7 are the labels
+    val_ds = dataset[train_ratio:train_ratio+config_file.forecast*2]
     # Saves the remaining data as the test set
-    test_ds = dataset[train_ratio+config_file.forecast:]
+    test_ds = dataset[train_ratio+config_file.forecast*2:]
 
     return datetime_index, train_ds, val_ds, test_ds
 
