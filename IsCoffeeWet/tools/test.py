@@ -70,6 +70,8 @@ def benchmark(predictions, labels, config_file):
     """
     TODO: documentation
     """
+    print(">>> Processing metrics of the last prediction period...")
+
     # Resets index to add datetime as a normal column
     labels = labels.reset_index()
 
