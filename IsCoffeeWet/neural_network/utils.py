@@ -44,9 +44,7 @@ def split_dataset(dataset, config_file):
     delta_freq = delta_freq.days + delta_freq.seconds / 86400
 
     # Number of data that will be in the training set
-    train_ratio = len(dataset) - int(np.floor(365 / delta_freq))
-    # Add the train_ratio to the config_file
-    config_file.train_ratio = train_ratio
+    train_ratio = len(dataset) - int(np.floor(364 / delta_freq))
 
     # Removes the last 365 days of data from the training set
     train_ds = dataset[:train_ratio]
