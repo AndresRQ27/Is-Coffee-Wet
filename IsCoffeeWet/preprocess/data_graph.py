@@ -50,7 +50,7 @@ def graph_model(model, model_name, output_path):
     print(">>> Creating model architecture graph...")
 
     # Creates the folder to save the graphs
-    output_path = os.path.join(output_path, "graphs", 
+    output_path = os.path.join(output_path, "graphs",
                                "{}.png".format(model_name))
 
     tf.keras.utils.plot_model(model, output_path, show_shapes=True)
@@ -70,22 +70,22 @@ def graph_labels(dataset, config_file, output_path, model):
         print("\n{} already exists".format(output_path))
 
     # Creates an empty Window, used for graphing
+    # Added a small train_ds to initialize column index
     graph_window = WindowGenerator(input_width=config_file.forecast,
                                    label_width=config_file.forecast,
                                    shift=config_file.forecast,
+                                   train_ds=dataset.head(),
                                    label_columns=config_file.labels)
 
     # Make a graph for each label
     for label in graph_window.label_columns:
         # Prediction data is the info of the last week
         prediction_data = dataset[
-            -config_file.forecast*2:-config_file.forecast,
-            label]
+            -config_file.forecast*2:-config_file.forecast][label]
 
         # Prediction label is the info of this week
         prediction_label = dataset[
-            -config_file.forecast:,
-            label]
+            -config_file.forecast:][label]
 
         graph_window.plot(label,
                           output_path,

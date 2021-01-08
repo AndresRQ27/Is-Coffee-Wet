@@ -1,4 +1,3 @@
-from types import new_class
 import pandas as pd
 
 from IsCoffeeWet.preprocess import data_derived as dd
@@ -92,7 +91,7 @@ def graphs(dataset, model, config_file, output_path):
                   config_file=config_file,
                   output_path=output_path)
     dg.graph_model(model=model,
-                   name=config_file.model_name,
+                   model_name=config_file.model_name,
                    output_path=output_path)
     dg.graph_labels(dataset=dataset,
                     config_file=config_file,

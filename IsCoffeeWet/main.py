@@ -117,7 +117,6 @@ def main():
     # *** Debug
     # Save debug variables not normally shown to the user
     if args.debug_flag:
-        # TODO: test debug functions
         # If a training/update has been made to the model
         if args.train_flag or args.updateAll_flag or args.update_flag:
             print(">>> Printing model trainin/update history metrics...")
@@ -146,7 +145,6 @@ def main():
     # *** Graphs
     # Create graphs when all data is available
     if args.graph_flag:
-        # TODO: all graph functions
         graphs(dataset=dataset,
                model=model,
                config_file=config_file,
