@@ -52,6 +52,12 @@ def parse_args():
         action="store_true"
     )
     parser.add_argument(
+        "-d", "--debug",
+        dest="debug_flag",
+        help="",
+        action="store_true"
+    )
+    parser.add_argument(
         "--update-all",
         dest="updateAll_flag",
         help="",
