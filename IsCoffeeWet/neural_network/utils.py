@@ -187,7 +187,7 @@ def compile_and_fit(model, window, nn_path, model_name, patience=4,
                                                     verbose=1,
                                                     save_best_only=True,
                                                     mode='auto',
-                                                    period=1)
+                                                    save_freq='epoch')
 
     # Compiles the model with the loss function, optimizer to use and metric to watch
     model.compile(loss=tf.losses.MeanSquaredError(),
@@ -228,6 +228,28 @@ def mae(y_true, y_pred):
 
 
 def analyze_loss(y_true, y_pred, index, grouping_func, frequency="1D"):
+    """AI is creating summary for analyze_loss
+
+    Parameters
+    ----------
+    y_true : [type]
+        [description]
+    y_pred : [type]
+        [description]
+    index : [type]
+        [description]
+    grouping_func : [type]
+        [description]
+    frequency : str, optional
+        [description], by default "1D"
+
+    Returns
+    -------
+    [type]
+        [description]
+    """
+    print(">>> Analysing error...")
+
     # Calculates the MAE of the values
     loss = mae(y_true, y_pred)
 
