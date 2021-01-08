@@ -13,7 +13,7 @@ class Test_TestDataGraph(unittest.TestCase):
     def setUpClass(cls):
         # Sets the index using Datetime column
         dataset = pd.read_csv(PATH + "/database/test_parsed.csv",
-                              engine="c", index_col="Datetime", parse_dates=True)
+                              engine="c", index_col=0, parse_dates=True)
         # Infers the frequency
         cls.dataset = dataset.asfreq(dataset.index.inferred_freq)
 
