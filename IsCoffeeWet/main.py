@@ -112,6 +112,19 @@ def main():
                          last_date=dataset.index[-1:][0],
                          config_file=config_file)
 
+    # Save debug variables not normally shown to the user
+    if args.debug_flag:
+        # TODO: test debug functions
+        # If a training/update has been made to the model
+        if args.train_flag or args.updateAll_flag or args.update_flag:
+            metrics_path = os.path.join(config_file.output_path,
+                                        "model_metrics.csv")
+            history.to_csv(metrics_path)
+
+            predict_path = os.path.join(config_file.output_path,
+                                        "debug_predictions.csv")
+            debug_predictions.to_csv(predict_path)
+
     if args.benchmark_flag:
         # Predict using the values of the last week
         benchmark_pred = predict(dataset=dataset[
@@ -131,19 +144,6 @@ def main():
                model=model,
                config_file=config_file,
                output_path=config_file.output_path)
-
-    # Save debug variables not normally shown to the user
-    if args.debug_flag:
-        # TODO: test debug functions
-        # If a training/update has been made to the model
-        if args.train_flag or args.updateAll_flag or args.update_flag:
-            metrics_path = os.path.join(config_file.output_path,
-                                        "model_metrics.csv")
-            history.to_csv(metrics_path)
-
-            predict_path = os.path.join(config_file.output_path,
-                                        "debug_predictions.csv")
-            debug_predictions.to_csv(predict_path)
 
 
 if __name__ == "__main__":
