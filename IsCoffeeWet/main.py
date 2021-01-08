@@ -58,15 +58,16 @@ def main():
     # Print a summary of the model to use
     model.summary()
 
+    # *** Training
     if args.train_flag:
-        # *** Train model
+        # Train model
         (train_history,
          debug_predictions1) = train(dataset=copy.deepcopy(dataset),
                                      model=model,
                                      config_file=config_file,
                                      debug=args.debug_flag)
 
-        # *** Update with data of the last year
+        # Update with data of the last year
         (update_history,
          debug_predictions2) = updateAll(dataset=copy.deepcopy(dataset),
                                          model=model,
@@ -75,13 +76,13 @@ def main():
 
         history = train_history.append(update_history)
 
-        # *** Merge the debug predictions
+        # Merge the debug predictions
         if args.debug_flag:
             debug_predictions = debug_predictions1.append(
                 debug_predictions2)
 
     elif args.updateAll_flag:
-        # *** Update with data of the last year
+        # Update with data of the last year
         (history,
          debug_predictions) = updateAll(dataset=copy.deepcopy(dataset),
                                         model=model,
@@ -89,7 +90,7 @@ def main():
                                         debug=args.debug_flag)
 
     elif args.update_flag:
-        # *** Update with the last data
+        # Update with the last data
         (history,
          debug_predictions) = update(mini_dataset=dataset[-config_file.forecast*2:],
                                      model=model,
@@ -101,30 +102,35 @@ def main():
                path=config_file.nn_path,
                name=config_file.model_name)
 
+    # *** Prediction
     if args.predict_flag:
-        # *** Generate a prediction for the next period
+        # Generate a prediction for the next period
         prediction = predict(dataset=dataset,
                              model=model,
                              config_file=config_file)
 
-        # *** Save the prediction
+        # Save the prediction
         save_predictions(prediction=prediction,
                          last_date=dataset.index[-1:][0],
                          config_file=config_file)
 
+    # *** Debug
     # Save debug variables not normally shown to the user
     if args.debug_flag:
         # TODO: test debug functions
         # If a training/update has been made to the model
         if args.train_flag or args.updateAll_flag or args.update_flag:
+            print(">>> Printing model trainin/update history metrics...")
             metrics_path = os.path.join(config_file.output_path,
                                         "model_metrics.csv")
             history.to_csv(metrics_path)
 
+            print(">>> Printing debug predictions metrics...")
             predict_path = os.path.join(config_file.output_path,
                                         "debug_predictions.csv")
             debug_predictions.to_csv(predict_path)
 
+    # *** Benchmarks
     if args.benchmark_flag:
         # Predict using the values of the last week
         benchmark_pred = predict(dataset=dataset[
@@ -137,6 +143,7 @@ def main():
         benchmark(predictions=benchmark_pred,
                   labels=dataset[-config_file.forecast:])
 
+    # *** Graphs
     # Create graphs when all data is available
     if args.graph_flag:
         # TODO: all graph functions
