@@ -109,7 +109,10 @@ def graph_performance(datasets, graph_columns, path_resources, name):
         for key, value in datasets.items():
             # Numbers to plot in the graph
             # Don't graph empty values
-            data = value[column].dropna(axis=0)
+            try:
+                data = value[column].dropna(axis=0).astype(float)
+            except ValueError as e:
+                print("Non-float column has values: {}".format(value[column]))
 
             # Generates the new positions that the bars will take in the graph
             positions = np.arange(len(data)) + bar_width * bars
