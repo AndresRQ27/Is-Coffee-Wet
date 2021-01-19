@@ -116,7 +116,7 @@ class Test_TestUtils(unittest.TestCase):
             self.predictions):]
         dataset.reset_index(inplace=True)
         datetime_index = dataset.pop("Datetime")
-        result = utils.analyze_loss(
+        result = utils.analyze_metrics(
             dataset, self.predictions, datetime_index, np.mean)
         # TODO: validate test result
         self.assertTrue(True)
