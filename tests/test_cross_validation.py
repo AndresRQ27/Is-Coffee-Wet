@@ -1,11 +1,14 @@
 import os
+import sys
 import unittest
 
 import pandas as pd
 
-from benchmarks import cross_validation as cv
+sys.path.insert(0, os.path.dirname(os.getcwd())+"/benchmark")
 
-PATH_RESOURCES = os.getcwd() + "/resources"
+from benchmark import cross_validation as cv
+
+PATH_RESOURCES = os.path.dirname(os.getcwd()) + "/resources"
 
 
 class Test_CrossValidation(unittest.TestCase):
@@ -268,3 +271,7 @@ def prediction_analysis():
         individual[key] = value.tail(-168)
 
     return labels, group, individual
+
+
+if __name__ == '__main__':
+    unittest.main()
