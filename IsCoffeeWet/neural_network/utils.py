@@ -255,7 +255,7 @@ def analyze_metrics(y_true, y_pred, index, grouping_func="mean",
     loss = mae(y_true, y_pred)
 
     # Sets the datetime index. It assumes these are the last values
-    loss.set_index(index[-len(y_true):], inplace=True)
+    loss.set_index(index[-len(y_pred):], inplace=True)
 
     # Resamples the loss in the desired frequency
     result = loss.resample(frequency, label="right",

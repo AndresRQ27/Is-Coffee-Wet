@@ -77,23 +77,26 @@ def benchmark(predictions, labels, config_file):
                             mean=config_file.mean,
                             std=config_file.std)
 
+    # Resets the prediction index to avoid problems
+    predictions.reset_index(inplace=True, drop=True)
+
     # Resets index to add datetime as a normal column
-    labels = labels.reset_index()
+    labels.reset_index(inplace=True)
 
     # Pops the datetime from the dataset. Not use in the NN explicitly
     datetime_index = labels.pop("index")
 
-    metrics_hour = analyze_metrics(y_true=labels,
+    metrics_hour = analyze_metrics(y_true=labels[config_file.labels],
                                    y_pred=predictions,
                                    index=datetime_index,
                                    frequency="1H")
 
-    metrics_day = analyze_metrics(y_true=labels,
+    metrics_day = analyze_metrics(y_true=labels[config_file.labels],
                                   y_pred=predictions,
                                   index=datetime_index,
                                   frequency="1D")
 
-    metrics_week = analyze_metrics(y_true=labels,
+    metrics_week = analyze_metrics(y_true=labels[config_file.labels],
                                    y_pred=predictions,
                                    index=datetime_index,
                                    frequency="7D")

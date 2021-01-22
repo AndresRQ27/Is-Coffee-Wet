@@ -139,7 +139,8 @@ def main():
         # Calculates the error of this week predictions
         # Labels are de-standardize inside the function
         benchmark(predictions=benchmark_pred,
-                  labels=dataset[-config_file.forecast:])
+                  labels=dataset[-config_file.forecast:],
+                  config_file=config_file)
 
     # *** Graphs
     # Create graphs when all data is available
