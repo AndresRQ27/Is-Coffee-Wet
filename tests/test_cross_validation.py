@@ -1,14 +1,16 @@
+from benchmark import cross_validation as cv
 import os
 import sys
 import unittest
 
 import pandas as pd
 
-sys.path.insert(0, os.path.dirname(os.getcwd())+"/benchmark")
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(__file__)),
+                                "benchmark"))
 
-from benchmark import cross_validation as cv
 
-PATH_RESOURCES = os.path.dirname(os.getcwd()) + "/resources"
+PATH_RESOURCES = os.path.join(os.path.dirname(os.path.dirname(__file__)),
+                              "resources")
 
 
 class Test_CrossValidation(unittest.TestCase):
@@ -107,7 +109,7 @@ class Test_CrossValidation(unittest.TestCase):
         cv.graph_predictions(datasets,
                              self.labels.columns,
                              PATH_RESOURCES + "/benchmark/images/predictions",
-                             "prediction" + test_name)
+                             "prediction_" + test_name)
         self.assertTrue(True)
 
     def test_prediction_temp(self):
@@ -121,7 +123,7 @@ class Test_CrossValidation(unittest.TestCase):
         cv.graph_predictions(datasets,
                              self.labels.columns,
                              PATH_RESOURCES + "/benchmark/images/predictions",
-                             "prediction" + test_name)
+                             "prediction_" + test_name)
         self.assertTrue(True)
 
 
