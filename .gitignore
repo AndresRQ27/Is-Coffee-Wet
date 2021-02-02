@@ -240,3 +240,4 @@ doc/
 
 # Ignore results folder
 **/results
+resources/benchmark
