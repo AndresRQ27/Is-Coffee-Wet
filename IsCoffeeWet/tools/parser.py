@@ -71,4 +71,5 @@ def parse_args():
     )
     if len(sys.argv) == 1:
         parser.print_help()
+        exit()
     return parser.parse_args()
