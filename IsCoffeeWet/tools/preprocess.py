@@ -7,17 +7,37 @@ from IsCoffeeWet.preprocess import normalize as norm
 
 
 def preprocess(config_file):
-    """AI is creating summary for preprocess
+    """
+    Function that executes all the steps involved in the preprocess of the
+    data. See `Notes` for the steps involved.
 
     Parameters
     ----------
-    config_file : [type]
-        [description]
+    config_file: config_file.ConfigFile
+        Object with the needed information to pre-process the dataset
 
     Returns
     -------
-    pandas.DataFrame
-        [description]
+    tuple [pandas.DataFrame, pandas.Series, pandas.Series]
+        Returns the pre-processed dataset, the mean and standard deviation
+        of each column new_dataset. The last to parameters are used for
+        de-normalizing.
+
+    Notes
+    -----
+    1. Merge datetime: merges the date column with the time column. All the
+       values must have the same format.
+    2. Convert numeric: fills the missing values by interpolation, removes
+       the empty values/columns and assign a type for each column.
+    3. Sample data: groups the data into constant time intervals. The
+       grouping of the data is m the mean function by default, but can be
+       different if specified in the config file.
+    4. Generate derived data: generates extra data added to the dataset,
+       like leaf wet accum or a time cyclical encoding.
+    5. Convert numeric: fills missing data that appeared during the
+       grouping and assign again the data types to the column
+    6. Normalize the dataset: Standardize the data so it's ready to be fed
+       to the neural network
     """
     print(">>> Preprocessing dataset...")
 
@@ -75,24 +95,33 @@ def preprocess(config_file):
 
 
 def graphs(dataset, model, config_file, output_path):
-    """AI is creating summary for graphs
+    """
+    Calls the functions to create all the graphs in the project
 
     Parameters
     ----------
-    dataset : [type]
-        [description]
-    config_file : [type]
-        [description]
-    path : [type]
-        [description]
+    dataset : `pandas.DataFrame`
+        Dataset with the pre-processed data
+    model : `tf.keras.Model`
+        Model of the neural network to graph and generate predictions
+    config_file: config_file.ConfigFile
+        Object with the needed information to graph the data
+    output_path : `str`
+        Path to save the graphs
     """
     print(">>> Printing graphs...")
+
+    # Prints the preprocessed data
     dg.graph_data(dataset=dataset,
                   config_file=config_file,
                   output_path=output_path)
+
+    # Prints the models architecture
     dg.graph_model(model=model,
                    model_name=config_file.model_name,
                    output_path=output_path)
+
+    # Prints the labels vs predictions for the current week
     dg.graph_labels(dataset=dataset,
                     config_file=config_file,
                     output_path=output_path,

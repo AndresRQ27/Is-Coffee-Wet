@@ -5,6 +5,7 @@ __Table of contents__
     - [`dataset_path`](#dataset_path)
     - [`frequency`](#frequency)
     - [`forecast_window`](#forecast_window)
+    - [`output_path`](#output_path)
   - [preprocess](#preprocess)
     - [`datetime`](#datetime)
     - [`datetime_format`](#datetime_format)
@@ -16,7 +17,11 @@ __Table of contents__
   - [neural_network](#neural_network)
     - [`model_name`](#model_name)
     - [`nn_path`](#nn_path)
-    - [`labels`](#labels)
+    - [`submodel`](#submodel)
+    - [`max_epochs`](#max_epochs)
+    - [`learning_rate`](#learning_rate)
+    - [`patience`](#patience)
+    - [`batch_size`](#batch_size)
 
 # JSON Format
 
@@ -46,6 +51,10 @@ timestamp to use when predicting the values.
 ### `forecast_window`
 
 (_int_) Amount of time to forecast. Its unit are days.
+
+### `output_path`
+
+(_str_) Path to save all the generated files by the system.
 
 
 ## preprocess
@@ -123,7 +132,26 @@ for a previously trained model in the [`path`](#path).
 
 - File extension is `.h5` that keras uses for this purpose.
 
-### `labels`
+### `submodel`
 
-List of (_string_) of the column names to predict. If left empty,
-all the columns, except the ones removed, are predicted.
+(_string_) Model architecture to create and use during the execution. There currently are 3 options:
+
+- "tcn"
+- "cnn"
+- "conv-lstm"
+
+### `max_epochs`
+
+(_int_) Maximum number of epochs to train the network.
+
+### `learning_rate`
+
+(_float_) Learning rate used when updating the weights of the model after a batch is done training.
+
+### `patience`
+
+(_int_) Number of epochs to wait before stopping the train, if the validation error has not improved.
+
+### `batch_size`
+
+(_int_) Number of data in a batch used for training.

@@ -8,7 +8,20 @@ from IsCoffeeWet.preprocess.data_parser import sample_series
 
 def create_leaf_wet_accum(dataset, config_file):
     """
-    # TODO: documentation
+    Creates the leaf wetness accumulated metric, based on the reports of
+    the leaf wetness sensor. Measured in minutes.
+
+    Parameters
+    ----------
+    dataset : ´pandas.DataFrame´
+        Dataset with the information of leaf wetness.
+    config_file: config_file.ConfigFile
+        Object with the needed information to create the new column.
+
+    Returns
+    -------
+    dataset : ´pandas.DataFrame´
+        Original dataset with leaf wetness accumulated appended
     """
     print(">>> Generating leaf wetness accumulated...")
 

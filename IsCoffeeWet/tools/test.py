@@ -9,7 +9,21 @@ from IsCoffeeWet.neural_network.utils import analyze_metrics
 
 def predict(dataset, model, config_file):
     """
-    # TODO: documentation
+    Predict the values for the next week
+
+    Parameters
+    ----------
+    dataset : `pandas.DataFrame`
+        Dataset with the pre-processed data
+    model : `tf.keras.Model`
+        Trained model to generate the predictions for the next week
+    config_file: config_file.ConfigFile
+        Object with the needed information to generate the prediction
+
+    Returns
+    -------
+    `pandas.DataFrame`
+        Next week prediction
     """
     print(">>> Predicting next values...")
 
@@ -41,7 +55,18 @@ def predict(dataset, model, config_file):
 
 def save_predictions(prediction, last_date, config_file):
     """
-    # TODO: documentation
+    Process the generated predictions by the neural network to be saved
+    into a csv file. Adds the datetime to each prediction and converts the
+    predicted values into the correct data type.
+
+    Parameters
+    ----------
+    prediction : pandas.DataFrame
+        Table with the predicted values
+    last_date : `str`
+        Last date registered in the dataset
+    config_file: config_file.ConfigFile
+        Object with the needed information to convert the predictions
     """
     print(">>> Saving predictions...")
 
@@ -68,7 +93,17 @@ def save_predictions(prediction, last_date, config_file):
 
 def benchmark(predictions, labels, config_file):
     """
-    TODO: documentation
+    Runs a benchmark by calculating the error of the prediction and
+    graphing it vs the real values
+
+    Parameters
+    ----------
+    predictions : `pandas.DataFrame`
+        Table with the predictions
+    labels : `pandas.DataFrame`
+        Dataset with the ground truth values
+    config_file: config_file.ConfigFile
+        Object with the needed information to run the benchmarks
     """
     print(">>> Processing metrics of the last prediction period...")
 

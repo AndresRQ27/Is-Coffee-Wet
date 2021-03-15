@@ -6,9 +6,27 @@ from IsCoffeeWet.neural_network.window_generator import WindowGenerator
 from IsCoffeeWet.tools.test import predict
 
 
-def train(dataset, model, config_file, debug):
+def train(dataset, model, config_file, debug=False):
     """
-    # TODO: documentation
+    Train the neural network
+
+    Parameters
+    ----------
+    dataset: pandas.DataFrame
+        Full dataset, then split into the training set
+    model : `tf.keras.Model`
+        Model to train
+    config_file: config_file.ConfigFile
+        Object with the needed information to train the network
+    debug : `bool`
+        Flag to log and save the network training performance
+
+    Returns
+    -------
+    tuple [`pandas.DataFrame`, `pandas.DataFrame`]
+        DataFrames with the training history of the network and a
+        prediction made immediately after finishing training, if the debug
+        is activated
     """
     print(">>> Training model...")
 
@@ -47,7 +65,27 @@ def train(dataset, model, config_file, debug):
 
 def update(mini_dataset, model, config_file, debug):
     """
-    # TODO: documentation
+    Updates (trains) the neural network with the values in the mini_dataset
+
+    Parameters
+    ----------
+    mini_dataset : `pandas.DataFrame`
+        Table containing a 2-week span, the first is for training and the
+        second for validation
+    model : `tf.keras.Model`
+        Model to update
+    config_file: config_file.ConfigFile
+        Object with the needed information to update the network
+    debug : `bool`
+        Flag to generate a prediction after the update. Useful for
+        consecutive updates (e.g. `updateAll` function)
+
+    Returns
+    -------
+    tuple [`pandas.DataFrame`, `pandas.DataFrame`]
+        DataFrames with the update history of the network and a
+        prediction made immediately after finishing updating, if the debug
+        is activated
     """
     print(">>> Updating model with the last data...")
 
@@ -89,7 +127,27 @@ def update(mini_dataset, model, config_file, debug):
 
 def updateAll(dataset, model, config_file, debug):
     """
-    # TODO: documentation
+    Updates (trains) the neural network with the values in the span of the
+    last year in the dataset
+
+    Parameters
+    ----------
+    dataset: pandas.DataFrame
+        Full dataset, then split into the update set
+    model : `tf.keras.Model`
+        Model to update
+    config_file: config_file.ConfigFile
+        Object with the needed information to update the network
+    debug : `bool`
+        Flag to generate a prediction after the update. Useful for
+        consecutive updates (e.g. `updateAll` function)
+
+    Returns
+    -------
+    tuple [`pandas.DataFrame`, `pandas.DataFrame`]
+        DataFrames with the update history of the network and a
+        prediction made immediately after finishing updating, if the debug
+        is activated
     """
     print(">>> Updating model with the last year information...")
 

@@ -11,7 +11,7 @@ def normalize(dataset):
 
     Returns
     -------
-    tuple[pandas.DataFrame, pandas.Series]
+    tuple [pandas.DataFrame, pandas.Series]
         Dataset with the normalized data and the max_values absolute value
         for each column
     """

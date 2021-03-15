@@ -229,20 +229,22 @@ def mae(y_true, y_pred):
 
 def analyze_metrics(y_true, y_pred, index, grouping_func="mean",
                     frequency="1D"):
-    """AI is creating summary for analyze_loss
+    """
+    Calculates the loss of the variables and group it intervals of the
+    frequency
 
     Parameters
     ----------
-    y_true : [type]
-        [description]
-    y_pred : [type]
-        [description]
-    index : [type]
-        [description]
-    grouping_func : [type]
-        [description]
-    frequency : str, optional
-        [description], by default "1D"
+    y_true : `pandas.DataFrame`
+        Table with the ground truth values of the dataset
+    y_pred : `pandas.DataFrame`
+        Table with the predicted values from the neural network
+    index : ` pandas.DatetimeIndex`
+        Index of both tables
+    grouping_func : `str`, optional
+        Grouping method when resampling the loss, by default "mean"
+    frequency : `str`, optional
+        Frequency to resample the loss, by default "1D"
 
     Returns
     -------

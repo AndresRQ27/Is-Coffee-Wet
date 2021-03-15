@@ -45,7 +45,16 @@ def graph_data(dataset, config_file, output_path):
 
 def graph_model(model, model_name, output_path):
     """
-    # TODO: documentation
+    Prints the architecture of the neural network in an image
+
+    Parameters
+    ----------
+    model : `tf.keras.Model`
+        Model of the neural network to graph
+    model_name : `str`
+        Name to give to the image. Based on the models name
+    output_path : `str`
+        Path to save the image
     """
     print(">>> Creating model architecture graph...")
 
@@ -58,7 +67,19 @@ def graph_model(model, model_name, output_path):
 
 def graph_labels(dataset, config_file, output_path, model):
     """
-    docstring
+    Graphs the last data in the dataset vs the predicted values from the
+    neural network
+
+    Parameters
+    ----------
+    dataset: pandas.DataFrame
+        Dataset with the data to normalize.
+    config_file: config_file.ConfigFile
+        Object with the needed information to graph the labels
+    output_path : `str`
+        Path to save the images
+    model : `tf.keras.Model`
+        Model to generate the predictions
     """
     print(">>> Creating labels graphs of the last predictions...")
 

@@ -118,7 +118,7 @@ def main():
     if args.debug_flag:
         # If a training/update has been made to the model
         if args.train_flag or args.updateAll_flag or args.update_flag:
-            print(">>> Printing model trainin/update history metrics...")
+            print(">>> Printing model training/update history metrics...")
             metrics_path = os.path.join(config_file.output_path,
                                         "model_metrics.csv")
             history.to_csv(metrics_path)
@@ -155,12 +155,3 @@ if __name__ == "__main__":
     # By default, it should be `/workpaces` but could be any other path
     # TODO: update unittests with new functions and changes
     main()
-
-"""
-
-# Show the model summary (layers, i/o data, etc.)
-# 
-
-# Graphs all the labels in the model
-
-"""
